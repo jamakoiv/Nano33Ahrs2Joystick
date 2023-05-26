@@ -10,6 +10,17 @@
 
 USBJoystick joystick;
 
+enum {
+    SERIAL_PRINT_NOTHING = 0x10,
+    SERIAL_PRINT_MAGNETIC = 0x11,
+    SERIAL_PRINT_NORMAL = 0x12,
+    SERIAL_SET_CALIBRATION = 0x30,
+    SERIAL_GET_CALIBRATION = 0x31,
+
+    SERIAL_READ_BUFFER_SIZE = 65,
+    SERIAL_COMMAND_SIZE = 4
+} ;
+auto SerialOutputMode = SERIAL_PRINT_NORMAL;
 
 
 // Fusion-library objects and variables.
@@ -38,13 +49,15 @@ float deltaTime;
 // IMU measurement variables and calibration.
 using MyVector::vector;
 
+// Variables for acceleration values and calibrations.
 vector Acc; 
+vector rawAcc;
 vector CurrentAcc;
 vector AccGain(1.00f, 1.00f, 1.00f);
-vector AccOffset(0.0325f, 0.0306f, 0.01819f);
-const float ACC_INTEG = 0.90f;
-
+vector AccOffset(0.0325f, 0.0306f, 0.01819f); const float ACC_INTEG = 0.90f;
+// Variables for gyroscope values and calibrations.
 vector Gyro;
+vector rawGyro;
 vector CurrentGyro;
 vector GyroGain(1.125f, 1.125f, 1.125f); 
 //vector GyroOffset(-0.59112f, -0.77606f, -0.240580);  // 15 Hz values
@@ -53,7 +66,9 @@ vector GyroGain(1.125f, 1.125f, 1.125f);
 vector GyroOffset(-0.50019f, -0.68556f, 0.13808f);     // 238 Hz values
 const float GYRO_INTEG = 0.90f;
 
+// Variables for magnetometer values and calibrations.
 vector Mag;
+vector rawMag;
 vector CurrentMag;
 //vector MagGain(1.0f/42.119f, 1.0f/40.031f, 1.0f/42.930f);
 //vector MagOffset(-11.660f, -10.046f, 1.094f);
@@ -83,9 +98,10 @@ FusionVector readGyroscope(void) {
     return MyVector_to_FusionVector( CurrentGyro );
 }
 
-FusionVector readMagneticField(void) {
-    IMU.readMagneticField( Mag.x, Mag.y, Mag.z );
-    Mag = (Mag + MagOffset) * MagGain;
+FusionVector readMagneticField(vector* rawMag) {
+    //IMU.readMagneticField( Mag.x, Mag.y, Mag.z );
+    IMU.readMagneticField( rawMag->x, rawMag->y, rawMag->z );
+    Mag = (*rawMag + MagOffset) * MagGain;
     Mag = changeAxisSign( Mag, -1, 1, -1 );
     CurrentMag = CurrentMag*MAG_INTEG + Mag*(1-MAG_INTEG);
 
@@ -195,13 +211,13 @@ void loop() {
 #ifndef NO_MAGNETOMETER
   /* 
    If acceleration, gyroscopy and magnetometer data are ready. 
-   Accelerometer and gyroscope run with 120 Hz sample rate, magnetometer with 20 Hz.
+   Accelerometer and gyroscope run with higher sample rate, magnetometer with 20 Hz.
   */
   if (IMU.accelerationAvailable() && IMU.gyroscopeAvailable() && IMU.magneticFieldAvailable()) {
     updateTimeStamp(); // Updates deltaTime variable.
 
     accelerometer = readAcceleration();   
-    magnetometer = readMagneticField();
+    magnetometer = readMagneticField(&rawMag);
     gyroscope = readGyroscope();
 
     // Compensate for the long-term gyroscope drift.
@@ -225,7 +241,9 @@ void loop() {
 
     accelerometer = readAcceleration();   
     gyroscope = readGyroscope();
-    gyroscope = FusionOffsetUpdate( &offset, gyroscope ); // Compensate for the long-term gyroscope drift.
+    
+    // Compensate for the long-term gyroscope drift.
+    gyroscope = FusionOffsetUpdate( &offset, gyroscope ); 
 
     // Run the AHRS-algorithm
     FusionAhrsUpdateNoMagnetometer( &AHRS, gyroscope, accelerometer, deltaTime ); 
@@ -237,21 +255,51 @@ void loop() {
   if (millis() - printTimer > 100) {
     printTimer = millis();
 
-    printAHRSeuler();
-    //printAHRSearth();
+    if (SerialOutputMode == SERIAL_PRINT_NORMAL) {
+      printAHRSeuler();
+      Serial.print( String("Heading: ") );
+      Serial.println( FusionCompassCalculateHeading(accelerometer, magnetometer), 3 );
+    }
+    else if (SerialOutputMode == SERIAL_PRINT_MAGNETIC) {
+      rawMag.printVector();
+    }
 
-    float heading = FusionCompassCalculateHeading( accelerometer, magnetometer );
-    Serial.print( String("Heading: ") );
-    Serial.println( heading, 3);
+    // Check for commands
+    if (Serial.available()) {
+      delay(50);  // Small delay in case the received message is 
+                  // incomplete when we check Serial.available. 
 
-    //CurrentGyro.printVector();
-    //CurrentAcc.printVector();
-    //CurrentMag.printVector();
+      char serialBuffer[SERIAL_READ_BUFFER_SIZE];
+      Serial.readBytes(serialBuffer, SERIAL_COMMAND_SIZE);
 
-    Gyro.printVector();
-    //Mag.printVector();
-    //CurrentMag.printVector();
-    //MagGain.printVector();
+      auto commandCode = strtol(serialBuffer, NULL, 16);
+      switch (commandCode) {
+        case SERIAL_PRINT_NOTHING:
+          SerialOutputMode = SERIAL_PRINT_NOTHING;
+          break;
+        case SERIAL_PRINT_MAGNETIC:
+          SerialOutputMode = SERIAL_PRINT_MAGNETIC;
+          break;
+        case SERIAL_PRINT_NORMAL:
+          SerialOutputMode = SERIAL_PRINT_NORMAL;
+          break;
+        case SERIAL_SET_CALIBRATION:
+          SerialOutputMode = SERIAL_PRINT_NOTHING;
+          MagOffset.x = Serial.parseFloat();
+          MagOffset.y = Serial.parseFloat();
+          MagOffset.z = Serial.parseFloat();
+          break;
+        case SERIAL_GET_CALIBRATION:
+          SerialOutputMode = SERIAL_PRINT_NOTHING;
+          MagOffset.printVector();
+          break;
+      }
+
+      // Clear waiting data from serial.
+      while (Serial.available()) { 
+          Serial.readBytes(serialBuffer, 1);
+      }
+    }
   }
 }
 
