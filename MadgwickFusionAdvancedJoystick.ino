@@ -28,15 +28,8 @@ using MyVector::vector;
   Fusion-library objects and variables.
 */
 const uint32_t SAMPLE_RATE = 238;
-FusionOffset offset;
+FusionOffset AHRS_gyro_offset;
 FusionAhrs AHRS;
-
-FusionVector gyroscope;
-FusionVector accelerometer;
-FusionVector magnetometer; 
-
-uint32_t IMU_timeStamp, IMU_previousTimeStamp;
-float deltaTime;
 
 // Set AHRS algorithm settings
 const FusionAhrsSettings AHRSsettings = {
@@ -51,22 +44,28 @@ const FusionAhrsSettings AHRSsettings = {
 vector Acc; 
 vector rawAcc;
 vector CurrentAcc;
-vector AccGain(1.00f, 1.00f, 1.00f);
-vector AccOffset(0.0325f, 0.0306f, 0.01819f); 
+vector AccGain;
+vector AccOffset;
+vector AccGain_default(1.00f, 1.00f, 1.00f);
+vector AccOffset_default(0.0325f, 0.0306f, 0.01819f); 
 
 // Variables for gyroscope values and calibrations.
 vector Gyro;
 vector rawGyro;
 vector CurrentGyro;
-vector GyroGain(1.125f, 1.125f, 1.125f); 
-vector GyroOffset(-0.50019f, -0.68556f, 0.13808f);     // 238 Hz values
+vector GyroGain;
+vector GyroOffset;
+vector GyroGain_default(1.125f, 1.125f, 1.125f); 
+vector GyroOffset_default(-0.50019f, -0.68556f, 0.13808f);     // 238 Hz values
 
 // Variables for magnetometer values and calibrations.
 vector Mag;
 vector rawMag;
 vector CurrentMag;
-vector MagGain(1.0f, 1.0f, 1.0f);
-vector MagOffset(-7.257f, 39.747f, -11.817f);
+vector MagGain;
+vector MagOffset;
+vector MagGain_default(1.0f, 1.0f, 1.0f);
+vector MagOffset_default(-7.257f, 39.747f, -11.817f);
 
 const float GYRO_INTEG = 0.90f;
 const float ACC_INTEG = 0.90f;
@@ -117,15 +116,17 @@ inline vector changeAxisSign(const vector& vec, int xSign, int ySign, int zSign)
     return vector( vec.x * xSign, vec.y * ySign, vec.z * zSign );
 }
 
-
-void updateTimeStamp(void) {
+float updateTimeStamp(void) {
     /* Calculate timestep and convert from microseconds to seconds. */
     static const float MICROSECONDS_TO_SECONDS = 1.0f / 1000000.0f;
+    static uint32_t IMU_timeStamp = micros();
+    static uint32_t IMU_previousTimeStamp;
 
-    // Variables defined globally, bad...
     IMU_timeStamp = micros();
-    deltaTime = static_cast<float>((IMU_timeStamp-IMU_previousTimeStamp)*MICROSECONDS_TO_SECONDS); 
+    float dt = static_cast<float>((IMU_timeStamp-IMU_previousTimeStamp)*MICROSECONDS_TO_SECONDS); 
     IMU_previousTimeStamp = IMU_timeStamp;
+
+    return dt;
 }
 
 void updateJoystickAxes(const FusionAhrs *const ahrs) {
@@ -140,41 +141,44 @@ void updateJoystickAxes(const FusionAhrs *const ahrs) {
 }
 
 void AHRS_check(void) {
+  static FusionVector gyroscope;
+  static FusionVector accelerometer;
+  static FusionVector magnetometer; 
+  static float deltaTime;
+  /*
+    TODO: Try to reduce code duplication.
+  */
+
   /* If acceleration, gyroscopy and magnetometer data are ready. 
    Accelerometer and gyroscope run with higher sample rate, magnetometer with 20 Hz. */
   if (IMU.accelerationAvailable() && IMU.gyroscopeAvailable() && IMU.magneticFieldAvailable()) {
-    updateTimeStamp(); // Updates deltaTime variable.
+    deltaTime = updateTimeStamp(); 
 
     accelerometer = readAcceleration(rawAcc);   
     magnetometer = readMagneticField(rawMag);
     gyroscope = readGyroscope(rawGyro);
 
     // Compensate for the long-term gyroscope drift.
-    gyroscope = FusionOffsetUpdate( &offset, gyroscope ); 
+    gyroscope = FusionOffsetUpdate(&AHRS_gyro_offset, gyroscope); 
 
     // Run the AHRS-algorithm.
-    FusionAhrsUpdate( &AHRS, gyroscope, accelerometer, magnetometer, deltaTime ); 
-
-    updateJoystickAxes( &AHRS );
+    FusionAhrsUpdate(&AHRS, gyroscope, accelerometer, magnetometer, deltaTime); 
   }
 
   /* If acceleration and gyroscope data are ready. */
   else if (IMU.accelerationAvailable() && IMU.gyroscopeAvailable()) {
-    updateTimeStamp(); // Updates deltaTime variable.
+    deltaTime = updateTimeStamp(); 
 
     accelerometer = readAcceleration(rawAcc);   
     gyroscope = readGyroscope(rawGyro);
     
     // Compensate for the long-term gyroscope drift.
-    gyroscope = FusionOffsetUpdate( &offset, gyroscope ); 
+    gyroscope = FusionOffsetUpdate(&AHRS_gyro_offset, gyroscope); 
 
     // Run the AHRS-algorithm
-    FusionAhrsUpdateNoMagnetometer( &AHRS, gyroscope, accelerometer, deltaTime ); 
-
-    updateJoystickAxes( &AHRS );
+    FusionAhrsUpdateNoMagnetometer(&AHRS, gyroscope, accelerometer, deltaTime); 
   }
 }
-
 /*
 ------------ END OF AHRS PART ---------------------------------------
 */
@@ -195,9 +199,7 @@ void printMagRaw(void);
 void printGyroRaw(void);
 
 using output_func_ptr_t = void (*)(void);
-
 std::map<uint8_t, output_func_ptr_t> output_functions = {
-//std::map<uint8_t, void (*)(void)> output_functions = {
     {SERIAL_PRINT_AHRS, &printAHRSeuler},
     {SERIAL_PRINT_NOTHING, &printNothing},
 
@@ -243,7 +245,6 @@ void printGyroRaw(void) {
     Serial.println(rawGyro.to_string().c_str());
 }
 
-
 void print_output(void) {
   auto it = output_functions.find(SerialOutputMode);
   if (it == output_functions.end()) {
@@ -253,12 +254,11 @@ void print_output(void) {
   }
   //output_functions[SerialOutputMode]();
 }
-
 /*
 -------------------- END OF SERIAL OUTPUT PART ------------------
 */
 
-
+// Updates deltaTime variable.
 /*
 -------------------- SERIAL INPUT PART --------------------  
 */
@@ -288,9 +288,10 @@ void set_print_acc_calib(std::string input);
 void set_print_gyro_raw(std::string input);
 void set_print_gyro_calib(std::string input);
 
+void kv_store_reset(std::string input);
+
 using input_func_ptr_t = void (*)(std::string input);
 std::map<uint8_t, input_func_ptr_t> input_functions = { 
-//std::map<uint8_t, void (*)(std::string input)> input_functions = { 
           {SERIAL_MAG_SET_OFFSET, &mag_set_offset},
           {SERIAL_MAG_SET_GAIN, &mag_set_gain},
           {SERIAL_MAG_GET_OFFSET, &mag_get_offset},
@@ -313,9 +314,11 @@ std::map<uint8_t, input_func_ptr_t> input_functions = {
           {SERIAL_PRINT_ACC_RAW, &set_print_acc_raw},
           {SERIAL_PRINT_ACC_CALIB, &set_print_acc_calib},
           {SERIAL_PRINT_GYRO_RAW, &set_print_gyro_raw},
-          {SERIAL_PRINT_GYRO_CALIB, &set_print_gyro_calib} };
+          {SERIAL_PRINT_GYRO_CALIB, &set_print_gyro_calib},
 
-std::vector<std::string> split_input(std::string input, std::string delimiter) {
+          {SERIAL_RESET_KVSTORE, &kv_store_reset} };
+
+std::vector<std::string> split_input(std::string input, const std::string& delimiter) {
 /*
   Split string at 'delimiter' and return the pieces in a std::vector<std::string>.
 */
@@ -338,7 +341,7 @@ std::vector<std::string> split_input(std::string input, std::string delimiter) {
   }
 }
 
-std::vector<float> split_and_strtof(std::string input, std::string delimiter) {
+std::vector<float> split_and_strtof(std::string input, const std::string& delimiter) {
 /*
   Split string, convert elements to float and return them as std::vector<float>.
 */
@@ -355,7 +358,7 @@ void set_calib_helper(const std::vector<float>& data, vector& calib) {
 /*
   
 */
-  if (data.size() != 3) {
+  if (data.size() != 3) {// Updates deltaTime variable.
     Serial.println("Invalid input: Could not parse 3 floats from input."); 
   } else {
     calib.x = data[0];
@@ -405,13 +408,15 @@ void acc_get_gain(std::string input) {
 }
 
 void gyro_set_offset(std::string input) {
+  Serial.println(input.c_str());
   set_calib_helper(split_and_strtof(input, ","), GyroOffset);
-  kv_store_save_calibration("GyroOffset", AccGain);
+
+  kv_store_save_calibration("GyroOffset", GyroOffset);
 }
 
 void gyro_set_gain(std::string input) {
   set_calib_helper(split_and_strtof(input, ","), GyroGain);
-  kv_store_save_calibration("GyroGain", AccGain);
+  kv_store_save_calibration("GyroGain", GyroGain);
 }
 
 void gyro_get_offset(std::string input) {
@@ -450,7 +455,6 @@ void set_print_gyro_calib(std::string input) {
   SerialOutputMode = SERIAL_PRINT_GYRO_CALIB;
 }
 
-
 void check_serial_input(void) {
 /* 
   Check for commands in serial. 
@@ -481,7 +485,6 @@ void check_serial_input(void) {
     (it->second)(input_params[1]);
   }
 }
-
 /*
 -------------------- END OF SERIAL INPUT PART --------------------
 */
@@ -530,30 +533,66 @@ bool kv_store_save_calibration(const std::string& key, const vector& data) {
     else return false;
 }
 
-vector kv_store_load_calibration(const std::string& key) {
+bool kv_store_load_calibration(const std::string& key, vector& calib, vector& factory_default) {
+/*
+  Load calibration values from the KVstore. If the KVStore key does not exist, 
+  set calibration to given factory defaults.
+
+  Returns true if calibration was loaded from KVStore succesfully.
+  Returns false if loading failed and defaults were used instead.
+*/
     static char kv_get_buffer[KV_BUFFER_SIZE];
+    static std::string VALUES_DELIMITER = ",";
 
     size_t bytes_received;
     kv_info_t info;
     auto full_key = kv_path + key;
 
+    calib = factory_default; 
+
     auto res = kv_get_info(full_key.c_str(), &info);
-    if (res == MBED_ERROR_ITEM_NOT_FOUND) return vector(0,0,0);
+    if (res == MBED_ERROR_ITEM_NOT_FOUND) return false;
 
     res = kv_get(full_key.c_str(), kv_get_buffer, info.size, &bytes_received);
-    if (res != MBED_SUCCESS) return vector(0,0,0);
+    if (res != MBED_SUCCESS) return false;
 
-    auto values = split_and_strtof(std::string(kv_get_buffer), ",");
-    if (values.size() != 3) return vector(0,0,0);
+    auto values = split_and_strtof(std::string(kv_get_buffer), VALUES_DELIMITER);
+    if (values.size() != 3) return false;
     
-    return vector(values[0], values[1], values[2]);
+    calib = vector(values[0], values[1], values[2]);
+    return true;
 }
 
+// kv_store_reset function has to match the 'std::map<...> input_functions' signature.
+void kv_store_reset(std::string input) {
+    
+    // TODO: kv_store_initialized calls kv_reset as well. 
+    kv_reset(kv_path.c_str()); 
 
+    if (!kv_store_initialized()) {
+      while (true) {
+        Serial.println("Unrecoverable error resetting KVStore.");
+        delay(2000);
+      }
+    }
+
+    kv_store_save_calibration("MagOffset", MagOffset_default);
+    kv_store_save_calibration("MagGain", MagGain_default);
+    kv_store_save_calibration("AccOffset", AccOffset_default);
+    kv_store_save_calibration("AccGain", AccGain_default);
+    kv_store_save_calibration("GyroOffset", GyroOffset_default);
+    kv_store_save_calibration("GyroGain", GyroGain_default);
+
+    MagOffset = MagOffset_default;
+    MagGain = MagGain_default;
+    AccOffset = AccOffset_default;
+    AccGain = AccGain_default;
+    GyroOffset = GyroOffset_default;
+    GyroGain = GyroGain_default;
+}
 /*
 -------------------- END OF KV-STORE PART --------------------
 */
-
 
 
 void setup() {
@@ -564,9 +603,9 @@ void setup() {
     IMU.begin(); // Start the STM LSM9DS1 inertial unit.
 
     // Madgwick fusion library initialization.
-    FusionOffsetInitialise( &offset, SAMPLE_RATE );
-    FusionAhrsInitialise( &AHRS );
-    FusionAhrsSetSettings( &AHRS, &AHRSsettings );
+    FusionOffsetInitialise(&AHRS_gyro_offset, SAMPLE_RATE);
+    FusionAhrsInitialise(&AHRS);
+    FusionAhrsSetSettings(&AHRS, &AHRSsettings);
 
     joystick.autoSend = false;
     joystick.sendBlocking = false;
@@ -578,14 +617,19 @@ void setup() {
     //joystick.setYAxisRange( -90, 90 );    // up-down, pitch-axis. Range [-90, 90] degrees.
     //joystick.setZAxisRange( -180, 180 );  // roll left-right, roll-axis. Range [-180, 180] degrees.
 
-    IMU_previousTimeStamp = micros();
-
     if (!kv_store_initialized()) {
-      // Error
+      while (true) {
+        Serial.println("Unrecoverable error with KVStore.");
+        delay(2000);
+      }
     }
 
-    MagOffset = kv_store_load_calibration("MagOffset"); 
-    MagGain = kv_store_load_calibration("MagGain");
+    kv_store_load_calibration("MagOffset", MagOffset, MagOffset_default); 
+    kv_store_load_calibration("MagGain", MagGain, MagGain_default); 
+    kv_store_load_calibration("AccOffset", AccOffset, AccOffset_default); 
+    kv_store_load_calibration("AccGain", AccGain, AccGain_default); 
+    kv_store_load_calibration("GyroOffset", GyroOffset, GyroOffset_default); 
+    kv_store_load_calibration("GyroGain", GyroGain, GyroGain_default); 
 
     Serial.println("System reset.");
 }
@@ -595,6 +639,7 @@ void loop() {
   static uint32_t serial_input_timer = millis();
   
   AHRS_check();
+  updateJoystickAxes(&AHRS);
 
   if (millis() - serial_output_timer > 100) {
     serial_output_timer = millis();
