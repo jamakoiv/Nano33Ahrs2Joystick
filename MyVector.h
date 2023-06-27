@@ -2,13 +2,10 @@
 #ifndef _MY_VECTOR_
   #define _MY_VECTOR_
 
-#include <Arduino.h>
 #include <math.h>
 #include <string>
 
 namespace MyVector {
-
-const uint8_t PRINT_DECIMAL_PLACES = 3;
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Simple class for dealing with basic vector math for 3-dimensional vector in Arduino. //

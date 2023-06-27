@@ -194,7 +194,10 @@ void printAccRaw(void);
 void printMagRaw(void);
 void printGyroRaw(void);
 
-std::map<uint8_t, void (*)(void)> output_functions = {
+using output_func_ptr_t = void (*)(void);
+
+std::map<uint8_t, output_func_ptr_t> output_functions = {
+//std::map<uint8_t, void (*)(void)> output_functions = {
     {SERIAL_PRINT_AHRS, &printAHRSeuler},
     {SERIAL_PRINT_NOTHING, &printNothing},
 
@@ -285,7 +288,9 @@ void set_print_acc_calib(std::string input);
 void set_print_gyro_raw(std::string input);
 void set_print_gyro_calib(std::string input);
 
-std::map<uint8_t, void (*)(std::string input)> input_functions = { 
+using input_func_ptr_t = void (*)(std::string input);
+std::map<uint8_t, input_func_ptr_t> input_functions = { 
+//std::map<uint8_t, void (*)(std::string input)> input_functions = { 
           {SERIAL_MAG_SET_OFFSET, &mag_set_offset},
           {SERIAL_MAG_SET_GAIN, &mag_set_gain},
           {SERIAL_MAG_GET_OFFSET, &mag_get_offset},
@@ -338,8 +343,7 @@ std::vector<float> split_and_strtof(std::string input, std::string delimiter) {
   Split string, convert elements to float and return them as std::vector<float>.
 */
   std::vector<float> res;
-
-  auto input_str_vec = split_input(input, ",");
+  auto input_str_vec = split_input(input, delimiter);
   for (std::string str : input_str_vec) {
     res.emplace_back(strtof(str.c_str(), NULL));
   }
@@ -347,23 +351,26 @@ std::vector<float> split_and_strtof(std::string input, std::string delimiter) {
   return res;
 }
 
+void set_calib_helper(const std::vector<float>& data, vector& calib) {
+/*
+  
+*/
+  if (data.size() != 3) {
+    Serial.println("Invalid input: Could not parse 3 floats from input."); 
+  } else {
+    calib.x = data[0];
+    calib.y = data[1];
+    calib.z = data[2];
+  }
+}
+
 void mag_set_offset(std::string input) {
-  auto values = split_and_strtof(input, ",");
-
-  MagOffset.x = values[0];
-  MagOffset.y = values[1];
-  MagOffset.z = values[2];
-
+  set_calib_helper(split_and_strtof(input, ","), MagOffset);
   kv_store_save_calibration("MagOffset", MagOffset);
 }
 
 void mag_set_gain(std::string input) {
-  auto values = split_and_strtof(input, ",");
-
-  MagGain.x = values[0];
-  MagGain.y = values[1];
-  MagGain.z = values[2];
-
+  set_calib_helper(split_and_strtof(input, ","), MagGain);
   kv_store_save_calibration("MagGain", MagGain);
 }
 
@@ -378,19 +385,13 @@ void mag_get_gain(std::string input) {
 }
 
 void acc_set_offset(std::string input) {
-  auto values = split_and_strtof(input, ",");
-
-  AccOffset.x = values[0];
-  AccOffset.y = values[1];
-  AccOffset.z = values[2];
+  set_calib_helper(split_and_strtof(input, ","), AccOffset);
+  kv_store_save_calibration("AccOffset", AccOffset);
 }
 
 void acc_set_gain(std::string input) {
-  auto values = split_and_strtof(input, ",");
-
-  AccGain.x = values[0];
-  AccGain.y = values[1];
-  AccGain.z = values[2];
+  set_calib_helper(split_and_strtof(input, ","), AccGain);
+  kv_store_save_calibration("AccGain", AccGain);
 }
 
 void acc_get_offset(std::string input) {
@@ -404,19 +405,13 @@ void acc_get_gain(std::string input) {
 }
 
 void gyro_set_offset(std::string input) {
-  auto values = split_and_strtof(input, ",");
-
-  GyroOffset.x = values[0];
-  GyroOffset.y = values[1];
-  GyroOffset.z = values[2];
+  set_calib_helper(split_and_strtof(input, ","), GyroOffset);
+  kv_store_save_calibration("GyroOffset", AccGain);
 }
 
 void gyro_set_gain(std::string input) {
-  auto values = split_and_strtof(input, ",");
-
-  GyroGain.x = values[0];
-  GyroGain.y = values[1];
-  GyroGain.z = values[2];
+  set_calib_helper(split_and_strtof(input, ","), GyroGain);
+  kv_store_save_calibration("GyroGain", AccGain);
 }
 
 void gyro_get_offset(std::string input) {
@@ -429,16 +424,13 @@ void gyro_get_gain(std::string input) {
   Serial.println(str.c_str());
 }
 
+/* functions for settings print output mode. */
 void set_print_nothing(std::string input) {
-  Serial.println("NOTHING");
   SerialOutputMode = SERIAL_PRINT_NOTHING;
 }
-
 void set_print_ahrs(std::string input) {
-  Serial.println("AHRS");
   SerialOutputMode = SERIAL_PRINT_AHRS;
 }
-
 void set_print_mag_raw(std::string input) {
   SerialOutputMode = SERIAL_PRINT_MAG_RAW;
 }
@@ -472,9 +464,10 @@ void check_serial_input(void) {
 
   delay(50);  // Small delay in case the received message is 
               // incomplete when we check Serial.available. 
-  Serial.println("Reading...");
   strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
   Serial.readBytesUntil('\n', serialBuffer, SERIAL_READ_BUFFER_SIZE);
+  Serial.print("Received command: ");
+  Serial.println(serialBuffer);
 
   auto input_params = split_input(std::string(serialBuffer), OPTIONS_DELIMITER);
   // Guard against inputs which would crash the program at the "(it->second)(input_params[1])"
@@ -499,9 +492,8 @@ void check_serial_input(void) {
 */
 
 const uint8_t KV_BUFFER_SIZE = 64;
-
-std::string kv_path = "/kv/";
-std::string kv_init_key = kv_path + "KVStore_global_api_init";
+const std::string kv_path = "/kv/";
+const std::string kv_init_key = kv_path + "KVStore_global_api_init";
 
 bool kv_store_initialized(void) {
     kv_info_t info; 
@@ -509,7 +501,7 @@ bool kv_store_initialized(void) {
     auto res = kv_get_info(kv_init_key.c_str(), &info);
     
     if (res == MBED_ERROR_ITEM_NOT_FOUND) {
-        Serial.println("KVStore not initialized.\nReset KVStore...");
+        Serial.println("KVStore not initialized. Resetting KVStore...");
         res = kv_reset(kv_path.c_str());
         if (res != MBED_SUCCESS) {
             return false;
@@ -518,6 +510,7 @@ bool kv_store_initialized(void) {
         res = kv_set(kv_init_key.c_str(), "1", 1, 0);
         if (res != MBED_SUCCESS) {
             Serial.println("Error setting init key to KVStore.");
+            return false;
         }
         Serial.println("KVStore reset successfully.");
         return true;
