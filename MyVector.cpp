@@ -28,19 +28,12 @@ void vector::normalize(void) {
   this->z /= normalization_factor;
 }
 
-void vector::printVector(void) const {
-  Serial.print( String("x: ") + String(this->x, PRINT_DECIMAL_PLACES) + String(" ") );
-  Serial.print( String("y: ") + String(this->y, PRINT_DECIMAL_PLACES) + String(" ") );
-  Serial.println( String("z: ") + String(this->z, PRINT_DECIMAL_PLACES) );
-}
-
 std::string vector::to_string(void) const {
-  std::string str = std::to_string(this->x) + ", " +
-                    std::to_string(this->y) + ", " + 
+  std::string str = std::to_string(this->x) + std::string(", ") + 
+                    std::to_string(this->y) + std::string(", ") + 
                     std::to_string(this->z);
   return str;
 }
-
 
 vector vector::crossProduct(const vector& A, const vector &B) {
   double X = A.y*B.z - A.z*B.y;

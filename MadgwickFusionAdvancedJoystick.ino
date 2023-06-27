@@ -4,9 +4,11 @@
 #include <string>
 #include <vector>
 #include <cstring>
+#include <kvstore_global_api.h>
 
 #include "MyVector.h"
 #include "LSM9DS1.h"
+#include "serial_commands.h"
 
 /*
   TODO: Using MyVector::vector and std::vector together is confusing and asking for trouble.
@@ -15,32 +17,6 @@
 
 USBJoystick joystick;
 
-enum {
-    SERIAL_PRINT_NOTHING = 0x10,
-    SERIAL_PRINT_MAG_RAW = 0x11,
-    SERIAL_PRINT_MAG_CALIB = 0x12,
-    SERIAL_PRINT_ACC_RAW = 0x13,
-    SERIAL_PRINT_ACC_CALIB = 0x14,
-    SERIAL_PRINT_GYRO_RAW = 0x15,
-    SERIAL_PRINT_GYRO_CALIB = 0x16,
-    SERIAL_PRINT_AHRS = 0x20,
-
-    SERIAL_MAG_SET_OFFSET = 0x30,
-    SERIAL_MAG_GET_OFFSET = 0x31,
-    SERIAL_MAG_SET_GAIN = 0x32,
-    SERIAL_MAG_GET_GAIN = 0x33,
-    SERIAL_ACC_SET_OFFSET = 0x40,
-    SERIAL_ACC_GET_OFFSET = 0x41,
-    SERIAL_ACC_SET_GAIN = 0x42,
-    SERIAL_ACC_GET_GAIN = 0x43,
-    SERIAL_GYRO_SET_OFFSET = 0x50,
-    SERIAL_GYRO_GET_OFFSET = 0x51,
-    SERIAL_GYRO_SET_GAIN = 0x52,
-    SERIAL_GYRO_GET_GAIN = 0x53,
-
-    SERIAL_BAUDRATE = 57600,
-    SERIAL_READ_BUFFER_SIZE = 65,
-} ;
 auto SerialOutputMode = SERIAL_PRINT_AHRS;
 
 /*
@@ -377,14 +353,18 @@ void mag_set_offset(std::string input) {
   MagOffset.x = values[0];
   MagOffset.y = values[1];
   MagOffset.z = values[2];
+
+  kv_store_save_calibration("MagOffset", MagOffset);
 }
 
 void mag_set_gain(std::string input) {
   auto values = split_and_strtof(input, ",");
 
-  MagGain.x = values[1];
+  MagGain.x = values[0];
   MagGain.y = values[1];
   MagGain.z = values[2];
+
+  kv_store_save_calibration("MagGain", MagGain);
 }
 
 void mag_get_offset(std::string input) {
@@ -514,6 +494,73 @@ void check_serial_input(void) {
 */
 
 
+/*
+-------------------- KV-STORE PART --------------------
+*/
+
+const uint8_t KV_BUFFER_SIZE = 64;
+
+std::string kv_path = "/kv/";
+std::string kv_init_key = kv_path + "KVStore_global_api_init";
+
+bool kv_store_initialized(void) {
+    kv_info_t info; 
+
+    auto res = kv_get_info(kv_init_key.c_str(), &info);
+    
+    if (res == MBED_ERROR_ITEM_NOT_FOUND) {
+        Serial.println("KVStore not initialized.\nReset KVStore...");
+        res = kv_reset(kv_path.c_str());
+        if (res != MBED_SUCCESS) {
+            return false;
+        }
+        
+        res = kv_set(kv_init_key.c_str(), "1", 1, 0);
+        if (res != MBED_SUCCESS) {
+            Serial.println("Error setting init key to KVStore.");
+        }
+        Serial.println("KVStore reset successfully.");
+        return true;
+    } else {
+        Serial.println("KVStore seems ok...");
+        return true;
+    }
+}
+
+bool kv_store_save_calibration(const std::string& key, const vector& data) {
+    auto data_str = data.to_string();
+    auto full_key = kv_path + key;
+
+    auto res = kv_set(full_key.c_str(), data_str.c_str(), data_str.length(), 0);
+
+    if (res == MBED_SUCCESS) return true;
+    else return false;
+}
+
+vector kv_store_load_calibration(const std::string& key) {
+    static char kv_get_buffer[KV_BUFFER_SIZE];
+
+    size_t bytes_received;
+    kv_info_t info;
+    auto full_key = kv_path + key;
+
+    auto res = kv_get_info(full_key.c_str(), &info);
+    if (res == MBED_ERROR_ITEM_NOT_FOUND) return vector(0,0,0);
+
+    res = kv_get(full_key.c_str(), kv_get_buffer, info.size, &bytes_received);
+    if (res != MBED_SUCCESS) return vector(0,0,0);
+
+    auto values = split_and_strtof(std::string(kv_get_buffer), ",");
+    if (values.size() != 3) return vector(0,0,0);
+    
+    return vector(values[0], values[1], values[2]);
+}
+
+
+/*
+-------------------- END OF KV-STORE PART --------------------
+*/
+
 
 
 void setup() {
@@ -539,6 +586,13 @@ void setup() {
     //joystick.setZAxisRange( -180, 180 );  // roll left-right, roll-axis. Range [-180, 180] degrees.
 
     IMU_previousTimeStamp = micros();
+
+    if (!kv_store_initialized()) {
+      // Error
+    }
+
+    MagOffset = kv_store_load_calibration("MagOffset"); 
+    MagGain = kv_store_load_calibration("MagGain");
 
     Serial.println("System reset.");
 }
