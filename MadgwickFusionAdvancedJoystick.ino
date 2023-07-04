@@ -1,10 +1,11 @@
-#include <Fusion.h>
-#include <USBJoystick.h>
 #include <map>
 #include <string>
 #include <vector>
 #include <cstring>
 #include <kvstore_global_api.h>
+
+#include <Fusion.h>
+#include <USBJoystick.h>
 
 #include "MyVector.h"
 #include "LSM9DS1.h"
@@ -30,13 +31,14 @@ using MyVector::vector;
 const uint32_t SAMPLE_RATE = 238;
 FusionOffset AHRS_gyro_offset;
 FusionAhrs AHRS;
+float CompassHeading;
 
 // Set AHRS algorithm settings
 const FusionAhrsSettings AHRSsettings = {
         .gain = 0.50f,
         .accelerationRejection = 10.0f,
         .magneticRejection = 20.0f,
-        .rejectionTimeout = 2*SAMPLE_RATE
+        .rejectionTimeout = 5*SAMPLE_RATE
         //.rejectionTimeout = 0
 } ;
 
@@ -67,9 +69,9 @@ vector MagOffset;
 vector MagGain_default(1.0f, 1.0f, 1.0f);
 vector MagOffset_default(-7.257f, 39.747f, -11.817f);
 
-const float GYRO_INTEG = 0.90f;
-const float ACC_INTEG = 0.90f;
-const float MAG_INTEG = 0.90f;
+const float GYRO_INTEG = 0.60f;
+const float ACC_INTEG = 0.60f;
+const float MAG_INTEG = 0.60f;
 
 FusionVector readAcceleration(vector& rawAcc) {
     /* Read and smooth the IMU-data. Uses leaky integrator smoothing. */
@@ -163,6 +165,7 @@ void AHRS_check(void) {
 
     // Run the AHRS-algorithm.
     FusionAhrsUpdate(&AHRS, gyroscope, accelerometer, magnetometer, deltaTime); 
+    CompassHeading = FusionCompassCalculateHeading(accelerometer, magnetometer);
   }
 
   /* If acceleration and gyroscope data are ready. */
@@ -217,9 +220,11 @@ void printAHRSeuler(void) {
 
     std::string str = "Roll: " + std::to_string(euler.angle.roll) + ", " +
                       "Pitch: " + std::to_string(euler.angle.pitch) + ", " +
-                      "Yaw: " + std::to_string(euler.angle.yaw) + ", ";
+                      "Yaw: " + std::to_string(euler.angle.yaw) + ", " +
+                      "Compass: " + std::to_string(CompassHeading);
     Serial.println(str.c_str());
 }
+
 
 void printNothing(void) {
     return;
@@ -264,20 +269,14 @@ void print_output(void) {
 */
 
 // Forward declarations for the map.
-void mag_set_offset(std::string input);
-void mag_set_gain(std::string input);
-void mag_get_offset(std::string input);
-void mag_get_gain(std::string input);
+void mag_set_calib(std::string input);
+void mag_get_calib(std::string input);
 
-void acc_set_offset(std::string input);
-void acc_set_gain(std::string input);
-void acc_get_offset(std::string input);
-void acc_get_gain(std::string input);
+void acc_set_calib(std::string input);
+void acc_get_calib(std::string input);
 
-void gyro_set_offset(std::string input);
-void gyro_set_gain(std::string input);
-void gyro_get_offset(std::string input);
-void gyro_get_gain(std::string input);
+void gyro_set_calib(std::string input);
+void gyro_get_calib(std::string input);
 
 void set_print_nothing(std::string input);
 void set_print_ahrs(std::string input);
@@ -292,20 +291,14 @@ void kv_store_reset(std::string input);
 
 using input_func_ptr_t = void (*)(std::string input);
 std::map<uint8_t, input_func_ptr_t> input_functions = { 
-          {SERIAL_MAG_SET_OFFSET, &mag_set_offset},
-          {SERIAL_MAG_SET_GAIN, &mag_set_gain},
-          {SERIAL_MAG_GET_OFFSET, &mag_get_offset},
-          {SERIAL_MAG_GET_GAIN, &mag_get_gain},
+          {SERIAL_MAG_SET_CALIB, &mag_set_calib},
+          {SERIAL_MAG_GET_CALIB, &mag_get_calib},
 
-          {SERIAL_ACC_SET_OFFSET, &acc_set_offset},
-          {SERIAL_ACC_SET_GAIN, &acc_set_gain},
-          {SERIAL_ACC_GET_OFFSET, &acc_get_offset},
-          {SERIAL_ACC_GET_GAIN, &acc_get_gain},
+          {SERIAL_ACC_SET_CALIB, &acc_set_calib},
+          {SERIAL_ACC_GET_CALIB, &acc_get_calib},
 
-          {SERIAL_GYRO_SET_OFFSET, &gyro_set_offset},
-          {SERIAL_GYRO_SET_GAIN, &gyro_set_gain},
-          {SERIAL_GYRO_GET_OFFSET, &gyro_get_offset},
-          {SERIAL_GYRO_GET_GAIN, &gyro_get_gain},
+          {SERIAL_GYRO_SET_CALIB, &gyro_set_calib},
+          {SERIAL_GYRO_GET_CALIB, &gyro_get_calib},
 
           {SERIAL_PRINT_NOTHING, &set_print_nothing},
           {SERIAL_PRINT_AHRS, &set_print_ahrs},
@@ -354,78 +347,128 @@ std::vector<float> split_and_strtof(std::string input, const std::string& delimi
   return res;
 }
 
-void set_calib_helper(const std::vector<float>& data, vector& calib) {
+void set_calib_helper(const std::vector<float>& data, vector& offset, vector& gain) {
 /*
   
 */
-  if (data.size() != 3) {// Updates deltaTime variable.
-    Serial.println("Invalid input: Could not parse 3 floats from input."); 
+  if (data.size() < 6) {
+    Serial.println("Invalid input: Could not parse 6 floats from input."); 
   } else {
-    calib.x = data[0];
-    calib.y = data[1];
-    calib.z = data[2];
+    offset.x = data[0];
+    offset.y = data[1];
+    offset.z = data[2];
+    gain.x = data[3];
+    gain.y = data[4];
+    gain.z = data[5];
   }
 }
 
-void mag_set_offset(std::string input) {
-  set_calib_helper(split_and_strtof(input, ","), MagOffset);
-  kv_store_save_calibration("MagOffset", MagOffset);
+bool serial_handshake(void) {
+/*
+  Call and response.   
+*/
+  static char serialBuffer[SERIAL_READ_BUFFER_SIZE];
+
+  strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
+  if (!Serial.available()) {
+    return false;
+  }
+
+  Serial.readBytes(serialBuffer, SERIAL_HANDSHAKE.length());
+  if (std::string(serialBuffer) == SERIAL_HANDSHAKE) {
+    Serial.println(SERIAL_HANDSHAKE.c_str());
+    return true;
+  } else {
+    return false;
+  }
 }
 
-void mag_set_gain(std::string input) {
-  set_calib_helper(split_and_strtof(input, ","), MagGain);
+std::string read_serial_input(void) {
+/*
+
+*/
+  static char serialBuffer[SERIAL_READ_BUFFER_SIZE];
+
+  strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
+  int bytes_read = Serial.readBytesUntil('\n', serialBuffer, SERIAL_READ_BUFFER_SIZE);
+
+  if (bytes_read == 0) {
+    return std::string("");
+  } else {
+    return std::string(serialBuffer);
+  }
+}
+
+void execute_command(std::vector<std::string> params) {
+  // Guard against inputs which would crash the program at the "(it->second)(params[1])"
+  if (params.size() == 1) params.emplace_back(" "); 
+
+  uint32_t command= static_cast<uint8_t>(strtol(params[0].c_str(), NULL, 16));
+
+  auto it = input_functions.find(command);
+  if (it == input_functions.end()) {
+    Serial.print("Command not found: 0x");
+    Serial.println(command, HEX);
+  } else {
+    (it->second)(params[1]);
+  }
+}
+
+void check_serial_input(void) {
+/* 
+  Check for commands in serial. 
+*/
+  static const std::string OPTIONS_DELIMITER = ";";
+
+  if (!serial_handshake()) {
+    return;
+  }
+
+  delay(2000);// Small delay in case the received message is 
+              // incomplete when we check Serial.available.
+              // Make larger if you want to send data manually via terminal.
+
+  auto input = read_serial_input();
+  auto input_params = split_input(input, OPTIONS_DELIMITER);
+  execute_command(input_params);
+}
+
+void mag_set_calib(std::string input) {
+  set_calib_helper(split_and_strtof(input, ","), MagOffset, MagGain);
+  kv_store_save_calibration("MagOffset", MagOffset);
   kv_store_save_calibration("MagGain", MagGain);
 }
 
-void mag_get_offset(std::string input) {
-  std::string str = "Magnetic offset (x,y,z): " + MagOffset.to_string();
+void mag_get_calib(std::string input) {
+  SerialOutputMode = SERIAL_PRINT_NOTHING;
+  std::string str = "Magnetic offset (x,y,z): " + MagOffset.to_string()
+                  + "; Magnetic gain (x,y,z): " + MagGain.to_string();
   Serial.println(str.c_str());
 }
 
-void mag_get_gain(std::string input) {
-  std::string str = "Magnetic gain (x,y,z): " + MagGain.to_string();
-  Serial.println(str.c_str());
-}
-
-void acc_set_offset(std::string input) {
-  set_calib_helper(split_and_strtof(input, ","), AccOffset);
+void acc_set_calib(std::string input) {
+  set_calib_helper(split_and_strtof(input, ","), AccOffset, AccGain);
   kv_store_save_calibration("AccOffset", AccOffset);
-}
-
-void acc_set_gain(std::string input) {
-  set_calib_helper(split_and_strtof(input, ","), AccGain);
   kv_store_save_calibration("AccGain", AccGain);
 }
 
-void acc_get_offset(std::string input) {
+void acc_get_calib(std::string input) {
+  SerialOutputMode = SERIAL_PRINT_NOTHING;
   std::string str = "Accelerometer offset (x,y,z): " + AccOffset.to_string();
+                  + "; Accelerometer gain (x,y,z): " + AccGain.to_string();
   Serial.println(str.c_str());
 }
 
-void acc_get_gain(std::string input) {
-  std::string str = "Accelerometer gain (x,y,z): " + AccGain.to_string();
-  Serial.println(str.c_str());
-}
-
-void gyro_set_offset(std::string input) {
-  Serial.println(input.c_str());
-  set_calib_helper(split_and_strtof(input, ","), GyroOffset);
-
+void gyro_set_calib(std::string input) {
+  set_calib_helper(split_and_strtof(input, ","), GyroOffset, GyroGain);
   kv_store_save_calibration("GyroOffset", GyroOffset);
-}
-
-void gyro_set_gain(std::string input) {
-  set_calib_helper(split_and_strtof(input, ","), GyroGain);
   kv_store_save_calibration("GyroGain", GyroGain);
 }
 
-void gyro_get_offset(std::string input) {
+void gyro_get_calib(std::string input) {
+  SerialOutputMode = SERIAL_PRINT_NOTHING;
   std::string str = "Gyroscope offset (x,y,z): " + GyroOffset.to_string();
-  Serial.println(str.c_str());
-}
-
-void gyro_get_gain(std::string input) {
-  std::string str = "Gyroscope gain (x,y,z): " + GyroGain.to_string();
+                  + "; Gyroscope gain (x,y,z): " + GyroGain.to_string();
   Serial.println(str.c_str());
 }
 
@@ -453,37 +496,6 @@ void set_print_gyro_raw(std::string input) {
 }
 void set_print_gyro_calib(std::string input) {
   SerialOutputMode = SERIAL_PRINT_GYRO_CALIB;
-}
-
-void check_serial_input(void) {
-/* 
-  Check for commands in serial. 
-*/
-  static char serialBuffer[SERIAL_READ_BUFFER_SIZE];
-  static const std::string OPTIONS_DELIMITER = ";";
-
-  if (!Serial.available()) {
-    return;
-  }
-
-  delay(50);  // Small delay in case the received message is 
-              // incomplete when we check Serial.available. 
-  strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
-  Serial.readBytesUntil('\n', serialBuffer, SERIAL_READ_BUFFER_SIZE);
-  Serial.print("Received command: ");
-  Serial.println(serialBuffer);
-
-  auto input_params = split_input(std::string(serialBuffer), OPTIONS_DELIMITER);
-  // Guard against inputs which would crash the program at the "(it->second)(input_params[1])"
-  if (input_params.size() == 1) input_params.emplace_back(" "); 
-
-  uint8_t commandCode = static_cast<uint8_t>(strtol(input_params[0].c_str(), NULL, 16));
-  auto it = input_functions.find(commandCode);
-  if (it == input_functions.end()) {
-    Serial.println("Command not found");
-  } else {
-    (it->second)(input_params[1]);
-  }
 }
 /*
 -------------------- END OF SERIAL INPUT PART --------------------
@@ -576,6 +588,8 @@ void kv_store_reset(std::string input) {
       }
     }
 
+    // TODO: KVStore keys are hardcoded and used in three different places.
+    //       Simple typo will give hard to track bugs.
     kv_store_save_calibration("MagOffset", MagOffset_default);
     kv_store_save_calibration("MagGain", MagGain_default);
     kv_store_save_calibration("AccOffset", AccOffset_default);
@@ -619,7 +633,7 @@ void setup() {
 
     if (!kv_store_initialized()) {
       while (true) {
-        Serial.println("Unrecoverable error with KVStore.");
+        Serial.println("Unrecoverable error with KVStore...");
         delay(2000);
       }
     }
