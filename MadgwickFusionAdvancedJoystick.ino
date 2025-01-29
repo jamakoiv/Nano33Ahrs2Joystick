@@ -437,6 +437,7 @@ void mag_set_calib(std::string input) {
   set_calib_helper(split_and_strtof(input, ","), MagOffset, MagGain);
   kv_store_save_calibration("MagOffset", MagOffset);
   kv_store_save_calibration("MagGain", MagGain);
+  Serial.println("Calibration set.");
 }
 
 void mag_get_calib(std::string input) {
@@ -450,6 +451,7 @@ void acc_set_calib(std::string input) {
   set_calib_helper(split_and_strtof(input, ","), AccOffset, AccGain);
   kv_store_save_calibration("AccOffset", AccOffset);
   kv_store_save_calibration("AccGain", AccGain);
+  Serial.println("Calibration set.");
 }
 
 void acc_get_calib(std::string input) {
@@ -463,6 +465,7 @@ void gyro_set_calib(std::string input) {
   set_calib_helper(split_and_strtof(input, ","), GyroOffset, GyroGain);
   kv_store_save_calibration("GyroOffset", GyroOffset);
   kv_store_save_calibration("GyroGain", GyroGain);
+  Serial.println("Calibration set.");
 }
 
 void gyro_get_calib(std::string input) {
@@ -475,27 +478,35 @@ void gyro_get_calib(std::string input) {
 /* functions for settings print output mode. */
 void set_print_nothing(std::string input) {
   SerialOutputMode = SERIAL_PRINT_NOTHING;
+  Serial.println("Output-mode set to NOTHING.");
 }
 void set_print_ahrs(std::string input) {
   SerialOutputMode = SERIAL_PRINT_AHRS;
+  Serial.println("Output-mode set to AHRS.");
 }
 void set_print_mag_raw(std::string input) {
   SerialOutputMode = SERIAL_PRINT_MAG_RAW;
+  Serial.println("Output-mode set to MAGNETOMETER-RAW.");
 }
 void set_print_mag_calib(std::string input) {
   SerialOutputMode = SERIAL_PRINT_MAG_CALIB;
+  Serial.println("Output-mode set to MAGNETOMETER-CALIBRATED.");
 }
 void set_print_acc_raw(std::string input) {
   SerialOutputMode = SERIAL_PRINT_ACC_RAW;
+  Serial.println("Output-mode set to ACCELEROMETER-RAW.");
 }
 void set_print_acc_calib(std::string input) {
   SerialOutputMode = SERIAL_PRINT_ACC_CALIB;
+  Serial.println("Output-mode set to ACCELEROMETER-CALIBRATED.");
 }
 void set_print_gyro_raw(std::string input) {
   SerialOutputMode = SERIAL_PRINT_GYRO_RAW;
+  Serial.println("Output-mode set to GYROSCOPE-RAW.");
 }
 void set_print_gyro_calib(std::string input) {
   SerialOutputMode = SERIAL_PRINT_GYRO_CALIB;
+  Serial.println("Output-mode set to GYROSCOPE-RAW.");
 }
 /*
 -------------------- END OF SERIAL INPUT PART --------------------
