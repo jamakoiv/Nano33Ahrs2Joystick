@@ -5,11 +5,10 @@
 #include <kvstore_global_api.h>
 
 #include <Fusion.h>
-#include <USBJoystick.h>
-
-#include "MyVector.h"
-#include "LSM9DS1.h"
 #include "serial_commands.h"
+#include "src/USBJoystick/USBJoystick.h"
+#include "src/MyVector/MyVector.h"
+#include "src/LSM9DS1/LSM9DS1.h"
 
 /*
   TODO: Using MyVector::vector and std::vector together is confusing and asking for trouble.
