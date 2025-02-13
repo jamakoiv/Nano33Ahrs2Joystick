@@ -186,6 +186,7 @@ void AHRS_check(void) {
 */
 
 
+// TODO: Serial input & output use a lot of global variables, hard to refactor into separate file.
 /*
  ---------------- SERIAL OUTPUT PART ------------------------------
 */
