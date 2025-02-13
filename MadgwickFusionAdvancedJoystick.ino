@@ -4,8 +4,8 @@
 #include <cstring>
 #include <kvstore_global_api.h>
 
-#include <Fusion.h>
 #include "serial_commands.h"
+#include "src/Fusion/Fusion.h"
 #include "src/USBJoystick/USBJoystick.h"
 #include "src/MyVector/MyVector.h"
 #include "src/LSM9DS1/LSM9DS1.h"
@@ -17,7 +17,7 @@
 
 USBJoystick joystick;
 
-auto SerialOutputMode = SERIAL_PRINT_AHRS;
+int SerialOutputMode = SERIAL_PRINT_AHRS;
 
 /*
  IMU measurement variables and calibration.
