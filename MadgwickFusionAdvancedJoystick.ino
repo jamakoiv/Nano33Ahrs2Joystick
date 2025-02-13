@@ -2,13 +2,15 @@
 #include <string>
 #include <vector>
 #include <cstring>
-#include <kvstore_global_api.h>
 
 #include "serial_commands.h"
 #include "src/Fusion/Fusion.h"
 #include "src/USBJoystick/USBJoystick.h"
 #include "src/MyVector/MyVector.h"
 #include "src/LSM9DS1/LSM9DS1.h"
+
+#include "src/kv_storage.h"
+#include "src/string_helpers.h"
 
 /*
   TODO: Using MyVector::vector and std::vector together is confusing and asking for trouble.
@@ -311,57 +313,6 @@ std::map<uint8_t, input_func_ptr_t> input_functions = {
 
           {SERIAL_RESET_KVSTORE, &kv_store_reset} };
 
-std::vector<std::string> split_input(std::string input, const std::string& delimiter) {
-/*
-  Split string at 'delimiter' and return the pieces in a std::vector<std::string>.
-*/
-  std::vector<std::string> res;
-    
-  auto pos = input.find(delimiter);
-
-  while (pos != std::string::npos) {
-    res.emplace_back(input.substr(0, pos));
-    input.erase(0, pos+1);
-    pos = input.find(delimiter);
-  }
-  
-  // Handle the last element if there is no delimiter at the end of the input string.
-  if (input.empty()) { 
-    return res;
-  } else {
-    res.emplace_back(input);
-    return res;
-  }
-}
-
-std::vector<float> split_and_strtof(std::string input, const std::string& delimiter) {
-/*
-  Split string, convert elements to float and return them as std::vector<float>.
-*/
-  std::vector<float> res;
-  auto input_str_vec = split_input(input, delimiter);
-  for (std::string str : input_str_vec) {
-    res.emplace_back(strtof(str.c_str(), NULL));
-  }
-
-  return res;
-}
-
-void set_calib_helper(const std::vector<float>& data, vector& offset, vector& gain) {
-/*
-  
-*/
-  if (data.size() < 6) {
-    Serial.println("Invalid input: Could not parse 6 floats from input."); 
-  } else {
-    offset.x = data[0];
-    offset.y = data[1];
-    offset.z = data[2];
-    gain.x = data[3];
-    gain.y = data[4];
-    gain.z = data[5];
-  }
-}
 
 bool serial_handshake(void) {
 /*
@@ -512,112 +463,6 @@ void set_print_gyro_calib(std::string input) {
 -------------------- END OF SERIAL INPUT PART --------------------
 */
 
-
-/*
--------------------- KV-STORE PART --------------------
-*/
-
-const uint8_t KV_BUFFER_SIZE = 64;
-const std::string kv_path = "/kv/";
-const std::string kv_init_key = kv_path + "KVStore_global_api_init";
-
-bool kv_store_initialized(void) {
-    kv_info_t info; 
-
-    auto res = kv_get_info(kv_init_key.c_str(), &info);
-    
-    if (res == MBED_ERROR_ITEM_NOT_FOUND) {
-        Serial.println("KVStore not initialized. Resetting KVStore...");
-        res = kv_reset(kv_path.c_str());
-        if (res != MBED_SUCCESS) {
-            return false;
-        }
-        
-        res = kv_set(kv_init_key.c_str(), "1", 1, 0);
-        if (res != MBED_SUCCESS) {
-            Serial.println("Error setting init key to KVStore.");
-            return false;
-        }
-        Serial.println("KVStore reset successfully.");
-        return true;
-    } else {
-        Serial.println("KVStore seems ok...");
-        return true;
-    }
-}
-
-bool kv_store_save_calibration(const std::string& key, const vector& data) {
-    auto data_str = data.to_string();
-    auto full_key = kv_path + key;
-
-    auto res = kv_set(full_key.c_str(), data_str.c_str(), data_str.length(), 0);
-
-    if (res == MBED_SUCCESS) return true;
-    else return false;
-}
-
-bool kv_store_load_calibration(const std::string& key, vector& calib, vector& factory_default) {
-/*
-  Load calibration values from the KVstore. If the KVStore key does not exist, 
-  set calibration to given factory defaults.
-
-  Returns true if calibration was loaded from KVStore succesfully.
-  Returns false if loading failed and defaults were used instead.
-*/
-    static char kv_get_buffer[KV_BUFFER_SIZE];
-    static std::string VALUES_DELIMITER = ",";
-
-    size_t bytes_received;
-    kv_info_t info;
-    auto full_key = kv_path + key;
-
-    calib = factory_default; 
-
-    auto res = kv_get_info(full_key.c_str(), &info);
-    if (res == MBED_ERROR_ITEM_NOT_FOUND) return false;
-
-    res = kv_get(full_key.c_str(), kv_get_buffer, info.size, &bytes_received);
-    if (res != MBED_SUCCESS) return false;
-
-    auto values = split_and_strtof(std::string(kv_get_buffer), VALUES_DELIMITER);
-    if (values.size() != 3) return false;
-    
-    calib = vector(values[0], values[1], values[2]);
-    return true;
-}
-
-// kv_store_reset function has to match the 'std::map<...> input_functions' signature.
-void kv_store_reset(std::string input) {
-    
-    // TODO: kv_store_initialized calls kv_reset as well. 
-    kv_reset(kv_path.c_str()); 
-
-    if (!kv_store_initialized()) {
-      while (true) {
-        Serial.println("Unrecoverable error resetting KVStore.");
-        delay(2000);
-      }
-    }
-
-    // TODO: KVStore keys are hardcoded and used in three different places.
-    //       Simple typo will give hard to track bugs.
-    kv_store_save_calibration("MagOffset", MagOffset_default);
-    kv_store_save_calibration("MagGain", MagGain_default);
-    kv_store_save_calibration("AccOffset", AccOffset_default);
-    kv_store_save_calibration("AccGain", AccGain_default);
-    kv_store_save_calibration("GyroOffset", GyroOffset_default);
-    kv_store_save_calibration("GyroGain", GyroGain_default);
-
-    MagOffset = MagOffset_default;
-    MagGain = MagGain_default;
-    AccOffset = AccOffset_default;
-    AccGain = AccGain_default;
-    GyroOffset = GyroOffset_default;
-    GyroGain = GyroGain_default;
-}
-/*
--------------------- END OF KV-STORE PART --------------------
-*/
 
 
 void setup() {
