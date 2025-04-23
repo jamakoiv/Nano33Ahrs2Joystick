@@ -75,8 +75,8 @@ vector MagOffset_default(-7.257f, 39.747f, -11.817f);
  * output default position problems in the OS software side.
  */
 
-vector AxisOffset(0.0f, 0.0f, 0.0f)
-vector AxisOffset_default(0.0f, 0.0f, 0.0f)
+vector AxisOffset(0.0f, 0.0f, 0.0f);
+vector AxisOffset_default(0.0f, 0.0f, 0.0f);
 
 const float GYRO_INTEG = 0.60f;
 const float ACC_INTEG = 0.60f;
@@ -144,9 +144,9 @@ void updateJoystickAxes(const FusionAhrs *const ahrs) {
     /*Update the joystick-axes using the AHRS angle data. */
     FusionEuler euler = FusionQuaternionToEuler( FusionAhrsGetQuaternion( ahrs ));
 
-    joystick.setXAxis( euler.angle.yaw + AxisOffset[0]);
-    joystick.setYAxis( euler.angle.pitch + AxisOffset[1]);
-    joystick.setZAxis( euler.angle.roll + AxisOffset[2]);
+    joystick.setXAxis( euler.angle.yaw + AxisOffset.x);
+    joystick.setYAxis( euler.angle.pitch + AxisOffset.y);
+    joystick.setZAxis( euler.angle.roll + AxisOffset.z);
 
     joystick.update();
 }
@@ -440,7 +440,7 @@ void yaw_set_offset(std::string input) {
   Serial.println("Calibration set.");
 }
 
-void yaw_set_offset(std::string input) {
+void yaw_get_offset(std::string input) {
   SerialOutputMode = SERIAL_PRINT_NOTHING;
   std::string str = "Axis Offset (yaw,pitch,roll): " + AxisOffset.to_string();
   Serial.println(str.c_str());
