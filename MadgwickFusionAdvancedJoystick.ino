@@ -70,6 +70,13 @@ vector MagOffset;
 vector MagGain_default(1.0f, 1.0f, 1.0f);
 vector MagOffset_default(-7.257f, 39.747f, -11.817f);
 
+/* AxisOffset(yaw, pitch, roll). Add constant offset to the AHRS-Euler 
+ * output as degrees. Generally you should leave these zero and mitigate 
+ * output default position problems in the OS software side.
+ */
+
+vector AxisOffset(0.0f, 0.0f, 0.0f)
+
 const float GYRO_INTEG = 0.60f;
 const float ACC_INTEG = 0.60f;
 const float MAG_INTEG = 0.60f;
@@ -136,9 +143,9 @@ void updateJoystickAxes(const FusionAhrs *const ahrs) {
     /*Update the joystick-axes using the AHRS angle data. */
     FusionEuler euler = FusionQuaternionToEuler( FusionAhrsGetQuaternion( ahrs ));
 
-    joystick.setXAxis( euler.angle.yaw );
-    joystick.setYAxis( euler.angle.pitch );
-    joystick.setZAxis( euler.angle.roll );
+    joystick.setXAxis( euler.angle.yaw + AxisOffset[0]);
+    joystick.setYAxis( euler.angle.pitch + AxisOffset[1]);
+    joystick.setZAxis( euler.angle.roll + AxisOffset[2]);
 
     joystick.update();
 }
@@ -423,6 +430,18 @@ void gyro_get_calib(std::string input) {
   SerialOutputMode = SERIAL_PRINT_NOTHING;
   std::string str = "Gyroscope offset (x,y,z): " + GyroOffset.to_string();
                   + "; Gyroscope gain (x,y,z): " + GyroGain.to_string();
+  Serial.println(str.c_str());
+}
+
+void yaw_set_offset(std::string input) {
+  set_calib_helper(split_and_strtof(input, ","), AxisOffset);
+  kv_store_save_calibration("AxisOffset", AxisOffset);
+  Serial.println("Calibration set.");
+}
+
+void yaw_set_offset(std::string input) {
+  SerialOutputMode = SERIAL_PRINT_NOTHING;
+  std::string str = "Axis Offset (yaw,pitch,roll): " + AxisOffset.to_string();
   Serial.println(str.c_str());
 }
 
