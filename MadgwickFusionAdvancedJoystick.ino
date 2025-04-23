@@ -74,9 +74,8 @@ vector MagOffset_default(-7.257f, 39.747f, -11.817f);
  * output as degrees. Generally you should leave these zero and mitigate 
  * output default position problems in the OS software side.
  */
-
-vector AxisOffset(0.0f, 0.0f, 0.0f);
-vector AxisOffset_default(0.0f, 0.0f, 0.0f);
+vector AxisOffset;
+vector AxisOffset_default(90.0f, 0.0f, 0.0f);
 
 const float GYRO_INTEG = 0.60f;
 const float ACC_INTEG = 0.60f;
