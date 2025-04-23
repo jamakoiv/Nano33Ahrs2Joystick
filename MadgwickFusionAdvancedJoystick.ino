@@ -143,8 +143,7 @@ void updateJoystickAxes(const FusionAhrs *const ahrs) {
     /*Update the joystick-axes using the AHRS angle data. */
     FusionEuler euler = FusionQuaternionToEuler( FusionAhrsGetQuaternion( ahrs ));
 
-    joystick.setXAxis( 
-        mapfi(euler.angle.yaw+AxisOffset.x, -180+AxisOffset.x, 180+AxisOffset.x, -180, 180));
+    joystick.setXAxis( remap_yaw(euler.angle.yaw, AxisOffset.x) );
     joystick.setYAxis( euler.angle.pitch + AxisOffset.y);
     joystick.setZAxis( euler.angle.roll + AxisOffset.z);
 
@@ -231,8 +230,8 @@ void printAHRSeuler(void) {
     std::string str = "Roll: " + std::to_string(euler.angle.roll) + ", " +
                       "Pitch: " + std::to_string(euler.angle.pitch) + ", " +
                       "Yaw: " + std::to_string(euler.angle.yaw) + ", " +
-                      "corr: " + std::to_string(euler.angle.yaw + AxisOffset.x) + ", " +
-
+                      "corr: " + std::to_string(remap_yaw(euler.angle.yaw, AxisOffset.x)) + ", " +
+                      "Xoff: " + std::to_string(AxisOffset.x) + ", " +
                       "Compass: " + std::to_string(CompassHeading);
     Serial.println(str.c_str());
 }
@@ -486,11 +485,22 @@ void set_print_gyro_calib(std::string input) {
 */
 
 
-// Code duplication from USBJoystick.
-static inline int16_t mapfi(float x, float in_min, float in_max,
-                            int16_t out_min, int16_t out_max) {
-  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+static inline float remap_yaw(float yaw, float d) {
+  float overlap = 0;
+  float res = yaw + d;
+
+  if (res > 180) {
+    overlap = res - 180;
+    res = -180 + overlap;
+
+  } else if (res <= -180) {
+    overlap = res + 180;
+    res = 180 + overlap;
+  }
+
+  return res;
 }
+
 
 
 void setup() {
