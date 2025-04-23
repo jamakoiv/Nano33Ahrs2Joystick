@@ -76,6 +76,7 @@ vector MagOffset_default(-7.257f, 39.747f, -11.817f);
  */
 
 vector AxisOffset(0.0f, 0.0f, 0.0f)
+vector AxisOffset_default(0.0f, 0.0f, 0.0f)
 
 const float GYRO_INTEG = 0.60f;
 const float ACC_INTEG = 0.60f;
@@ -519,6 +520,7 @@ void setup() {
     kv_store_load_calibration("AccGain", AccGain, AccGain_default); 
     kv_store_load_calibration("GyroOffset", GyroOffset, GyroOffset_default); 
     kv_store_load_calibration("GyroGain", GyroGain, GyroGain_default); 
+    kv_store_load_calibration("AxisOffset", AxisOffset, AxisOffset_default);
 
     Serial.println("System reset.");
 }

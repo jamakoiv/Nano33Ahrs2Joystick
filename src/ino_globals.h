@@ -31,3 +31,6 @@ extern vector MagGain;
 extern vector MagOffset;
 extern vector MagGain_default;
 extern vector MagOffset_default;
+
+extern vector AxisOffset;
+extern vector AxisOffset_default;

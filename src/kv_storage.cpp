@@ -108,6 +108,7 @@ void kv_store_reset(std::string input) {
   kv_store_save_calibration("AccGain", AccGain_default);
   kv_store_save_calibration("GyroOffset", GyroOffset_default);
   kv_store_save_calibration("GyroGain", GyroGain_default);
+  kv_store_save_calibration("AxisOffset", AxisOffset_default);
 
   MagOffset = MagOffset_default;
   MagGain = MagGain_default;
@@ -115,6 +116,7 @@ void kv_store_reset(std::string input) {
   AccGain = AccGain_default;
   GyroOffset = GyroOffset_default;
   GyroGain = GyroGain_default;
+  AxisOffset = AxisOffset_default;
 }
 /*
 -------------------- END OF KV-STORE PART --------------------
