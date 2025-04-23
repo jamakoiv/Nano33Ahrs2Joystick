@@ -13,8 +13,11 @@
 #include "src/string_helpers.h"
 
 /*
-  TODO: Using MyVector::vector and std::vector together is confusing and asking for trouble.
-  TODO: Maybe try having less global variables...
+ * TODO: Using MyVector::vector and std::vector together is confusing 
+ *     and asking for trouble.
+ * TODO: Maybe try having less global variables...
+ * TODO: Axis ranges are defined in multiple places with magic numbers. Replace with
+ *      central definition.
 */
 
 USBJoystick joystick;
@@ -73,6 +76,7 @@ vector MagOffset_default(-7.257f, 39.747f, -11.817f);
 /* AxisOffset(yaw, pitch, roll). Add constant offset to the AHRS-Euler 
  * output as degrees. Generally you should leave these zero and mitigate 
  * output default position problems in the OS software side.
+ * BUG: Due to MyVector::vector these must still be accessed as AxisOffset.x etc.
  */
 vector AxisOffset;
 vector AxisOffset_default(90.0f, 0.0f, 0.0f);
