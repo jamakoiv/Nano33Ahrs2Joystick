@@ -536,13 +536,13 @@ void setup() {
       }
     }
 
-    kv_store_load_calibration("MagOffset", MagOffset, MagOffset_default); 
-    kv_store_load_calibration("MagGain", MagGain, MagGain_default); 
-    kv_store_load_calibration("AccOffset", AccOffset, AccOffset_default); 
-    kv_store_load_calibration("AccGain", AccGain, AccGain_default); 
-    kv_store_load_calibration("GyroOffset", GyroOffset, GyroOffset_default); 
-    kv_store_load_calibration("GyroGain", GyroGain, GyroGain_default); 
-    kv_store_load_calibration("AxisOffset", AxisOffset, AxisOffset_default);
+    kv_store_load_calibration(kv_keys[cal_mag_offset], MagOffset, MagOffset_default); 
+    kv_store_load_calibration(kv_keys[cal_mag_gain], MagGain, MagGain_default); 
+    kv_store_load_calibration(kv_keys[cal_acc_offset], AccOffset, AccOffset_default); 
+    kv_store_load_calibration(kv_keys[cal_acc_gain], AccGain, AccGain_default); 
+    kv_store_load_calibration(kv_keys[cal_gyro_offset], GyroOffset, GyroOffset_default); 
+    kv_store_load_calibration(kv_keys[cal_gyro_gain], GyroGain, GyroGain_default); 
+    kv_store_load_calibration(kv_keys[cal_euler_output_offset], AxisOffset, AxisOffset_default);
 
     Serial.println("System reset.");
 }

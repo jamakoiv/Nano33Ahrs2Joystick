@@ -3,12 +3,16 @@
 #include <mbed_error.h>
 #include <stdint.h>
 #include <string>
+#include <unordered_map>
 
 #include "kv_storage.h"
 #include "string_helpers.h"
 
+std::string kv_keys[7] = {"MagOffset",  "MagGain",  "AccOffset",   "AccGain",
+                          "GyroOffset", "GyroGain", "OutputOffset"};
+
 /*
--------------------- KV-STORE PART --------------------
+"AxisOffset"-------------------- KV-STORE PART --------------------
 */
 
 const uint8_t KV_BUFFER_SIZE = 64;
@@ -100,15 +104,14 @@ void kv_store_reset(std::string input) {
     }
   }
 
-  // TODO: KVStore keys are hardcoded and used in three different places.
-  //       Simple typo will give hard to track bugs.
-  kv_store_save_calibration("MagOffset", MagOffset_default);
-  kv_store_save_calibration("MagGain", MagGain_default);
-  kv_store_save_calibration("AccOffset", AccOffset_default);
-  kv_store_save_calibration("AccGain", AccGain_default);
-  kv_store_save_calibration("GyroOffset", GyroOffset_default);
-  kv_store_save_calibration("GyroGain", GyroGain_default);
-  kv_store_save_calibration("AxisOffset", AxisOffset_default);
+  kv_store_save_calibration(kv_keys[cal_mag_offset], MagOffset_default);
+  kv_store_save_calibration(kv_keys[cal_mag_gain], MagGain_default);
+  kv_store_save_calibration(kv_keys[cal_acc_offset], AccOffset_default);
+  kv_store_save_calibration(kv_keys[cal_acc_gain], AccGain_default);
+  kv_store_save_calibration(kv_keys[cal_gyro_offset], GyroOffset_default);
+  kv_store_save_calibration(kv_keys[cal_gyro_gain], GyroGain_default);
+  kv_store_save_calibration(kv_keys[cal_euler_output_offset],
+                            AxisOffset_default);
 
   MagOffset = MagOffset_default;
   MagGain = MagGain_default;

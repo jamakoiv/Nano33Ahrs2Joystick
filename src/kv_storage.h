@@ -2,10 +2,26 @@
 
 #include "MyVector/MyVector.h"
 #include "ino_globals.h"
-
 #include <string>
 
 using MyVector::vector;
+
+// NOTE: Enum is declared here, but the strings are declared in the cpp-file.
+
+enum {
+  cal_mag_offset,
+  cal_mag_gain,
+  cal_acc_offset,
+  cal_acc_gain,
+  cal_gyro_offset,
+  cal_gyro_gain,
+  cal_euler_output_offset
+};
+
+// std::string kv_keys[7] = {"MagOffset", "MagGain", "AccOffset", "AccGain",
+// "GyroOffset", "GyroGain", "OutputOffset"};
+
+extern std::string kv_keys[7];
 
 bool kv_store_initialized(void);
 bool kv_store_save_calibration(const std::string &key, const vector &data);
