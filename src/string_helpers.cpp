@@ -47,6 +47,16 @@ std::vector<float> split_and_strtof(std::string input,
   return res;
 }
 
+void set_calib_helper(const std::vector<float> &data, vector &offset) {
+  if (data.size() < 3) {
+    Serial.println("Invalid input: Could not parse 3 floats from input.");
+  } else {
+    offset.x = data[0];
+    offset.y = data[1];
+    offset.z = data[2];
+  }
+}
+
 void set_calib_helper(const std::vector<float> &data, vector &offset,
                       vector &gain) {
   /*

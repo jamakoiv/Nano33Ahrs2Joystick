@@ -13,6 +13,7 @@ std::vector<std::string> split_input(std::string input,
 std::vector<float> split_and_strtof(std::string input,
                                     const std::string &delimiter);
 
+void set_calib_helper(const std::vector<float> &data, vector &offset);
 void set_calib_helper(const std::vector<float> &data, vector &offset,
                       vector &gain);
 #endif // __STRING_HELPERS
