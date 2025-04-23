@@ -143,7 +143,8 @@ void updateJoystickAxes(const FusionAhrs *const ahrs) {
     /*Update the joystick-axes using the AHRS angle data. */
     FusionEuler euler = FusionQuaternionToEuler( FusionAhrsGetQuaternion( ahrs ));
 
-    joystick.setXAxis( euler.angle.yaw + AxisOffset.x);
+    joystick.setXAxis( 
+        mapfi(euler.angle.yaw+AxisOffset.x, -180+AxisOffset.x, 180+AxisOffset.x, -180, 180));
     joystick.setYAxis( euler.angle.pitch + AxisOffset.y);
     joystick.setZAxis( euler.angle.roll + AxisOffset.z);
 
@@ -230,6 +231,8 @@ void printAHRSeuler(void) {
     std::string str = "Roll: " + std::to_string(euler.angle.roll) + ", " +
                       "Pitch: " + std::to_string(euler.angle.pitch) + ", " +
                       "Yaw: " + std::to_string(euler.angle.yaw) + ", " +
+                      "corr: " + std::to_string(euler.angle.yaw + AxisOffset.x) + ", " +
+
                       "Compass: " + std::to_string(CompassHeading);
     Serial.println(str.c_str());
 }
@@ -482,6 +485,12 @@ void set_print_gyro_calib(std::string input) {
 -------------------- END OF SERIAL INPUT PART --------------------
 */
 
+
+// Code duplication from USBJoystick.
+static inline int16_t mapfi(float x, float in_min, float in_max,
+                            int16_t out_min, int16_t out_max) {
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 
 
 void setup() {
