@@ -28,6 +28,7 @@ namespace arduino {
 class USBJoystick : public USBHID {
 private:
   // TODO: Change BUTTONS_MAX_NUMBER to be set by user.
+  static const uint8_t BUTTONS_MAX_NUMBER = 64;
   static const uint8_t BUTTON_ARRAY_MAX_SIZE =
       32; // Absolute maximum number of buttons 32*8 = 256.
   static const uint8_t BYTE_LENGTH =
@@ -43,10 +44,6 @@ private:
   // report-descriptor becomes corrupted and the whole USB-device goes down.
   static const uint8_t REPORT_ID = 0x10;
 
-  // Buttons amount must be byte-aligned because I don't want to deal with
-  // padding-data in the HID-report :)
-  MBED_STATIC_ASSERT(BUTTONS_MAX_NUMBER % BYTE_LENGTH == 0,
-                     "BUTTONS_MAX_NUMBER does not align to byte-length");
   // TODO: Get rid of hardcoded magic numbers.
   uint8_t _configuration_descriptor[34]; // 34 bytes.
                                          //
@@ -106,7 +103,7 @@ public:
     @returns true if there was no error, false otherwise. Return values passed
     through from 'USBHID::send'.
   */
-  bool update(void);
+  bool update();
 
   /*
     Wrapper. For API-compliance with the MHeironimus-ArduinoJoystickLibrary.
@@ -124,7 +121,7 @@ public:
     Update the HID-report with the current joystick-state (axis-values,
     button-states etc.).
   */
-  void updateHIDreport(void);
+  void updateHIDreport(Joystick *joystick);
 
   /*
     Get the lower (LSB) or higher (MSB) 8-bits of 16-bit axis-value.

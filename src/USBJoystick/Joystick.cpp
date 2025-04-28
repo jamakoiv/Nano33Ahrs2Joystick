@@ -4,6 +4,13 @@
 #include <cstdint>
 
 namespace arduino {
+
+uint8_t Joystick::getButtonBytesAmount(void) {
+  return this->BUTTONS_MAX_NUMBER / this->BYTE_LENGTH;
+}
+
+uint8_t Joystick::getAxisAmount(void) { return this->AXIS_AMOUNT; }
+
 // TODO: Cut & paste of same code in 'pressButton', 'releaseButton' and '
 // toggleButton'.
 void Joystick::pressButton(uint8_t buttonNumber) {
@@ -44,30 +51,36 @@ void Joystick::setButton(uint8_t buttonNumber, uint8_t value) {
 void Joystick::setAxis(float value, int AXIS) {
   switch (AXIS) {
   case X:
-    this->axis.X = constrain(value, this->axisMin.X, this->axisMax.X);
+    this->axis.name.X =
+        constrain(value, this->axisMin.name.X, this->axisMax.name.X);
     break;
   case Y:
-    this->axis.Y = constrain(value, this->axisMin.Y, this->axisMax.Y);
+    this->axis.name.Y =
+        constrain(value, this->axisMin.name.Y, this->axisMax.name.Y);
     break;
   case Z:
-    this->axis.Z = constrain(value, this->axisMin.Z, this->axisMax.Z);
+    this->axis.name.Z =
+        constrain(value, this->axisMin.name.Z, this->axisMax.name.Z);
     break;
   case Rx:
-    this->axis.Rx = constrain(value, this->axisMin.Rx, this->axisMax.Rx);
+    this->axis.name.Rx =
+        constrain(value, this->axisMin.name.Rx, this->axisMax.name.Rx);
     break;
   case Ry:
-    this->axis.Ry = constrain(value, this->axisMin.Ry, this->axisMax.Ry);
+    this->axis.name.Ry =
+        constrain(value, this->axisMin.name.Ry, this->axisMax.name.Ry);
     break;
   case Rz:
-    this->axis.Rz = constrain(value, this->axisMin.Rz, this->axisMax.Rz);
+    this->axis.name.Rz =
+        constrain(value, this->axisMin.name.Rz, this->axisMax.name.Rz);
     break;
   case slider0:
-    this->axis.slider0 =
-        constrain(value, this->axisMin.slider0, this->axisMax.slider0);
+    this->axis.name.slider0 = constrain(value, this->axisMin.name.slider0,
+                                        this->axisMax.name.slider0);
     break;
   case slider1:
-    this->axis.Rz =
-        constrain(value, this->axisMin.slider1, this->axisMax.slider1);
+    this->axis.name.Rz = constrain(value, this->axisMin.name.slider1,
+                                   this->axisMax.name.slider1);
     break;
   }
 }
@@ -75,36 +88,36 @@ void Joystick::setAxis(float value, int AXIS) {
 void Joystick::setAxisRange(float minimum, float maximum, int AXIS) {
   switch (AXIS) {
   case X:
-    this->axisMin.X = std::min(minimum, maximum);
-    this->axisMax.X = std::max(minimum, maximum);
+    this->axisMin.name.X = std::min(minimum, maximum);
+    this->axisMax.name.X = std::max(minimum, maximum);
     break;
   case Y:
-    this->axisMin.Y = std::min(minimum, maximum);
-    this->axisMax.Y = std::max(minimum, maximum);
+    this->axisMin.name.Y = std::min(minimum, maximum);
+    this->axisMax.name.Y = std::max(minimum, maximum);
     break;
   case Z:
-    this->axisMin.Z = std::min(minimum, maximum);
-    this->axisMax.Z = std::max(minimum, maximum);
+    this->axisMin.name.Z = std::min(minimum, maximum);
+    this->axisMax.name.Z = std::max(minimum, maximum);
     break;
   case Rx:
-    this->axisMin.Rx = std::min(minimum, maximum);
-    this->axisMax.Rx = std::max(minimum, maximum);
+    this->axisMin.name.Rx = std::min(minimum, maximum);
+    this->axisMax.name.Rx = std::max(minimum, maximum);
     break;
   case Ry:
-    this->axisMin.Ry = std::min(minimum, maximum);
-    this->axisMax.Ry = std::max(minimum, maximum);
+    this->axisMin.name.Ry = std::min(minimum, maximum);
+    this->axisMax.name.Ry = std::max(minimum, maximum);
     break;
   case Rz:
-    this->axisMin.Rz = std::min(minimum, maximum);
-    this->axisMax.Rz = std::max(minimum, maximum);
+    this->axisMin.name.Rz = std::min(minimum, maximum);
+    this->axisMax.name.Rz = std::max(minimum, maximum);
     break;
   case slider0:
-    this->axisMin.slider0 = std::min(minimum, maximum);
-    this->axisMax.slider0 = std::max(minimum, maximum);
+    this->axisMin.name.slider0 = std::min(minimum, maximum);
+    this->axisMax.name.slider0 = std::max(minimum, maximum);
     break;
   case slider1:
-    this->axisMin.slider1 = std::min(minimum, maximum);
-    this->axisMax.slider1 = std::max(minimum, maximum);
+    this->axisMin.name.slider1 = std::min(minimum, maximum);
+    this->axisMax.name.slider1 = std::max(minimum, maximum);
     break;
   }
 }

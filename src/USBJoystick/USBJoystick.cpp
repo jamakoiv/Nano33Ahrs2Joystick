@@ -157,27 +157,23 @@ const uint8_t *USBJoystick::configuration_desc(uint8_t index) {
   return this->_configuration_descriptor;
 }
 
-void USBJoystick::updateHIDreport(void) {
+void USBJoystick::updateHIDreport(Joystick *joystick) {
 
   // Buttons part of the HID-report.
-  uint8_t dataBytesAmount = this->BUTTONS_MAX_NUMBER / this->BYTE_LENGTH;
-
   this->HIDreport.data[0] = this->REPORT_ID;
   this->HIDreport.length = 1;
 
+  uint8_t dataBytesAmount = joystick->getButtonBytesAmount();
   for (uint8_t i = 0; i < dataBytesAmount; i++) {
-    this->HIDreport.data[i + 1] = this->buttonState[i];
+    this->HIDreport.data[i + 1] = joystick->buttonState[i];
     this->HIDreport.length++;
   }
 
   // Axis part of the report.
-
-  // NOTE: The axis-values are 16-bit, assigning them to the
-  // 8-bit array-elements chops away higher bits that don't fit the target
-  // variable.
   // TODO: Should we write 'static_cast<uint8_t>()' to show this more
   // explicitly?
-  // TODO: Or use the axis16bitToByte?
+
+  for (int i=0; i < 
 
   this->HIDreport.data[this->HIDreport.length++] = this->axis.X;
   this->HIDreport.data[this->HIDreport.length++] =
@@ -205,8 +201,6 @@ void USBJoystick::updateHIDreport(void) {
 }
 
 bool USBJoystick::update(void) {
-  this->updateHIDreport();
-
   this->_mutex.lock(); // The underlying USB-system and -hardware is most
                        // probably shared by all threads, so we need to acquire
                        // lock before using it.
