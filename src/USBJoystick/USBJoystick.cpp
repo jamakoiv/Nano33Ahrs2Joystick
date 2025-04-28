@@ -19,19 +19,21 @@
 #include "stdint.h"
 #include "usb_phy_api.h"
 
-arduino::USBJoystick::USBJoystick(bool connect, uint16_t vendor_id,
-                                  uint16_t product_id, uint16_t product_release)
+namespace arduino {
+
+USBJoystick(bool connect, uint16_t vendor_id, uint16_t product_id,
+            uint16_t product_release)
     : USBHID(get_usb_phy(), 0, 0, vendor_id, product_id, product_release) {}
 
-arduino::USBJoystick::USBJoystick(USBPhy *phy, uint16_t vendor_id,
-                                  uint16_t product_id, uint16_t product_release)
+USBJoystick(USBPhy *phy, uint16_t vendor_id, uint16_t product_id,
+            uint16_t product_release)
     : USBHID(phy, 0, 0, vendor_id, product_id, product_release) {
   // User or child must call connect or init when using this constructor.
 }
 
-arduino::USBJoystick::~USBJoystick(void) {}
+Joystick::~USBJoystick(void) {}
 
-const uint8_t *arduino::USBJoystick::report_desc(void) {
+const uint8_t *USBJoystick::report_desc(void) {
   // TODO: Make a HID-descriptor which can handle different axis-counts and
   // multiple joysticks.
   static const uint8_t reportDescriptor[] = {
@@ -88,7 +90,7 @@ const uint8_t *arduino::USBJoystick::report_desc(void) {
    (1 * HID_DESCRIPTOR_LENGTH) + (1 * ENDPOINT_DESCRIPTOR_LENGTH))
 //+ (2 * ENDPOINT_DESCRIPTOR_LENGTH))
 
-const uint8_t *arduino::USBJoystick::configuration_desc(uint8_t index) {
+const uint8_t *USBJoystick::configuration_desc(uint8_t index) {
   if (index != 0) {
     return NULL;
   } // Is 'index' the configuration number??
@@ -155,7 +157,7 @@ const uint8_t *arduino::USBJoystick::configuration_desc(uint8_t index) {
   return this->_configuration_descriptor;
 }
 
-void arduino::USBJoystick::updateHIDreport(void) {
+void USBJoystick::updateHIDreport(void) {
 
   // Buttons part of the HID-report.
   uint8_t dataBytesAmount = this->BUTTONS_MAX_NUMBER / this->BYTE_LENGTH;
@@ -202,7 +204,7 @@ void arduino::USBJoystick::updateHIDreport(void) {
       this->axis.Rz >> this->BYTE_LENGTH;
 }
 
-bool arduino::USBJoystick::update(void) {
+bool USBJoystick::update(void) {
   this->updateHIDreport();
 
   this->_mutex.lock(); // The underlying USB-system and -hardware is most
@@ -219,174 +221,4 @@ bool arduino::USBJoystick::update(void) {
   this->_mutex.unlock();
   return sendSuccessful;
 }
-
-// TODO: Cut & paste of same code in 'pressButton', 'releaseButton' and '
-// toggleButton'.
-void arduino::USBJoystick::pressButton(uint8_t buttonNumber) {
-  // buttonState is array of 8-bit integers where each bit represents current
-  // button state. buttonState[0] has buttons 0-7, buttonState[1] has buttons
-  // 8-15 etc.
-
-  // Get the array index and bit position for the button number 'buttonNumber'.
-  uint8_t index = buttonNumber / this->BYTE_LENGTH;
-  uint8_t position = buttonNumber % this->BYTE_LENGTH;
-
-  bitSet(this->buttonState[index], position);
-  if (this->autoSend)
-    this->update();
-}
-
-void USBJoystick::releaseButton(uint8_t buttonNumber) {
-  // See 'USBJoystick::pressButton for explanation of 'index' and 'position'.
-  uint8_t index = buttonNumber / this->BYTE_LENGTH;
-  uint8_t position = buttonNumber % this->BYTE_LENGTH;
-
-  bitClear(this->buttonState[index], position);
-  if (this->autoSend)
-    this->update();
-}
-
-void arduino::USBJoystick::toggleButton(uint8_t buttonNumber) {
-  // See 'USBJoystick::pressButton for explanation of 'index' and 'position'.
-  uint8_t index = buttonNumber / this->BYTE_LENGTH;
-  uint8_t position = buttonNumber % this->BYTE_LENGTH;
-
-  this->buttonState[index] ^= 0x01 << position; // XOR to toggle a bit.
-  if (this->autoSend)
-    this->update();
-}
-
-void arduino::USBJoystick::setButton(uint8_t buttonNumber, uint8_t value) {
-  if (value == 0)
-    this->releaseButton(buttonNumber);
-  else
-    this->pressButton(buttonNumber);
-}
-
-int8_t arduino::USBJoystick::axis16bitToByte(int16_t axisValue,
-                                             bool MSB_OR_LSB) {
-  switch (MSB_OR_LSB) {
-  case MSB:
-    return static_cast<int8_t>(axisValue >> this->BYTE_LENGTH);
-  case LSB:
-    return static_cast<int8_t>(axisValue);
-  }
-}
-
-// TODO: Too much cut & pasting. Can we just write one function which takes axis
-// as input?
-void arduino::USBJoystick::setXAxis(float value) {
-  value = constrain(value, this->axisMin.X, this->axisMax.X);
-  this->axis.X = USBJoystick::mapfi(value, this->axisMin.X, this->axisMax.X,
-                                    this->HID_AXIS_MIN, this->HID_AXIS_MAX);
-
-  if (this->autoSend)
-    this->update();
-}
-
-void arduino::USBJoystick::setYAxis(float value) {
-  value = constrain(value, this->axisMin.Y, this->axisMax.Y);
-  this->axis.Y = USBJoystick::mapfi(value, this->axisMin.Y, this->axisMax.Y,
-                                    this->HID_AXIS_MIN, this->HID_AXIS_MAX);
-
-  if (this->autoSend)
-    this->update();
-}
-
-void arduino::USBJoystick::setZAxis(float value) {
-  value = constrain(value, this->axisMin.Z, this->axisMax.Z);
-  this->axis.Z = USBJoystick::mapfi(value, this->axisMin.Z, this->axisMax.Z,
-                                    this->HID_AXIS_MIN, this->HID_AXIS_MAX);
-
-  if (this->autoSend)
-    this->update();
-}
-void arduino::USBJoystick::setRxAxis(float value) {
-  value = constrain(value, this->axisMin.Rx, this->axisMax.Rx);
-  this->axis.Rx = map(value, this->axisMin.Rx, this->axisMax.Rx,
-                      this->HID_AXIS_MIN, this->HID_AXIS_MAX);
-
-  if (this->autoSend)
-    this->update();
-}
-void arduino::USBJoystick::setRyAxis(float value) {
-  value = constrain(value, this->axisMin.Ry, this->axisMax.Ry);
-  this->axis.Ry = map(value, this->axisMin.Ry, this->axisMax.Ry,
-                      this->HID_AXIS_MIN, this->HID_AXIS_MAX);
-
-  if (this->autoSend)
-    this->update();
-}
-void arduino::USBJoystick::setRzAxis(float value) {
-  value = constrain(value, this->axisMin.Rz, this->axisMax.Rz);
-  this->axis.Rz = map(value, this->axisMin.Rz, this->axisMax.Rz,
-                      this->HID_AXIS_MIN, this->HID_AXIS_MAX);
-
-  if (this->autoSend)
-    this->update();
-}
-
-void arduino::USBJoystick::setThrottleAxis(float value) {
-  value = constrain(value, this->axisMin.throttle, this->axisMax.throttle);
-  this->axis.throttle =
-      map(value, this->axisMin.throttle, this->axisMax.throttle,
-          this->HID_AXIS_MIN, this->HID_AXIS_MAX);
-
-  if (this->autoSend)
-    this->update();
-}
-
-void arduino::USBJoystick::setRudderAxis(float value) {
-  value = constrain(value, this->axisMin.rudder, this->axisMax.rudder);
-  this->axis.rudder = map(value, this->axisMin.rudder, this->axisMax.rudder,
-                          this->HID_AXIS_MIN, this->HID_AXIS_MAX);
-
-  if (this->autoSend)
-    this->update();
-}
-
-// TODO: Too much cut & pasting, again...
-void arduino::USBJoystick::setXAxisRange(int16_t minimum, int16_t maximum) {
-  this->axisMin.X = min(minimum, maximum);
-  this->axisMax.X = max(minimum, maximum);
-}
-void arduino::USBJoystick::setYAxisRange(int16_t minimum, int16_t maximum) {
-  this->axisMin.Y = min(minimum, maximum);
-  this->axisMax.Y = max(minimum, maximum);
-}
-void arduino::USBJoystick::setZAxisRange(int16_t minimum, int16_t maximum) {
-  this->axisMin.Z = min(minimum, maximum);
-  this->axisMax.Z = max(minimum, maximum);
-}
-void arduino::USBJoystick::setRxAxisRange(int16_t minimum, int16_t maximum) {
-  this->axisMin.Rx = min(minimum, maximum);
-  this->axisMax.Rx = max(minimum, maximum);
-}
-void arduino::USBJoystick::setRyAxisRange(int16_t minimum, int16_t maximum) {
-  this->axisMin.Ry = min(minimum, maximum);
-  this->axisMax.Ry = max(minimum, maximum);
-}
-void arduino::USBJoystick::setRzAxisRange(int16_t minimum, int16_t maximum) {
-  this->axisMin.Rz = min(minimum, maximum);
-  this->axisMax.Rz = max(minimum, maximum);
-}
-void arduino::USBJoystick::setThrottleAxisRange(int16_t minimum,
-                                                int16_t maximum) {
-  this->axisMin.throttle = min(minimum, maximum);
-  this->axisMax.throttle = max(minimum, maximum);
-}
-void arduino::USBJoystick::setRudderAxisRange(int16_t minimum,
-                                              int16_t maximum) {
-  this->axisMin.rudder = min(minimum, maximum);
-  this->axisMax.rudder = max(minimum, maximum);
-}
-void arduino::USBJoystick::setAllAxisRange(int16_t minimum, int16_t maximum) {
-  this->setXAxisRange(minimum, maximum);
-  this->setYAxisRange(minimum, maximum);
-  this->setZAxisRange(minimum, maximum);
-  this->setRxAxisRange(minimum, maximum);
-  this->setRyAxisRange(minimum, maximum);
-  this->setRzAxisRange(minimum, maximum);
-  this->setThrottleAxisRange(minimum, maximum);
-  this->setRudderAxisRange(minimum, maximum);
-}
+} // namespace arduino
