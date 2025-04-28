@@ -66,8 +66,10 @@ const uint8_t *USBJoystick::report_desc(void) {
       USAGE(1), 0x33,      // Rx
       USAGE(1), 0x34,      // Ry
       USAGE(1), 0x35,      // Rz
-      // LOGICAL_MINIMUM(2), 0x01, 0xfe, // 0xfe01 = -511. 10-bit resolution.
-      // LOGICAL_MAXIMUM(2), 0xff, 0x01, // 0x01ff = 511
+      // USAGE(1), 0x36,      // slider0
+      // USAGE(1), 0x37,      // slider1
+      //  LOGICAL_MINIMUM(2), 0x01, 0xfe, // 0xfe01 = -511. 10-bit resolution.
+      //  LOGICAL_MAXIMUM(2), 0xff, 0x01, // 0x01ff = 511
       LOGICAL_MINIMUM(2), this->HID_AXIS_MIN,
       this->HID_AXIS_MIN >> this->BYTE_LENGTH, LOGICAL_MAXIMUM(2),
       this->HID_AXIS_MAX, this->HID_AXIS_MAX >> this->BYTE_LENGTH,
@@ -164,9 +166,11 @@ void USBJoystick::updateHIDreport(const Joystick *const joystick) {
   this->HIDreport.length = 1;
 
   uint8_t dataBytesAmount = joystick->getButtonBytesAmount();
+  Serial.println(dataBytesAmount);
   for (uint8_t i = 0; i < dataBytesAmount; i++) {
     this->HIDreport.data[i + 1] = joystick->buttonState[i];
     this->HIDreport.length++;
+    Serial.println(this->HIDreport.length);
   }
 
   // Axis part of the report.
@@ -182,6 +186,7 @@ void USBJoystick::updateHIDreport(const Joystick *const joystick) {
 
     this->HIDreport.data[this->HIDreport.length++] = value;
     this->HIDreport.data[this->HIDreport.length++] = value >> this->BYTE_LENGTH;
+    Serial.println(this->HIDreport.length);
   }
 }
 

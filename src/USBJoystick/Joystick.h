@@ -28,7 +28,8 @@ private:
   static const uint8_t BYTE_LENGTH = 8;
   static const uint8_t BUTTONS_MAX_NUMBER =
       64; // Actual max amount of buttons we are using.
-  static const uint8_t AXIS_AMOUNT = 8;
+  static const uint8_t AXIS_AMOUNT =
+      6; // slider0 and slider1 are currently not used.
 
   // TODO: Replace MBED_ASSERTS with c++ assert.
   // Buttons amount must be byte-aligned because I don't want to deal with

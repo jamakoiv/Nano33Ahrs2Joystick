@@ -554,6 +554,8 @@ void loop() {
   AHRS_check();
   Serial.println("Update joystick.");
   updateJoystickAxes(&AHRS, &joystick, &usb_comms);
+  Serial.println("Send HID-report.");
+  usb_comms.update();
 
   if (millis() - serial_output_timer > 100) {
     serial_output_timer = millis();

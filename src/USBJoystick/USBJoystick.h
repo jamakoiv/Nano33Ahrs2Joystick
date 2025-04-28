@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+// TODO: Change the filename and class-name to something more expressive now
+// that the joystick-related stuff is handled in the Joystick-class.
+
 #ifndef USBJOYSTICK_H
 #define USBJOYSTICK_H
 
