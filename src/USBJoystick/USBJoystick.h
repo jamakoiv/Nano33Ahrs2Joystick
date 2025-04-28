@@ -18,32 +18,18 @@
 #ifndef USBJOYSTICK_H
 #define USBJOYSTICK_H
 
+#include "Joystick.h"
 #include "PlatformMutex.h"
 #include "PluggableUSBHID.h"
 #include <cstdint>
 
 namespace arduino {
 
-enum { MSB, LSB };
-
-struct axis_t {
-  int16_t X;
-  int16_t Y;
-  int16_t Z;
-  int16_t Rx;
-  int16_t Ry;
-  int16_t Rz;
-  int16_t throttle;
-  int16_t rudder;
-};
-
 class USBJoystick : public USBHID {
 private:
   // TODO: Change BUTTONS_MAX_NUMBER to be set by user.
   static const uint8_t BUTTON_ARRAY_MAX_SIZE =
       32; // Absolute maximum number of buttons 32*8 = 256.
-  static const uint8_t BUTTONS_MAX_NUMBER =
-      64; // Actual max amount of buttons we are using.
   static const uint8_t BYTE_LENGTH =
       8; // How many bits is in a single byte of data.
 
@@ -68,14 +54,8 @@ private:
   PlatformMutex _mutex;
 
 public:
-  uint8_t buttonState[BUTTON_ARRAY_MAX_SIZE];
   bool sendBlocking = true;
   bool autoSend = false;
-
-  // TODO: Hardcoded magic default numbers.
-  axis_t axis = {0, 0, 0, 0, 0, 0, 0, 0};
-  axis_t axisMin = {-511, -511, -511, -511, -511, -511, -511, -511};
-  axis_t axisMax = {511, 511, 511, 511, 511, 511, 511, 511};
 
   /*
     Constuctors and destructors.
@@ -179,42 +159,6 @@ public:
                               int16_t out_min, int16_t out_max) {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
   }
-
-  /*
-    Set axis value to the given value.
-  */
-  void setXAxis(float value);
-  void setYAxis(float value);
-  void setZAxis(float value);
-  void setRxAxis(float value);
-  void setRyAxis(float value);
-  void setRzAxis(float value);
-  void setThrottleAxis(float value);
-  void setRudderAxis(float value);
-
-  /*
-    Set the allowed minimum and maximum values.
-  */
-  void setXAxisRange(int16_t min, int16_t max);
-  void setYAxisRange(int16_t min, int16_t max);
-  void setZAxisRange(int16_t min, int16_t max);
-  void setRxAxisRange(int16_t min, int16_t max);
-  void setRyAxisRange(int16_t min, int16_t max);
-  void setRzAxisRange(int16_t min, int16_t max);
-  void setThrottleAxisRange(int16_t min, int16_t max);
-  void setRudderAxisRange(int16_t min, int16_t max);
-  void setAllAxisRange(int16_t min, int16_t max);
-
-  /*
-    Press button. Sets button 'buttonNumber' state to 1.
-    Release button. Sets button 'buttonNumber' state to 0.
-    Toggle button. Invert the current state of the button 'buttonNumber'.
-    Set button 'buttonNumber' state to 0 if value is 0, 1 if value is non-zero.
-  */
-  void pressButton(uint8_t buttonNumber);
-  void releaseButton(uint8_t buttonNumber);
-  void toggleButton(uint8_t buttonNumber);
-  void setButton(uint8_t buttonNumber, uint8_t value);
 
 protected:
   /*
