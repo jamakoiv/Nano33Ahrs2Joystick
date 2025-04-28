@@ -557,6 +557,8 @@ void loop() {
   if (millis() - serial_output_timer > 100) {
     serial_output_timer = millis();
     print_output();
+    Serial.println(joystick.sendBlocking);
+    Serial.println(joystick.autoSend);
   }
 
   if (millis() - serial_input_timer > 200) {
