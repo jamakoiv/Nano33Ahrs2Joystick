@@ -170,34 +170,19 @@ void USBJoystick::updateHIDreport(Joystick *joystick) {
   }
 
   // Axis part of the report.
+  // INFO: mapfi maps the axis values to 16-bit integer, which we must split
+  // into two bytes when inserting it to the HID-report.
   // TODO: Should we write 'static_cast<uint8_t>()' to show this more
   // explicitly?
 
-  for (int i=0; i < 
+  for (int ax = 0; ax < joystick->getAxisAmount(); ax++) {
+    uint16_t value = this->mapfi(
+        joystick->getAxis(ax), joystick->getAxisMin(ax),
+        joystick->getAxisMax(ax), this->HID_AXIS_MIN, this->HID_AXIS_MAX);
 
-  this->HIDreport.data[this->HIDreport.length++] = this->axis.X;
-  this->HIDreport.data[this->HIDreport.length++] =
-      this->axis.X >> this->BYTE_LENGTH;
-
-  this->HIDreport.data[this->HIDreport.length++] = this->axis.Y;
-  this->HIDreport.data[this->HIDreport.length++] =
-      this->axis.Y >> this->BYTE_LENGTH;
-
-  this->HIDreport.data[this->HIDreport.length++] = this->axis.Z;
-  this->HIDreport.data[this->HIDreport.length++] =
-      this->axis.Z >> this->BYTE_LENGTH;
-
-  this->HIDreport.data[this->HIDreport.length++] = this->axis.Rx;
-  this->HIDreport.data[this->HIDreport.length++] =
-      this->axis.Rx >> this->BYTE_LENGTH;
-
-  this->HIDreport.data[this->HIDreport.length++] = this->axis.Ry;
-  this->HIDreport.data[this->HIDreport.length++] =
-      this->axis.Ry >> this->BYTE_LENGTH;
-
-  this->HIDreport.data[this->HIDreport.length++] = this->axis.Rz;
-  this->HIDreport.data[this->HIDreport.length++] =
-      this->axis.Rz >> this->BYTE_LENGTH;
+    this->HIDreport.data[this->HIDreport.length++] = value;
+    this->HIDreport.data[this->HIDreport.length++] = value >> this->BYTE_LENGTH;
+  }
 }
 
 bool USBJoystick::update(void) {
