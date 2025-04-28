@@ -43,14 +43,18 @@ private:
 public:
   uint8_t buttonState[BUTTONS_MAX_NUMBER];
 
-  Joystick();
-  ~Joystick();
+  Joystick() = default;
+  ~Joystick() = default;
 
   uint8_t getButtonBytesAmount(void);
   uint8_t getAxisAmount(void);
 
   void setAxis(float value, int AXIS);
+  float getAxis(int AXIS);
+
   void setAxisRange(float minimum, float maximum, int AXIS);
+  float getAxisMin(int AXIS);
+  float getAxisMax(int AXIS);
   void setAllAxisRange(float minimum, float maximum);
 
   /*

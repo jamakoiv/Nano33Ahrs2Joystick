@@ -49,78 +49,20 @@ void Joystick::setButton(uint8_t buttonNumber, uint8_t value) {
 }
 
 void Joystick::setAxis(float value, int AXIS) {
-  switch (AXIS) {
-  case X:
-    this->axis.name.X =
-        constrain(value, this->axisMin.name.X, this->axisMax.name.X);
-    break;
-  case Y:
-    this->axis.name.Y =
-        constrain(value, this->axisMin.name.Y, this->axisMax.name.Y);
-    break;
-  case Z:
-    this->axis.name.Z =
-        constrain(value, this->axisMin.name.Z, this->axisMax.name.Z);
-    break;
-  case Rx:
-    this->axis.name.Rx =
-        constrain(value, this->axisMin.name.Rx, this->axisMax.name.Rx);
-    break;
-  case Ry:
-    this->axis.name.Ry =
-        constrain(value, this->axisMin.name.Ry, this->axisMax.name.Ry);
-    break;
-  case Rz:
-    this->axis.name.Rz =
-        constrain(value, this->axisMin.name.Rz, this->axisMax.name.Rz);
-    break;
-  case slider0:
-    this->axis.name.slider0 = constrain(value, this->axisMin.name.slider0,
-                                        this->axisMax.name.slider0);
-    break;
-  case slider1:
-    this->axis.name.Rz = constrain(value, this->axisMin.name.slider1,
-                                   this->axisMax.name.slider1);
-    break;
-  }
+  this->axis.array[AXIS] =
+      constrain(value, this->axisMin.array[AXIS], this->axisMin.array[AXIS]);
 }
 
 void Joystick::setAxisRange(float minimum, float maximum, int AXIS) {
-  switch (AXIS) {
-  case X:
-    this->axisMin.name.X = std::min(minimum, maximum);
-    this->axisMax.name.X = std::max(minimum, maximum);
-    break;
-  case Y:
-    this->axisMin.name.Y = std::min(minimum, maximum);
-    this->axisMax.name.Y = std::max(minimum, maximum);
-    break;
-  case Z:
-    this->axisMin.name.Z = std::min(minimum, maximum);
-    this->axisMax.name.Z = std::max(minimum, maximum);
-    break;
-  case Rx:
-    this->axisMin.name.Rx = std::min(minimum, maximum);
-    this->axisMax.name.Rx = std::max(minimum, maximum);
-    break;
-  case Ry:
-    this->axisMin.name.Ry = std::min(minimum, maximum);
-    this->axisMax.name.Ry = std::max(minimum, maximum);
-    break;
-  case Rz:
-    this->axisMin.name.Rz = std::min(minimum, maximum);
-    this->axisMax.name.Rz = std::max(minimum, maximum);
-    break;
-  case slider0:
-    this->axisMin.name.slider0 = std::min(minimum, maximum);
-    this->axisMax.name.slider0 = std::max(minimum, maximum);
-    break;
-  case slider1:
-    this->axisMin.name.slider1 = std::min(minimum, maximum);
-    this->axisMax.name.slider1 = std::max(minimum, maximum);
-    break;
-  }
+  this->axisMin.array[AXIS] = std::min(minimum, maximum);
+  this->axisMax.array[AXIS] = std::max(minimum, maximum);
 }
+
+float Joystick::getAxis(int AXIS) { return this->axis.array[AXIS]; }
+
+float Joystick::getAxisMin(int AXIS) { return this->axisMin.array[AXIS]; }
+
+float Joystick::getAxisMax(int AXIS) { return this->axisMax.array[AXIS]; }
 
 void Joystick::setAllAxisRange(float minimum, float maximum) {
   this->setAxisRange(minimum, maximum, X);
