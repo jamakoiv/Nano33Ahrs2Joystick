@@ -36,6 +36,7 @@ public:
 
   void setAxis(float value, int AXIS);
   void setAxisRange(float minimum, float maximum, int AXIS);
+  void setAllAxisRange(float minimum, float maximum);
 
   /*
     Press button. Sets button 'buttonNumber' state to 1.

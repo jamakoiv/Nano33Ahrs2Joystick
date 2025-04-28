@@ -21,17 +21,17 @@
 
 namespace arduino {
 
-USBJoystick(bool connect, uint16_t vendor_id, uint16_t product_id,
-            uint16_t product_release)
+USBJoystick::USBJoystick(bool connect, uint16_t vendor_id, uint16_t product_id,
+                         uint16_t product_release)
     : USBHID(get_usb_phy(), 0, 0, vendor_id, product_id, product_release) {}
 
-USBJoystick(USBPhy *phy, uint16_t vendor_id, uint16_t product_id,
-            uint16_t product_release)
+USBJoystick::USBJoystick(USBPhy *phy, uint16_t vendor_id, uint16_t product_id,
+                         uint16_t product_release)
     : USBHID(phy, 0, 0, vendor_id, product_id, product_release) {
   // User or child must call connect or init when using this constructor.
 }
 
-Joystick::~USBJoystick(void) {}
+USBJoystick::~USBJoystick(void) {}
 
 const uint8_t *USBJoystick::report_desc(void) {
   // TODO: Make a HID-descriptor which can handle different axis-counts and
