@@ -26,6 +26,17 @@ namespace arduino {
 
 enum { MSB, LSB };
 
+struct axis_t {
+  int16_t X;
+  int16_t Y;
+  int16_t Z;
+  int16_t Rx;
+  int16_t Ry;
+  int16_t Rz;
+  int16_t throttle;
+  int16_t rudder;
+};
+
 class USBJoystick : public USBHID {
 private:
   // TODO: Change BUTTONS_MAX_NUMBER to be set by user.
@@ -37,28 +48,22 @@ private:
       8; // How many bits is in a single byte of data.
 
   // Axis data will be constrained to this range when sending it over the USB.
-  // Default 10-bit res.
   // TODO: 16-bit resolution works on windows but not on linux. Maybe something
   // wrong with the HID-report?
-  // static const int16_t HID_AXIS_MIN = -511;   // 10-bit
-  // static const int16_t HID_AXIS_MAX = 511;
-  // static const int16_t HID_AXIS_MIN = -1023;  // 11-bit
-  // static const int16_t HID_AXIS_MAX = 1023;
   static const int16_t HID_AXIS_MIN = -2047; // 12-bit
   static const int16_t HID_AXIS_MAX = 2047;
 
   // TODO:  Report IDs have to be declared static or otherwise the
-  // report-descriptor becomes corrupted and
-  //        the whole USB-device goes down.
+  // report-descriptor becomes corrupted and the whole USB-device goes down.
   static const uint8_t REPORT_ID = 0x10;
 
   // Buttons amount must be byte-aligned because I don't want to deal with
   // padding-data in the HID-report :)
   MBED_STATIC_ASSERT(BUTTONS_MAX_NUMBER % BYTE_LENGTH == 0,
                      "BUTTONS_MAX_NUMBER does not align to byte-length");
-
-  uint8_t _configuration_descriptor[34]; // 34 bytes. // TODO: Hardcoded magic
-                                         // number
+  // TODO: Get rid of hardcoded magic numbers.
+  uint8_t _configuration_descriptor[34]; // 34 bytes.
+                                         //
   HID_REPORT HIDreport;
   PlatformMutex _mutex;
 
@@ -67,21 +72,10 @@ public:
   bool sendBlocking = true;
   bool autoSend = false;
 
-  struct _axis_ {
-    int16_t X;
-    int16_t Y;
-    int16_t Z;
-    int16_t Rx;
-    int16_t Ry;
-    int16_t Rz;
-    int16_t throttle;
-    int16_t rudder;
-  };
-
   // TODO: Hardcoded magic default numbers.
-  _axis_ axis = {0, 0, 0, 0, 0, 0, 0, 0};
-  _axis_ axisMin = {-511, -511, -511, -511, -511, -511, -511, -511};
-  _axis_ axisMax = {511, 511, 511, 511, 511, 511, 511, 511};
+  axis_t axis = {0, 0, 0, 0, 0, 0, 0, 0};
+  axis_t axisMin = {-511, -511, -511, -511, -511, -511, -511, -511};
+  axis_t axisMax = {511, 511, 511, 511, 511, 511, 511, 511};
 
   /*
     Constuctors and destructors.
