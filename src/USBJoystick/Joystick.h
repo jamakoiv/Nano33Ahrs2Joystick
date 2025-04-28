@@ -46,16 +46,16 @@ public:
   Joystick() = default;
   ~Joystick() = default;
 
-  uint8_t getButtonBytesAmount(void);
-  uint8_t getAxisAmount(void);
-
   void setAxis(float value, int AXIS);
-  float getAxis(int AXIS);
-
   void setAxisRange(float minimum, float maximum, int AXIS);
-  float getAxisMin(int AXIS);
-  float getAxisMax(int AXIS);
   void setAllAxisRange(float minimum, float maximum);
+
+  uint8_t getButtonBytesAmount(void) const;
+  uint8_t getAxisAmount(void) const;
+
+  float getAxis(int AXIS) const;
+  float getAxisMin(int AXIS) const;
+  float getAxisMax(int AXIS) const;
 
   /*
     Press button. Sets button 'buttonNumber' state to 1.

@@ -5,11 +5,11 @@
 
 namespace arduino {
 
-uint8_t Joystick::getButtonBytesAmount(void) {
+uint8_t Joystick::getButtonBytesAmount(void) const {
   return this->BUTTONS_MAX_NUMBER / this->BYTE_LENGTH;
 }
 
-uint8_t Joystick::getAxisAmount(void) { return this->AXIS_AMOUNT; }
+uint8_t Joystick::getAxisAmount(void) const { return this->AXIS_AMOUNT; }
 
 // TODO: Cut & paste of same code in 'pressButton', 'releaseButton' and '
 // toggleButton'.
@@ -58,11 +58,11 @@ void Joystick::setAxisRange(float minimum, float maximum, int AXIS) {
   this->axisMax.array[AXIS] = std::max(minimum, maximum);
 }
 
-float Joystick::getAxis(int AXIS) { return this->axis.array[AXIS]; }
+float Joystick::getAxis(int AXIS) const { return this->axis.array[AXIS]; }
 
-float Joystick::getAxisMin(int AXIS) { return this->axisMin.array[AXIS]; }
+float Joystick::getAxisMin(int AXIS) const { return this->axisMin.array[AXIS]; }
 
-float Joystick::getAxisMax(int AXIS) { return this->axisMax.array[AXIS]; }
+float Joystick::getAxisMax(int AXIS) const { return this->axisMax.array[AXIS]; }
 
 void Joystick::setAllAxisRange(float minimum, float maximum) {
   this->setAxisRange(minimum, maximum, X);

@@ -121,7 +121,7 @@ public:
     Update the HID-report with the current joystick-state (axis-values,
     button-states etc.).
   */
-  void updateHIDreport(Joystick *joystick);
+  void updateHIDreport(const Joystick *const joystick);
 
   /*
     Get the lower (LSB) or higher (MSB) 8-bits of 16-bit axis-value.

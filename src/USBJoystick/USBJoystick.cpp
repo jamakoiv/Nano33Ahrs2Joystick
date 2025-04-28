@@ -157,7 +157,7 @@ const uint8_t *USBJoystick::configuration_desc(uint8_t index) {
   return this->_configuration_descriptor;
 }
 
-void USBJoystick::updateHIDreport(Joystick *joystick) {
+void USBJoystick::updateHIDreport(const Joystick *const joystick) {
 
   // Buttons part of the HID-report.
   this->HIDreport.data[0] = this->REPORT_ID;
