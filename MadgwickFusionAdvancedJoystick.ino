@@ -20,7 +20,8 @@
  *      central definition.
 */
 
-USBJoystick joystick;
+USBJoystick usb_comms;
+Joystick joystick;
 
 int SerialOutputMode = SERIAL_PRINT_AHRS;
 
