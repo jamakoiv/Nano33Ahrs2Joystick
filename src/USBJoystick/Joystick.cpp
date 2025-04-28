@@ -44,30 +44,30 @@ void Joystick::setButton(uint8_t buttonNumber, uint8_t value) {
 void Joystick::setAxis(float value, int AXIS) {
   switch (AXIS) {
   case X:
-    this->axis.X = std::clamp(value, this->axisMin.X, this->axisMax.X);
+    this->axis.X = constrain(value, this->axisMin.X, this->axisMax.X);
     break;
   case Y:
-    this->axis.Y = std::clamp(value, this->axisMin.Y, this->axisMax.Y);
+    this->axis.Y = constrain(value, this->axisMin.Y, this->axisMax.Y);
     break;
   case Z:
-    this->axis.Z = std::clamp(value, this->axisMin.Z, this->axisMax.Z);
+    this->axis.Z = constrain(value, this->axisMin.Z, this->axisMax.Z);
     break;
   case Rx:
-    this->axis.Rx = std::clamp(value, this->axisMin.Rx, this->axisMax.Rx);
+    this->axis.Rx = constrain(value, this->axisMin.Rx, this->axisMax.Rx);
     break;
   case Ry:
-    this->axis.Ry = std::clamp(value, this->axisMin.Ry, this->axisMax.Ry);
+    this->axis.Ry = constrain(value, this->axisMin.Ry, this->axisMax.Ry);
     break;
   case Rz:
-    this->axis.Rz = std::clamp(value, this->axisMin.Rz, this->axisMax.Rz);
+    this->axis.Rz = constrain(value, this->axisMin.Rz, this->axisMax.Rz);
     break;
   case slider0:
     this->axis.slider0 =
-        std::clamp(value, this->axisMin.slider0, this->axisMax.slider0);
+        constrain(value, this->axisMin.slider0, this->axisMax.slider0);
     break;
   case slider1:
     this->axis.Rz =
-        std::clamp(value, this->axisMin.slider1, this->axisMax.slider1);
+        constrain(value, this->axisMin.slider1, this->axisMax.slider1);
     break;
   }
 }
