@@ -20,6 +20,7 @@
 
 #include "PlatformMutex.h"
 #include "PluggableUSBHID.h"
+#include <cstdint>
 
 namespace arduino {
 
