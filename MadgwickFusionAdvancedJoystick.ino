@@ -144,16 +144,15 @@ float updateTimeStamp(void) {
     return dt;
 }
 
-void updateJoystickAxes(const FusionAhrs *const ahrs) {
+void updateJoystickAxes(const FusionAhrs *const ahrs, Joystick *const joy, USBJoystick *const usb) {
     /*Update the joystick-axes using the AHRS angle data. */
     FusionEuler euler = FusionQuaternionToEuler( FusionAhrsGetQuaternion( ahrs ));
 
-    joystick.setAxis( remap_yaw(euler.angle.yaw, AxisOffset.x), X);
-    joystick.setAxis( euler.angle.pitch + AxisOffset.y, Y);
-    joystick.setAxis( euler.angle.roll + AxisOffset.z, Z);
+    joy->setAxis( remap_yaw(euler.angle.yaw, AxisOffset.x), X);
+    joy->setAxis( euler.angle.pitch + AxisOffset.y, Y);
+    joy->setAxis( euler.angle.roll + AxisOffset.z, Z);
 
-    usb_comms.updateHIDreport(&joystick);
-    usb_comms.update();
+    usb->updateHIDreport(joy);
 }
 
 void AHRS_check(void) {
@@ -510,6 +509,7 @@ static inline float remap_yaw(float yaw, float d) {
 
 
 void setup() {
+    while (!Serial) {}
     Serial.begin(SERIAL_BAUDRATE);
 
     IMU.setGyroscopeSettings( LSM9DS1_ODR_G_238HZ, LSM9DS1_FS_G_500DPS );
@@ -527,9 +527,6 @@ void setup() {
     joystick.setAxisRange( -90, 90, Y );    // up-down, pitch-axis. Range [-90, 90] degrees.
     joystick.setAxisRange( -90, 90, Z );  // roll left-right, roll-axis. Range [-90, 90] degrees.
 
-    //joystick.setXAxisRange( -90, 90 );  // left-right, yaw-axis. Range [-90, 90] degrees. 
-    //joystick.setYAxisRange( -90, 90 );    // up-down, pitch-axis. Range [-90, 90] degrees.
-    //joystick.setZAxisRange( -180, 180 );  // roll left-right, roll-axis. Range [-180, 180] degrees.
 
     if (!kv_store_initialized()) {
       while (true) {
@@ -553,8 +550,10 @@ void loop() {
   static uint32_t serial_output_timer = millis();
   static uint32_t serial_input_timer = millis();
   
+  Serial.println("AHRS");
   AHRS_check();
-  updateJoystickAxes(&AHRS);
+  Serial.println("Update joystick.");
+  updateJoystickAxes(&AHRS, &joystick, &usb_comms);
 
   if (millis() - serial_output_timer > 100) {
     serial_output_timer = millis();
