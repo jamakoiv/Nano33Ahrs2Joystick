@@ -215,4 +215,14 @@ bool USBCommsJoystick::update(void) {
   this->_mutex.unlock();
   return sendSuccessful;
 }
+
+void USBCommsJoystick::setSettings(bool autoSend, bool sendBlocking) {
+  this->autoSend = autoSend;
+  this->sendBlocking = sendBlocking;
+}
+
+std::tuple<bool, bool> USBCommsJoystick::getSettings(void) {
+  return std::make_tuple(this->autoSend, this->sendBlocking);
+}
+
 } // namespace arduino

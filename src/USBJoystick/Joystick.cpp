@@ -14,10 +14,6 @@ uint8_t Joystick::getAxisAmount(void) const { return this->AXIS_AMOUNT; }
 void Joystick::setAxis(float value, int AXIS) {
   this->axis.array[AXIS] =
       constrain(value, this->axisMin.array[AXIS], this->axisMax.array[AXIS]);
-
-  Serial.println(AXIS);
-  Serial.println(value);
-  Serial.println(this->axis.array[AXIS]);
 }
 
 void Joystick::setAxisRange(float minimum, float maximum, int AXIS) {
@@ -57,7 +53,8 @@ void Joystick::pressButton(uint8_t buttonNumber) {
 }
 
 void Joystick::releaseButton(uint8_t buttonNumber) {
-  // See 'USBCommsJoystick::pressButton for explanation of 'index' and 'position'.
+  // See 'USBCommsJoystick::pressButton for explanation of 'index' and
+  // 'position'.
   uint8_t index = buttonNumber / this->BYTE_LENGTH;
   uint8_t position = buttonNumber % this->BYTE_LENGTH;
 
@@ -65,7 +62,8 @@ void Joystick::releaseButton(uint8_t buttonNumber) {
 }
 
 void Joystick::toggleButton(uint8_t buttonNumber) {
-  // See 'USBCommsJoystick::pressButton for explanation of 'index' and 'position'.
+  // See 'USBCommsJoystick::pressButton for explanation of 'index' and
+  // 'position'.
   uint8_t index = buttonNumber / this->BYTE_LENGTH;
   uint8_t position = buttonNumber % this->BYTE_LENGTH;
 

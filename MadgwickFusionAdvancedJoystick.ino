@@ -5,7 +5,7 @@
 
 #include "serial_commands.h"
 #include "src/Fusion/Fusion.h"
-#include "src/USBJoystick/USBJoystick.h"
+#include "src/USBJoystick/USBCommsJoystick.h"
 #include "src/MyVector/MyVector.h"
 #include "src/LSM9DS1/LSM9DS1.h"
 
@@ -20,7 +20,7 @@
  *      central definition.
 */
 
-USBJoystick usb_comms;
+USBCommsJoystick usb_comms;
 Joystick joystick;
 
 int SerialOutputMode = SERIAL_PRINT_AHRS;
@@ -144,7 +144,7 @@ float updateTimeStamp(void) {
     return dt;
 }
 
-void updateJoystickAxes(const FusionAhrs *const ahrs, Joystick *const joy, USBJoystick *const usb) {
+void updateJoystickAxes(const FusionAhrs *const ahrs, Joystick *const joy, USBCommsJoystick *const usb) {
     /*Update the joystick-axes using the AHRS angle data. */
     FusionEuler euler = FusionQuaternionToEuler( FusionAhrsGetQuaternion( ahrs ));
 
@@ -521,8 +521,7 @@ void setup() {
     FusionAhrsInitialise(&AHRS);
     FusionAhrsSetSettings(&AHRS, &AHRSsettings);
 
-    usb_comms.autoSend = false;
-    usb_comms.sendBlocking = false;
+    usb_comms.setSettings(true, true);
     joystick.setAxisRange( -180, 180, X );  // left-right, yaw-axis. Range [-180, 180] degrees. 
     joystick.setAxisRange( -90, 90, Y );    // up-down, pitch-axis. Range [-90, 90] degrees.
     joystick.setAxisRange( -90, 90, Z );  // roll left-right, roll-axis. Range [-90, 90] degrees.
@@ -560,8 +559,10 @@ void loop() {
   if (millis() - serial_output_timer > 100) {
     serial_output_timer = millis();
     print_output();
-    Serial.println(usb_comms.sendBlocking);
-    Serial.println(usb_comms.autoSend);
+
+    const auto [sendBlocking, autoSend] = usb_comms.getSettings();
+    Serial.println(sendBlocking);
+    Serial.println(autoSend);
   }
 
   if (millis() - serial_input_timer > 200) {

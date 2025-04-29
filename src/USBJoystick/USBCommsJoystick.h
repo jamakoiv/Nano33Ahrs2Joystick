@@ -24,17 +24,17 @@
 #include "Joystick.h"
 #include "PlatformMutex.h"
 #include "PluggableUSBHID.h"
+
 #include <cstdint>
+#include <tuple>
 
 namespace arduino {
 
 class USBCommsJoystick : public USBHID {
-
-public:
-  bool sendBlocking = true;
+private:
+  bool sendBlocking = false;
   bool autoSend = false;
 
-private:
   // TODO: Change BUTTONS_MAX_NUMBER to be set by user.
   static const uint8_t BUTTONS_MAX_NUMBER = 64;
 
@@ -166,13 +166,8 @@ public:
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
   }
 
-  bool getAutoSend(void) { return this->autoSend; }
-  bool getSendBlocking(void) { return this->sendBlocking; }
-
-  void printThis(void) {
-    Serial.print("0x");
-    Serial.println(reinterpret_cast<int>(this));
-  }
+  void setSettings(bool autoSend, bool sendBlocking);
+  std::tuple<bool, bool> getSettings(void);
 
 protected:
   /*
