@@ -58,6 +58,12 @@ private:
   uint8_t _configuration_descriptor[34]; // 34 bytes.
 
   HID_REPORT HIDreport;
+
+  /*  INFO: !!!WARNING!!! Do not move the PlatformMutex! Putting it above the
+        other variables leads to some very strange bugs where accessing the
+     variables inside method 'update' accesses different memory-address than
+     same variable from other methods.
+  */
   PlatformMutex _mutex;
 
 public:
