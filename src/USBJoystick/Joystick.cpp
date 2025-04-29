@@ -23,9 +23,9 @@ void Joystick::setAxisRange(float minimum, float maximum, int AXIS) {
 
 float Joystick::getAxis(int AXIS) const { return this->axis.array[AXIS]; }
 
-float Joystick::getAxisMin(int AXIS) const { return this->axisMin.array[AXIS]; }
-
-float Joystick::getAxisMax(int AXIS) const { return this->axisMax.array[AXIS]; }
+std::tuple<float, float> Joystick::getAxisRange(int AXIS) const {
+  return std::make_tuple(this->axisMin.array[AXIS], this->axisMax.array[AXIS]);
+};
 
 void Joystick::setAllAxisRange(float minimum, float maximum) {
   this->setAxisRange(minimum, maximum, X);

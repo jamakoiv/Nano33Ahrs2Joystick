@@ -2,6 +2,7 @@
 #define __JOYSTICK_H__
 
 #include <cstdint>
+#include <tuple>
 
 namespace arduino {
 
@@ -59,8 +60,7 @@ public:
   uint8_t getAxisAmount(void) const;
 
   float getAxis(int AXIS) const;
-  float getAxisMin(int AXIS) const;
-  float getAxisMax(int AXIS) const;
+  std::tuple<float, float> getAxisRange(int AXIS) const;
 
   /*
     Press button. Sets button 'buttonNumber' state to 1.

@@ -180,9 +180,9 @@ void USBCommsJoystick::updateHIDreport(const Joystick *const joystick) {
   // explicitly?
 
   for (int ax = 0; ax < joystick->getAxisAmount(); ax++) {
-    uint16_t value = this->mapfi(
-        joystick->getAxis(ax), joystick->getAxisMin(ax),
-        joystick->getAxisMax(ax), this->HID_AXIS_MIN, this->HID_AXIS_MAX);
+    const auto [axis_min, axis_max] = joystick->getAxisRange(ax);
+    uint16_t value = this->mapfi(joystick->getAxis(ax), axis_min, axis_max,
+                                 this->HID_AXIS_MIN, this->HID_AXIS_MAX);
 
     this->HIDreport.data[this->HIDreport.length++] = value;
     this->HIDreport.data[this->HIDreport.length++] = value >> this->BYTE_LENGTH;
