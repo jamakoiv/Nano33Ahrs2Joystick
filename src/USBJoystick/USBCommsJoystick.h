@@ -18,8 +18,8 @@
 // TODO: Change the filename and class-name to something more expressive now
 // that the joystick-related stuff is handled in the Joystick-class.
 
-#ifndef USBJOYSTICK_H
-#define USBJOYSTICK_H
+#ifndef __USBJOYSTICK_H__
+#define __USBJOYSTICK_H__
 
 #include "Joystick.h"
 #include "PlatformMutex.h"
@@ -28,14 +28,21 @@
 
 namespace arduino {
 
-class USBJoystick : public USBHID {
+class USBCommsJoystick : public USBHID {
+
+public:
+  bool sendBlocking = true;
+  bool autoSend = false;
+
 private:
   // TODO: Change BUTTONS_MAX_NUMBER to be set by user.
   static const uint8_t BUTTONS_MAX_NUMBER = 64;
-  static const uint8_t BUTTON_ARRAY_MAX_SIZE =
-      32; // Absolute maximum number of buttons 32*8 = 256.
-  static const uint8_t BYTE_LENGTH =
-      8; // How many bits is in a single byte of data.
+
+  // Absolute maximum number of buttons 32*8 = 256.
+  static const uint8_t BUTTON_ARRAY_MAX_SIZE = 32;
+
+  // How many bits is in a single byte of data.
+  static const uint8_t BYTE_LENGTH = 8;
 
   // Axis data will be constrained to this range when sending it over the USB.
   // TODO: 16-bit resolution works on windows but not on linux. Maybe something
@@ -49,24 +56,23 @@ private:
 
   // TODO: Get rid of hardcoded magic numbers.
   uint8_t _configuration_descriptor[34]; // 34 bytes.
-                                         //
+
   HID_REPORT HIDreport;
   PlatformMutex _mutex;
 
 public:
-  bool sendBlocking = true;
-  bool autoSend = false;
-
   /*
     Constuctors and destructors.
   */
-  USBJoystick(bool connect_blocking = true, uint16_t vendor_id = 0x1235,
-              uint16_t product_id = 0x0050, uint16_t product_release = 0x0001);
+  USBCommsJoystick(bool connect_blocking = true, uint16_t vendor_id = 0x1235,
+                   uint16_t product_id = 0x0050,
+                   uint16_t product_release = 0x0001);
 
-  USBJoystick(USBPhy *phy, uint16_t vendor_id = 0x1235,
-              uint16_t product_id = 0x0050, uint16_t product_release = 0x0001);
+  USBCommsJoystick(USBPhy *phy, uint16_t vendor_id = 0x1235,
+                   uint16_t product_id = 0x0050,
+                   uint16_t product_release = 0x0001);
 
-  virtual ~USBJoystick(void);
+  virtual ~USBCommsJoystick(void);
 
   /*
    Construct the HID-report descriptor.
@@ -160,6 +166,14 @@ public:
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
   }
 
+  bool getAutoSend(void) { return this->autoSend; }
+  bool getSendBlocking(void) { return this->sendBlocking; }
+
+  void printThis(void) {
+    Serial.print("0x");
+    Serial.println(reinterpret_cast<int>(this));
+  }
+
 protected:
   /*
    Get configuration descriptor.
@@ -169,7 +183,7 @@ protected:
   // TODO: Who calls this function? Something deep inside the USB-stack???
   virtual const uint8_t *configuration_desc(uint8_t index);
 
-}; // End of 'class USBJoystick'.
+}; // class USBCommsJoystick
 
 } // namespace arduino
 

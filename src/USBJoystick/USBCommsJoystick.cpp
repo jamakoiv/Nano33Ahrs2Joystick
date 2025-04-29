@@ -15,25 +15,27 @@
  * limitations under the License.
  */
 
-#include "USBJoystick.h"
+#include "USBCommsJoystick.h"
 #include "stdint.h"
 #include "usb_phy_api.h"
 
 namespace arduino {
 
-USBJoystick::USBJoystick(bool connect, uint16_t vendor_id, uint16_t product_id,
-                         uint16_t product_release)
+USBCommsJoystick::USBCommsJoystick(bool connect, uint16_t vendor_id,
+                                   uint16_t product_id,
+                                   uint16_t product_release)
     : USBHID(get_usb_phy(), 0, 0, vendor_id, product_id, product_release) {}
 
-USBJoystick::USBJoystick(USBPhy *phy, uint16_t vendor_id, uint16_t product_id,
-                         uint16_t product_release)
+USBCommsJoystick::USBCommsJoystick(USBPhy *phy, uint16_t vendor_id,
+                                   uint16_t product_id,
+                                   uint16_t product_release)
     : USBHID(phy, 0, 0, vendor_id, product_id, product_release) {
   // User or child must call connect or init when using this constructor.
 }
 
-USBJoystick::~USBJoystick(void) {}
+USBCommsJoystick::~USBCommsJoystick(void) {}
 
-const uint8_t *USBJoystick::report_desc(void) {
+const uint8_t *USBCommsJoystick::report_desc(void) {
   // TODO: Make a HID-descriptor which can handle different axis-counts and
   // multiple joysticks.
   static const uint8_t reportDescriptor[] = {
@@ -92,7 +94,7 @@ const uint8_t *USBJoystick::report_desc(void) {
    (1 * HID_DESCRIPTOR_LENGTH) + (1 * ENDPOINT_DESCRIPTOR_LENGTH))
 //+ (2 * ENDPOINT_DESCRIPTOR_LENGTH))
 
-const uint8_t *USBJoystick::configuration_desc(uint8_t index) {
+const uint8_t *USBCommsJoystick::configuration_desc(uint8_t index) {
   if (index != 0) {
     return NULL;
   } // Is 'index' the configuration number??
@@ -148,19 +150,18 @@ const uint8_t *USBJoystick::configuration_desc(uint8_t index) {
       //    1,                                  // bInterval (milliseconds)
   };
 
-  MBED_STATIC_ASSERT(
-      sizeof(configuration_descriptor_temp) ==
-          sizeof(this->_configuration_descriptor),
-      "Length of 'configuration_descriptor_temp' in "
-      "'USBJoystick::configuration_desc' must be identical to the length of "
-      "array 'USBJoystick::_configuration_descriptor'.");
+  MBED_STATIC_ASSERT(sizeof(configuration_descriptor_temp) ==
+                         sizeof(this->_configuration_descriptor),
+                     "Length of 'configuration_descriptor_temp' in "
+                     "'USBCommsJoystick::configuration_desc' must be identical "
+                     "to the length of "
+                     "array 'USBCommsJoystick::_configuration_descriptor'.");
   memcpy(this->_configuration_descriptor, configuration_descriptor_temp,
          sizeof(this->_configuration_descriptor));
   return this->_configuration_descriptor;
 }
 
-void USBJoystick::updateHIDreport(const Joystick *const joystick) {
-
+void USBCommsJoystick::updateHIDreport(const Joystick *const joystick) {
   // Buttons part of the HID-report.
   this->HIDreport.data[0] = this->REPORT_ID;
   this->HIDreport.length = 1;
@@ -170,7 +171,6 @@ void USBJoystick::updateHIDreport(const Joystick *const joystick) {
   for (uint8_t i = 0; i < dataBytesAmount; i++) {
     this->HIDreport.data[i + 1] = joystick->buttonState[i];
     this->HIDreport.length++;
-    Serial.println(this->HIDreport.length);
   }
 
   // Axis part of the report.
@@ -186,17 +186,23 @@ void USBJoystick::updateHIDreport(const Joystick *const joystick) {
 
     this->HIDreport.data[this->HIDreport.length++] = value;
     this->HIDreport.data[this->HIDreport.length++] = value >> this->BYTE_LENGTH;
-    Serial.println(this->HIDreport.length);
   }
 }
 
-bool USBJoystick::update(void) {
+bool USBCommsJoystick::update(void) {
   Serial.println("Get mutex");
   this->_mutex.lock(); // The underlying USB-system and -hardware is most
-                       // probably shared by all threads, so we need to acquire
-                       // lock before using it.
+  // probably shared by all threads, so we need to acquire
+  // lock before using it.
 
   bool sendSuccessful;
+  Serial.print("this->sendBlocking: ");
+  Serial.println(this->sendBlocking);
+  Serial.print("this-> addr.: 0x");
+  Serial.println(reinterpret_cast<int>(this));
+  Serial.print("this->sendBlocking addr.: 0x");
+  Serial.println(reinterpret_cast<int>(&(this->sendBlocking)));
+
   if (this->sendBlocking) {
     Serial.println("send blocking");
     sendSuccessful = this->send(&(this->HIDreport));
