@@ -191,17 +191,21 @@ void USBJoystick::updateHIDreport(const Joystick *const joystick) {
 }
 
 bool USBJoystick::update(void) {
+  Serial.println("Get mutex");
   this->_mutex.lock(); // The underlying USB-system and -hardware is most
                        // probably shared by all threads, so we need to acquire
                        // lock before using it.
 
   bool sendSuccessful;
   if (this->sendBlocking) {
+    Serial.println("send blocking");
     sendSuccessful = this->send(&(this->HIDreport));
   } else {
+    Serial.println("send nonblocking");
     sendSuccessful = this->send_nb(&(this->HIDreport));
   }
 
+  Serial.println("release mutex");
   this->_mutex.unlock();
   return sendSuccessful;
 }
