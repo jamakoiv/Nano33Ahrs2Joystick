@@ -181,6 +181,7 @@ void USBCommsJoystick::updateHIDreport(const Joystick *const joystick) {
 
   for (int ax = 0; ax < joystick->getAxisAmount(); ax++) {
     const auto [axis_min, axis_max] = joystick->getAxisRange(ax);
+
     uint16_t value = this->mapfi(joystick->getAxis(ax), axis_min, axis_max,
                                  this->HID_AXIS_MIN, this->HID_AXIS_MAX);
 
@@ -221,10 +222,11 @@ void USBCommsJoystick::setSettings(bool autoSend, bool sendBlocking) {
   this->sendBlocking = sendBlocking;
 }
 
-std::tuple<bool, bool> USBCommsJoystick::getSettings(void) {
+std::tuple<bool, bool> USBCommsJoystick::getSettings(void) const {
   return std::make_tuple(this->autoSend, this->sendBlocking);
 }
-std::tuple<bool *, bool *> USBCommsJoystick::getSettingsPtr(void) {
+std::tuple<const bool *, const bool *>
+USBCommsJoystick::getSettingsPtr(void) const {
   return std::make_tuple(&this->autoSend, &this->sendBlocking);
 }
 
