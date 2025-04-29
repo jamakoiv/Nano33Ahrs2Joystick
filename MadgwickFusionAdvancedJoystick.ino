@@ -561,8 +561,12 @@ void loop() {
     print_output();
 
     const auto [sendBlocking, autoSend] = usb_comms.getSettings();
-    Serial.println(sendBlocking);
     Serial.println(autoSend);
+    Serial.println(sendBlocking);
+
+    const auto [sendBlocking_ptr, autoSend_ptr] = usb_comms.getSettingsPtr();
+    Serial.println(reinterpret_cast<int>(autoSend_ptr));
+    Serial.println(reinterpret_cast<int>(sendBlocking_ptr));
   }
 
   if (millis() - serial_input_timer > 200) {

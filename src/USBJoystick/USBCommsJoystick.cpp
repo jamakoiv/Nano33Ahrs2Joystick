@@ -224,5 +224,8 @@ void USBCommsJoystick::setSettings(bool autoSend, bool sendBlocking) {
 std::tuple<bool, bool> USBCommsJoystick::getSettings(void) {
   return std::make_tuple(this->autoSend, this->sendBlocking);
 }
+std::tuple<bool *, bool *> USBCommsJoystick::getSettingsPtr(void) {
+  return std::make_tuple(&this->autoSend, &this->sendBlocking);
+}
 
 } // namespace arduino
