@@ -506,8 +506,6 @@ static inline float remap_yaw(float yaw, float d) {
   return res;
 }
 
-
-
 void setup() {
     while (!Serial) {}
     Serial.begin(SERIAL_BAUDRATE);
@@ -521,7 +519,7 @@ void setup() {
     FusionAhrsInitialise(&AHRS);
     FusionAhrsSetSettings(&AHRS, &AHRSsettings);
 
-    usb_comms.setSettings(true, true);
+    usb_comms.setSettings(usb_comms.NO_AUTOSEND, usb_comms.SEND_NONBLOCKING);
     joystick.setAxisRange( -180, 180, X );  // left-right, yaw-axis. Range [-180, 180] degrees. 
     joystick.setAxisRange( -90, 90, Y );    // up-down, pitch-axis. Range [-90, 90] degrees.
     joystick.setAxisRange( -90, 90, Z );  // roll left-right, roll-axis. Range [-90, 90] degrees.

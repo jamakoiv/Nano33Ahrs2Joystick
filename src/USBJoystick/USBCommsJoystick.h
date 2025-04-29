@@ -67,6 +67,11 @@ private:
   PlatformMutex _mutex;
 
 public:
+  static const bool SEND_BLOCKING = true;
+  static const bool SEND_NONBLOCKING = false;
+  static const bool AUTOSEND = true;
+  static const bool NO_AUTOSEND = false;
+
   /*
     Constuctors and destructors.
   */
