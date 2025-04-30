@@ -389,7 +389,7 @@ void check_serial_input(void) {
     return;
   }
 
-  delay(2000);// Small delay in case the received message is 
+  delay(5000);// Small delay in case the received message is 
               // incomplete when we check Serial.available.
               // Make larger if you want to send data manually via terminal.
 

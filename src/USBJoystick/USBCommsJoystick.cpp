@@ -225,7 +225,7 @@ void USBCommsJoystick::setSettings(bool autoSend, bool sendBlocking) {
 std::tuple<bool, bool> USBCommsJoystick::getSettings(void) const {
   return std::make_tuple(this->autoSend, this->sendBlocking);
 }
-std::tuple<const bool *, const bool *>
+std::tuple<const bool *const, const bool *const>
 USBCommsJoystick::getSettingsPtr(void) const {
   return std::make_tuple(&this->autoSend, &this->sendBlocking);
 }

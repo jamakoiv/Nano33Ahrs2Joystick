@@ -179,7 +179,7 @@ public:
 
   void setSettings(bool autoSend, bool sendBlocking);
   std::tuple<bool, bool> getSettings(void) const;
-  std::tuple<const bool *const, const bool *> getSettingsPtr(void) const;
+  std::tuple<const bool *const, const bool *const> getSettingsPtr(void) const;
 
 protected:
   /*
