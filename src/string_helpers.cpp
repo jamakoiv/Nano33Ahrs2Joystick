@@ -1,10 +1,45 @@
 #include <Serial.h>
+#include <sstream>
 #include <string>
 #include <vector>
 
 #include "MyVector/MyVector.h"
+#include "string_helpers.h"
 
-using MyVector::vector;
+std::vector<std::string> split(const std::string &s, char delim) {
+  std::vector<std::string> res;
+  std::stringstream ss(s);
+  std::string item;
+
+  while (std::getline(ss, item, delim)) {
+    res.push_back(item);
+  }
+
+  return res;
+}
+
+std::vector<std::string> split_between(const std::string &s, char start_char,
+                                       char stop_char) {
+  std::vector<std::string> res;
+
+  int pos0 = 0;
+  int pos1 = 0;
+  int last_pos0 = 0;
+
+  while (true) {
+    pos0 = s.find(start_char, pos1);
+    pos1 = s.find(stop_char, pos0);
+
+    if (pos0 == std::string::npos) {
+      break;
+    }
+
+    std::string substr = s.substr(pos0, pos1 - pos0 + 1);
+    res.push_back(substr);
+  }
+
+  return res;
+}
 
 std::vector<std::string> split_input(std::string input,
                                      const std::string &delimiter) {
@@ -47,7 +82,8 @@ std::vector<float> split_and_strtof(std::string input,
   return res;
 }
 
-void set_calib_helper(const std::vector<float> &data, vector &offset) {
+void set_calib_helper(const std::vector<float> &data,
+                      MyVector::vector &offset) {
   if (data.size() < 3) {
     Serial.println("Invalid input: Could not parse 3 floats from input.");
   } else {
@@ -57,8 +93,8 @@ void set_calib_helper(const std::vector<float> &data, vector &offset) {
   }
 }
 
-void set_calib_helper(const std::vector<float> &data, vector &offset,
-                      vector &gain) {
+void set_calib_helper(const std::vector<float> &data, MyVector::vector &offset,
+                      MyVector::vector &gain) {
   /*
 
   */
