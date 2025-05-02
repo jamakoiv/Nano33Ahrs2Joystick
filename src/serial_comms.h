@@ -6,8 +6,8 @@
 
 // TODO: Why are some constants as string and others as enum/int?
 
-const std::string SERIAL_HANDSHAKE = "0x05";
-const std::string SERIAL_DONE = "0x06";
+static const std::string SERIAL_HANDSHAKE = "0x05";
+static const std::string SERIAL_DONE = "0x06";
 
 enum {
   SERIAL_PRINT_NOTHING = 0x10,
