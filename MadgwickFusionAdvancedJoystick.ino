@@ -9,7 +9,7 @@
 #include "src/MyVector/MyVector.h"
 #include "src/LSM9DS1/LSM9DS1.h"
 
-#include "src/comms.h"
+#include "src/serial_comms.h"
 #include "src/kv_storage.h"
 #include "src/string_helpers.h"
 
