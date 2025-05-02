@@ -1,3 +1,4 @@
+#include "Fusion/FusionAhrs.h"
 #include "MyVector/MyVector.h"
 
 using MyVector::vector;
@@ -34,3 +35,7 @@ extern vector MagOffset_default;
 
 extern vector AxisOffset;
 extern vector AxisOffset_default;
+
+extern FusionAhrs AHRS;
+extern float CompassHeading;
+extern int SerialOutputMode;
