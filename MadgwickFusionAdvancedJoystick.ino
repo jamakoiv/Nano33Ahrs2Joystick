@@ -336,6 +336,7 @@ bool serial_handshake(void) {
 
   strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
   if (!Serial.available()) {
+    Serial.println("No serial data.");
     return false;
   }
 
@@ -344,6 +345,7 @@ bool serial_handshake(void) {
     Serial.println(SERIAL_HANDSHAKE.c_str());
     return true;
   } else {
+    Serial.println("Not a handshake.");
     return false;
   }
 }
@@ -355,11 +357,13 @@ std::string read_serial_input(void) {
   static char serialBuffer[SERIAL_READ_BUFFER_SIZE];
 
   strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
-  int bytes_read = Serial.readBytesUntil('\n', serialBuffer, SERIAL_READ_BUFFER_SIZE);
+  int bytes_read = Serial.readBytesUntil(';', serialBuffer, SERIAL_READ_BUFFER_SIZE);
 
   if (bytes_read == 0) {
+    Serial.println("Zero bytes read.");
     return std::string("");
   } else {
+    Serial.println("Non-zero bytes read.");
     return std::string(serialBuffer);
   }
 }
@@ -367,6 +371,9 @@ std::string read_serial_input(void) {
 void execute_command(std::vector<std::string> params) {
   // Guard against inputs which would crash the program at the "(it->second)(params[1])"
   if (params.size() == 1) params.emplace_back(" "); 
+
+  Serial.print("params[0]: ");
+  Serial.println(params[0].c_str());
 
   uint32_t command= static_cast<uint8_t>(strtol(params[0].c_str(), NULL, 16));
 
@@ -383,7 +390,7 @@ void check_serial_input(void) {
 /* 
   Check for commands in serial. 
 */
-  static const std::string OPTIONS_DELIMITER = ";";
+  static const std::string OPTIONS_DELIMITER = ",";
 
   if (!serial_handshake()) {
     return;
@@ -547,27 +554,27 @@ void loop() {
   static uint32_t serial_output_timer = millis();
   static uint32_t serial_input_timer = millis();
   
-  Serial.println("AHRS");
+  //Serial.println("AHRS");
   AHRS_check();
-  Serial.println("Update joystick.");
+  //Serial.println("Update joystick.");
   updateJoystickAxes(&AHRS, &joystick, &usb_comms);
-  Serial.println("Send HID-report.");
+  //Serial.println("Send HID-report.");
   usb_comms.update();
 
-  if (millis() - serial_output_timer > 100) {
+  if (millis() - serial_output_timer > 200) {
     serial_output_timer = millis();
     print_output();
 
-    const auto [sendBlocking, autoSend] = usb_comms.getSettings();
-    Serial.println(autoSend);
-    Serial.println(sendBlocking);
+    //const auto [sendBlocking, autoSend] = usb_comms.getSettings();
+    //Serial.println(autoSend);
+    //Serial.println(sendBlocking);
 
-    const auto [sendBlocking_ptr, autoSend_ptr] = usb_comms.getSettingsPtr();
-    Serial.println(reinterpret_cast<int>(autoSend_ptr));
-    Serial.println(reinterpret_cast<int>(sendBlocking_ptr));
+    //const auto [sendBlocking_ptr, autoSend_ptr] = usb_comms.getSettingsPtr();
+    //Serial.println(reinterpret_cast<int>(autoSend_ptr));
+    //Serial.println(reinterpret_cast<int>(sendBlocking_ptr));
   }
 
-  if (millis() - serial_input_timer > 200) {
+  if (millis() - serial_input_timer > 2000) {
     serial_input_timer = millis();
     check_serial_input();
   }

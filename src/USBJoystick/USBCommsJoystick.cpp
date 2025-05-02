@@ -167,7 +167,7 @@ void USBCommsJoystick::updateHIDreport(const Joystick *const joystick) {
   this->HIDreport.length = 1;
 
   uint8_t dataBytesAmount = joystick->getButtonBytesAmount();
-  Serial.println(dataBytesAmount);
+  // Serial.println(dataBytesAmount);
   for (uint8_t i = 0; i < dataBytesAmount; i++) {
     this->HIDreport.data[i + 1] = joystick->buttonState[i];
     this->HIDreport.length++;
@@ -191,28 +191,28 @@ void USBCommsJoystick::updateHIDreport(const Joystick *const joystick) {
 }
 
 bool USBCommsJoystick::update(void) {
-  Serial.println("Get mutex");
+  // Serial.println("Get mutex");
   this->_mutex.lock(); // The underlying USB-system and -hardware is most
   // probably shared by all threads, so we need to acquire
   // lock before using it.
 
   bool sendSuccessful;
-  Serial.print("this->sendBlocking: ");
-  Serial.println(this->sendBlocking);
-  Serial.print("this-> addr.: 0x");
-  Serial.println(reinterpret_cast<int>(this));
-  Serial.print("this->sendBlocking addr.: 0x");
-  Serial.println(reinterpret_cast<int>(&(this->sendBlocking)));
+  // Serial.print("this->sendBlocking: ");
+  // Serial.println(this->sendBlocking);
+  // Serial.print("this-> addr.: 0x");
+  // Serial.println(reinterpret_cast<int>(this));
+  // Serial.print("this->sendBlocking addr.: 0x");
+  // Serial.println(reinterpret_cast<int>(&(this->sendBlocking)));
 
   if (this->sendBlocking) {
-    Serial.println("send blocking");
+    // Serial.println("send blocking");
     sendSuccessful = this->send(&(this->HIDreport));
   } else {
-    Serial.println("send nonblocking");
+    // Serial.println("send nonblocking");
     sendSuccessful = this->send_nb(&(this->HIDreport));
   }
 
-  Serial.println("release mutex");
+  // Serial.println("release mutex");
   this->_mutex.unlock();
   return sendSuccessful;
 }
