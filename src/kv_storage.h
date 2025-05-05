@@ -2,6 +2,7 @@
 
 #include "MyVector/MyVector.h"
 #include "ino_globals.h"
+#include "utils.h"
 #include <string>
 
 using MyVector::vector;

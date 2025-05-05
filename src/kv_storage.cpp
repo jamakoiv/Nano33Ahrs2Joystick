@@ -1,12 +1,10 @@
-#include <Serial.h>
+#include <Arduino.h>
 #include <kvstore_global_api.h>
 #include <mbed_error.h>
 #include <stdint.h>
 #include <string>
-#include <unordered_map>
 
 #include "kv_storage.h"
-#include "string_helpers.h"
 
 std::string kv_keys[7] = {"MagOffset",  "MagGain",  "AccOffset",   "AccGain",
                           "GyroOffset", "GyroGain", "OutputOffset"};
