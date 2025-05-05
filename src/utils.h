@@ -16,4 +16,7 @@ std::vector<float> split_and_strtof(std::string input,
 void set_calib_helper(const std::vector<float> &data, vector &offset);
 void set_calib_helper(const std::vector<float> &data, vector &offset,
                       vector &gain);
+
+float remap_yaw(float yaw, float d);
+
 #endif // __STRING_HELPERS

@@ -8,22 +8,6 @@
 #include "serial_comms.h"
 #include "utils.h"
 
-float remap_yaw(float yaw, float d) {
-    float overlap = 0;
-    float res = yaw + d;
-
-    if (res > 180) {
-        overlap = res - 180;
-        res = -180 + overlap;
-
-    } else if (res <= -180) {
-        overlap = res + 180;
-        res = 180 + overlap;
-    }
-
-    return res;
-}
-
 // TODO: Serial input & output use a lot of global variables, hard to refactor
 // into separate file.
 /*

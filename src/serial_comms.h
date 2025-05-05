@@ -36,8 +36,6 @@ static const int SERIAL_BAUDRATE =
 static const int SERIAL_READ_BUFFER_SIZE = 2048; // 2 kB
 static char serialBuffer[SERIAL_READ_BUFFER_SIZE];
 
-float remap_yaw(float yaw, float d);
-
 bool serial_handshake(void);
 std::string read_serial_input(void);
 void execute_command(std::vector<std::string> params);

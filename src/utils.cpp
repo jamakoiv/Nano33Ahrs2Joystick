@@ -108,3 +108,19 @@ void set_calib_helper(const std::vector<float> &data, MyVector::vector &offset,
         gain.z = data[5];
     }
 }
+
+float remap_yaw(float yaw, float d) {
+    float overlap = 0;
+    float res = yaw + d;
+
+    if (res > 180) {
+        overlap = res - 180;
+        res = -180 + overlap;
+
+    } else if (res <= -180) {
+        overlap = res + 180;
+        res = 180 + overlap;
+    }
+
+    return res;
+}
