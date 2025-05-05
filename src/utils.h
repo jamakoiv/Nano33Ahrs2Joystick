@@ -1,5 +1,5 @@
 
-#ifndef __STRING_HELPERS__
+#ifndef __UTILS__
 
 #include <string>
 #include <vector>
@@ -19,4 +19,4 @@ void set_calib_helper(const std::vector<float> &data, vector &offset,
 
 float remap_yaw(float yaw, float d);
 
-#endif // __STRING_HELPERS
+#endif // __UTILS__
