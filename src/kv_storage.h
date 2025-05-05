@@ -9,13 +9,13 @@ using MyVector::vector;
 // NOTE: Enum is declared here, but the strings are declared in the cpp-file.
 
 enum {
-  cal_mag_offset,
-  cal_mag_gain,
-  cal_acc_offset,
-  cal_acc_gain,
-  cal_gyro_offset,
-  cal_gyro_gain,
-  cal_euler_output_offset
+    cal_mag_offset,
+    cal_mag_gain,
+    cal_acc_offset,
+    cal_acc_gain,
+    cal_gyro_offset,
+    cal_gyro_gain,
+    cal_euler_output_offset
 };
 
 // std::string kv_keys[7] = {"MagOffset", "MagGain", "AccOffset", "AccGain",

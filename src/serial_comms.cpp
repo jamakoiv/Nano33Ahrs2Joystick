@@ -9,19 +9,19 @@
 #include "string_helpers.h"
 
 float remap_yaw(float yaw, float d) {
-  float overlap = 0;
-  float res = yaw + d;
+    float overlap = 0;
+    float res = yaw + d;
 
-  if (res > 180) {
-    overlap = res - 180;
-    res = -180 + overlap;
+    if (res > 180) {
+        overlap = res - 180;
+        res = -180 + overlap;
 
-  } else if (res <= -180) {
-    overlap = res + 180;
-    res = 180 + overlap;
-  }
+    } else if (res <= -180) {
+        overlap = res + 180;
+        res = 180 + overlap;
+    }
 
-  return res;
+    return res;
 }
 
 // TODO: Serial input & output use a lot of global variables, hard to refactor
@@ -45,17 +45,17 @@ std::map<uint8_t, output_func_ptr_t> output_functions = {
 };
 
 void printAHRSeuler(void) {
-  const FusionEuler euler =
-      FusionQuaternionToEuler(FusionAhrsGetQuaternion(&AHRS));
+    const FusionEuler euler =
+        FusionQuaternionToEuler(FusionAhrsGetQuaternion(&AHRS));
 
-  std::string str =
-      "Roll: " + std::to_string(euler.angle.roll) + ", " +
-      "Pitch: " + std::to_string(euler.angle.pitch) + ", " +
-      "Yaw: " + std::to_string(euler.angle.yaw) + ", " +
-      "corr: " + std::to_string(remap_yaw(euler.angle.yaw, AxisOffset.x)) +
-      ", " + "Xoff: " + std::to_string(AxisOffset.x) + ", " +
-      "Compass: " + std::to_string(CompassHeading);
-  Serial.println(str.c_str());
+    std::string str =
+        "Roll: " + std::to_string(euler.angle.roll) + ", " +
+        "Pitch: " + std::to_string(euler.angle.pitch) + ", " +
+        "Yaw: " + std::to_string(euler.angle.yaw) + ", " +
+        "corr: " + std::to_string(remap_yaw(euler.angle.yaw, AxisOffset.x)) +
+        ", " + "Xoff: " + std::to_string(AxisOffset.x) + ", " +
+        "Compass: " + std::to_string(CompassHeading);
+    Serial.println(str.c_str());
 }
 
 void printNothing(void) { return; }
@@ -69,13 +69,13 @@ void printMagRaw(void) { Serial.println(rawMag.to_string().c_str()); }
 void printGyroRaw(void) { Serial.println(rawGyro.to_string().c_str()); }
 
 void print_output(void) {
-  auto it = output_functions.find(SerialOutputMode);
-  if (it == output_functions.end()) {
-    Serial.println("Output command not found.");
-  } else {
-    (it->second)();
-  }
-  // output_functions[SerialOutputMode]();
+    auto it = output_functions.find(SerialOutputMode);
+    if (it == output_functions.end()) {
+        Serial.println("Output command not found.");
+    } else {
+        (it->second)();
+    }
+    // output_functions[SerialOutputMode]();
 }
 /*
 -------------------- END OF SERIAL OUTPUT PART ------------------
@@ -109,172 +109,173 @@ std::map<uint8_t, input_func_ptr_t> input_functions = {
     {SERIAL_RESET_KVSTORE, &kv_store_reset}};
 
 bool serial_handshake(void) {
-  /*
-    Call and response.
-  */
-  static char serialBuffer[SERIAL_READ_BUFFER_SIZE];
+    /*
+      Call and response.
+    */
+    static char serialBuffer[SERIAL_READ_BUFFER_SIZE];
 
-  std::strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
-  if (!Serial.available()) {
-    Serial.println("No serial data.");
-    return false;
-  }
+    std::strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
+    if (!Serial.available()) {
+        Serial.println("No serial data.");
+        return false;
+    }
 
-  Serial.readBytes(serialBuffer, SERIAL_HANDSHAKE.length());
-  if (std::string(serialBuffer) == SERIAL_HANDSHAKE) {
-    Serial.println(SERIAL_HANDSHAKE.c_str());
-    return true;
-  } else {
-    Serial.println("Not a handshake.");
-    return false;
-  }
+    Serial.readBytes(serialBuffer, SERIAL_HANDSHAKE.length());
+    if (std::string(serialBuffer) == SERIAL_HANDSHAKE) {
+        Serial.println(SERIAL_HANDSHAKE.c_str());
+        return true;
+    } else {
+        Serial.println("Not a handshake.");
+        return false;
+    }
 }
 
 std::string read_serial_input(void) {
-  /*
+    /*
 
-  */
+    */
 
-  strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
-  int bytes_read =
-      Serial.readBytesUntil(';', serialBuffer, SERIAL_READ_BUFFER_SIZE);
+    strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
+    int bytes_read =
+        Serial.readBytesUntil(';', serialBuffer, SERIAL_READ_BUFFER_SIZE);
 
-  if (bytes_read == 0) {
-    Serial.println("Zero bytes read.");
-    return std::string("");
-  } else {
-    Serial.println("Non-zero bytes read.");
-    return std::string(serialBuffer);
-  }
+    if (bytes_read == 0) {
+        Serial.println("Zero bytes read.");
+        return std::string("");
+    } else {
+        Serial.println("Non-zero bytes read.");
+        return std::string(serialBuffer);
+    }
 }
 
 void execute_command(std::vector<std::string> params) {
-  // Guard against inputs which would crash the program at the
-  // "(it->second)(params[1])"
-  if (params.size() == 1)
-    params.emplace_back(" ");
+    // Guard against inputs which would crash the program at the
+    // "(it->second)(params[1])"
+    if (params.size() == 1)
+        params.emplace_back(" ");
 
-  Serial.print("params[0]: ");
-  Serial.println(params[0].c_str());
+    Serial.print("params[0]: ");
+    Serial.println(params[0].c_str());
 
-  uint32_t command = static_cast<uint8_t>(strtol(params[0].c_str(), NULL, 16));
+    uint32_t command =
+        static_cast<uint8_t>(strtol(params[0].c_str(), NULL, 16));
 
-  auto it = input_functions.find(command);
-  if (it == input_functions.end()) {
-    Serial.print("Command not found: 0x");
-    Serial.println(command, HEX);
-  } else {
-    (it->second)(params[1]);
-  }
+    auto it = input_functions.find(command);
+    if (it == input_functions.end()) {
+        Serial.print("Command not found: 0x");
+        Serial.println(command, HEX);
+    } else {
+        (it->second)(params[1]);
+    }
 }
 
 void check_serial_input(void) {
-  /*
-    Check for commands in serial.
-  */
-  static const std::string OPTIONS_DELIMITER = ",";
+    /*
+      Check for commands in serial.
+    */
+    static const std::string OPTIONS_DELIMITER = ",";
 
-  std::strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
-  int n = Serial.readBytesUntil(';', serialBuffer, SERIAL_READ_BUFFER_SIZE);
-  Serial.flush();
-  Serial.println(n);
-  Serial.println(serialBuffer);
+    std::strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
+    int n = Serial.readBytesUntil(';', serialBuffer, SERIAL_READ_BUFFER_SIZE);
+    Serial.flush();
+    Serial.println(n);
+    Serial.println(serialBuffer);
 
-  delay(5000); // Small delay in case the received message is
-               // incomplete when we check Serial.available.
-               // Make larger if you want to send data manually via terminal.
+    delay(5000); // Small delay in case the received message is
+                 // incomplete when we check Serial.available.
+                 // Make larger if you want to send data manually via terminal.
 
-  // auto input = read_serial_input();
-  // auto input_params = split_input(input, OPTIONS_DELIMITER);
-  // execute_command(input_params);
+    // auto input = read_serial_input();
+    // auto input_params = split_input(input, OPTIONS_DELIMITER);
+    // execute_command(input_params);
 }
 
 void mag_set_calib(std::string input) {
-  set_calib_helper(split_and_strtof(input, ","), MagOffset, MagGain);
-  kv_store_save_calibration("MagOffset", MagOffset);
-  kv_store_save_calibration("MagGain", MagGain);
-  Serial.println("Calibration set.");
+    set_calib_helper(split_and_strtof(input, ","), MagOffset, MagGain);
+    kv_store_save_calibration("MagOffset", MagOffset);
+    kv_store_save_calibration("MagGain", MagGain);
+    Serial.println("Calibration set.");
 }
 
 void mag_get_calib(std::string input) {
-  SerialOutputMode = SERIAL_PRINT_NOTHING;
-  std::string str = "Magnetic offset (x,y,z): " + MagOffset.to_string() +
-                    "; Magnetic gain (x,y,z): " + MagGain.to_string();
-  Serial.println(str.c_str());
+    SerialOutputMode = SERIAL_PRINT_NOTHING;
+    std::string str = "Magnetic offset (x,y,z): " + MagOffset.to_string() +
+                      "; Magnetic gain (x,y,z): " + MagGain.to_string();
+    Serial.println(str.c_str());
 }
 
 void acc_set_calib(std::string input) {
-  set_calib_helper(split_and_strtof(input, ","), AccOffset, AccGain);
-  kv_store_save_calibration("AccOffset", AccOffset);
-  kv_store_save_calibration("AccGain", AccGain);
-  Serial.println("Calibration set.");
+    set_calib_helper(split_and_strtof(input, ","), AccOffset, AccGain);
+    kv_store_save_calibration("AccOffset", AccOffset);
+    kv_store_save_calibration("AccGain", AccGain);
+    Serial.println("Calibration set.");
 }
 
 void acc_get_calib(std::string input) {
-  SerialOutputMode = SERIAL_PRINT_NOTHING;
-  std::string str = "Accelerometer offset (x,y,z): " + AccOffset.to_string();
-  +"; Accelerometer gain (x,y,z): " + AccGain.to_string();
-  Serial.println(str.c_str());
+    SerialOutputMode = SERIAL_PRINT_NOTHING;
+    std::string str = "Accelerometer offset (x,y,z): " + AccOffset.to_string();
+    +"; Accelerometer gain (x,y,z): " + AccGain.to_string();
+    Serial.println(str.c_str());
 }
 
 void gyro_set_calib(std::string input) {
-  set_calib_helper(split_and_strtof(input, ","), GyroOffset, GyroGain);
-  kv_store_save_calibration("GyroOffset", GyroOffset);
-  kv_store_save_calibration("GyroGain", GyroGain);
-  Serial.println("Calibration set.");
+    set_calib_helper(split_and_strtof(input, ","), GyroOffset, GyroGain);
+    kv_store_save_calibration("GyroOffset", GyroOffset);
+    kv_store_save_calibration("GyroGain", GyroGain);
+    Serial.println("Calibration set.");
 }
 
 void gyro_get_calib(std::string input) {
-  SerialOutputMode = SERIAL_PRINT_NOTHING;
-  std::string str = "Gyroscope offset (x,y,z): " + GyroOffset.to_string();
-  +"; Gyroscope gain (x,y,z): " + GyroGain.to_string();
-  Serial.println(str.c_str());
+    SerialOutputMode = SERIAL_PRINT_NOTHING;
+    std::string str = "Gyroscope offset (x,y,z): " + GyroOffset.to_string();
+    +"; Gyroscope gain (x,y,z): " + GyroGain.to_string();
+    Serial.println(str.c_str());
 }
 
 void yaw_set_offset(std::string input) {
-  set_calib_helper(split_and_strtof(input, ","), AxisOffset);
-  kv_store_save_calibration("AxisOffset", AxisOffset);
-  Serial.println("Calibration set.");
+    set_calib_helper(split_and_strtof(input, ","), AxisOffset);
+    kv_store_save_calibration("AxisOffset", AxisOffset);
+    Serial.println("Calibration set.");
 }
 
 void yaw_get_offset(std::string input) {
-  SerialOutputMode = SERIAL_PRINT_NOTHING;
-  std::string str = "Axis Offset (yaw,pitch,roll): " + AxisOffset.to_string();
-  Serial.println(str.c_str());
+    SerialOutputMode = SERIAL_PRINT_NOTHING;
+    std::string str = "Axis Offset (yaw,pitch,roll): " + AxisOffset.to_string();
+    Serial.println(str.c_str());
 }
 
 /* functions for settings print output mode. */
 void set_print_nothing(std::string input) {
-  SerialOutputMode = SERIAL_PRINT_NOTHING;
-  Serial.println("Output-mode set to NOTHING.");
+    SerialOutputMode = SERIAL_PRINT_NOTHING;
+    Serial.println("Output-mode set to NOTHING.");
 }
 void set_print_ahrs(std::string input) {
-  SerialOutputMode = SERIAL_PRINT_AHRS;
-  Serial.println("Output-mode set to AHRS.");
+    SerialOutputMode = SERIAL_PRINT_AHRS;
+    Serial.println("Output-mode set to AHRS.");
 }
 void set_print_mag_raw(std::string input) {
-  SerialOutputMode = SERIAL_PRINT_MAG_RAW;
-  Serial.println("Output-mode set to MAGNETOMETER-RAW.");
+    SerialOutputMode = SERIAL_PRINT_MAG_RAW;
+    Serial.println("Output-mode set to MAGNETOMETER-RAW.");
 }
 void set_print_mag_calib(std::string input) {
-  SerialOutputMode = SERIAL_PRINT_MAG_CALIB;
-  Serial.println("Output-mode set to MAGNETOMETER-CALIBRATED.");
+    SerialOutputMode = SERIAL_PRINT_MAG_CALIB;
+    Serial.println("Output-mode set to MAGNETOMETER-CALIBRATED.");
 }
 void set_print_acc_raw(std::string input) {
-  SerialOutputMode = SERIAL_PRINT_ACC_RAW;
-  Serial.println("Output-mode set to ACCELEROMETER-RAW.");
+    SerialOutputMode = SERIAL_PRINT_ACC_RAW;
+    Serial.println("Output-mode set to ACCELEROMETER-RAW.");
 }
 void set_print_acc_calib(std::string input) {
-  SerialOutputMode = SERIAL_PRINT_ACC_CALIB;
-  Serial.println("Output-mode set to ACCELEROMETER-CALIBRATED.");
+    SerialOutputMode = SERIAL_PRINT_ACC_CALIB;
+    Serial.println("Output-mode set to ACCELEROMETER-CALIBRATED.");
 }
 void set_print_gyro_raw(std::string input) {
-  SerialOutputMode = SERIAL_PRINT_GYRO_RAW;
-  Serial.println("Output-mode set to GYROSCOPE-RAW.");
+    SerialOutputMode = SERIAL_PRINT_GYRO_RAW;
+    Serial.println("Output-mode set to GYROSCOPE-RAW.");
 }
 void set_print_gyro_calib(std::string input) {
-  SerialOutputMode = SERIAL_PRINT_GYRO_CALIB;
-  Serial.println("Output-mode set to GYROSCOPE-RAW.");
+    SerialOutputMode = SERIAL_PRINT_GYRO_CALIB;
+    Serial.println("Output-mode set to GYROSCOPE-RAW.");
 }
 /*
 -------------------- END OF SERIAL INPUT PART --------------------
