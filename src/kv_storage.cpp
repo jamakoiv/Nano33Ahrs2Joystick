@@ -4,7 +4,9 @@
 #include <stdint.h>
 #include <string>
 
+#include "ino_globals.h"
 #include "kv_storage.h"
+#include "utils.h"
 
 std::string kv_keys[7] = {"MagOffset",  "MagGain",  "AccOffset",   "AccGain",
                           "GyroOffset", "GyroGain", "OutputOffset"};

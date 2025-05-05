@@ -1,11 +1,7 @@
 #ifndef __KV_STORAGE__
 
 #include "MyVector/MyVector.h"
-#include "ino_globals.h"
-#include "utils.h"
 #include <string>
-
-using MyVector::vector;
 
 // NOTE: Enum is declared here, but the strings are declared in the cpp-file.
 
@@ -25,9 +21,10 @@ enum {
 extern std::string kv_keys[7];
 
 bool kv_store_initialized(void);
-bool kv_store_save_calibration(const std::string &key, const vector &data);
-bool kv_store_load_calibration(const std::string &key, vector &calib,
-                               vector &factory_default);
+bool kv_store_save_calibration(const std::string &key,
+                               const MyVector::vector &data);
+bool kv_store_load_calibration(const std::string &key, MyVector::vector &calib,
+                               MyVector::vector &factory_default);
 void kv_store_reset(std::string input);
 
 #endif // !f __KV_STORAGE__

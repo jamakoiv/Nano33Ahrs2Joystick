@@ -1,7 +1,5 @@
 #include <Serial.h>
 #include <sstream>
-#include <string>
-#include <vector>
 
 #include "utils.h"
 
