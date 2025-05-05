@@ -29,9 +29,12 @@ enum {
   SERIAL_RESET_FACTORY_DEFAULTS = 0x60,
   SERIAL_RESET_KVSTORE = 0x70,
 
-  SERIAL_BAUDRATE = 57600,
-  SERIAL_READ_BUFFER_SIZE = 1024,
 };
+
+static const int SERIAL_BAUDRATE =
+    57600; // Not actually used when using USB-serial
+static const int SERIAL_READ_BUFFER_SIZE = 2048; // 2 kB
+static char serialBuffer[SERIAL_READ_BUFFER_SIZE];
 
 float remap_yaw(float yaw, float d);
 

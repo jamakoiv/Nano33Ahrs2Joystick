@@ -263,8 +263,10 @@ void loop() {
     //Serial.println(reinterpret_cast<int>(sendBlocking_ptr));
   }
 
-  if (millis() - serial_input_timer > 2000) {
-    serial_input_timer = millis();
+  if (Serial.available()) {
+    Serial.println("Serial available");
+
+    // serial_input_timer = millis();
     check_serial_input();
   }
 }

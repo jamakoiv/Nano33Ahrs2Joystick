@@ -134,7 +134,6 @@ std::string read_serial_input(void) {
   /*
 
   */
-  static char serialBuffer[SERIAL_READ_BUFFER_SIZE];
 
   strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
   int bytes_read =
@@ -175,17 +174,19 @@ void check_serial_input(void) {
   */
   static const std::string OPTIONS_DELIMITER = ",";
 
-  if (!serial_handshake()) {
-    return;
-  }
+  std::strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
+  int n = Serial.readBytesUntil(';', serialBuffer, SERIAL_READ_BUFFER_SIZE);
+  Serial.flush();
+  Serial.println(n);
+  Serial.println(serialBuffer);
 
   delay(5000); // Small delay in case the received message is
                // incomplete when we check Serial.available.
                // Make larger if you want to send data manually via terminal.
 
-  auto input = read_serial_input();
-  auto input_params = split_input(input, OPTIONS_DELIMITER);
-  execute_command(input_params);
+  // auto input = read_serial_input();
+  // auto input_params = split_input(input, OPTIONS_DELIMITER);
+  // execute_command(input_params);
 }
 
 void mag_set_calib(std::string input) {
