@@ -92,24 +92,6 @@ std::map<uint8_t, input_func_ptr_t> input_functions = {
 
     {SERIAL_RESET_KVSTORE, &kv_store_reset}};
 
-std::string read_serial_input(void) {
-    /*
-
-    */
-
-    strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
-    int bytes_read =
-        Serial.readBytesUntil(';', serialBuffer, SERIAL_READ_BUFFER_SIZE);
-
-    if (bytes_read == 0) {
-        Serial.println("Zero bytes read.");
-        return std::string("");
-    } else {
-        Serial.println("Non-zero bytes read.");
-        return std::string(serialBuffer);
-    }
-}
-
 void execute_command(std::vector<std::string> params) {
     // Guard against inputs which would crash the program at the
     // "(it->second)(params[1])"
@@ -152,15 +134,27 @@ void check_serial_input(void) {
         std::strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
     }
 
-    int i = 0;
     for (std::string s : lines) {
-        Serial.print("i: ");
-        Serial.print(i);
-        Serial.print(", str: ");
-        Serial.print(s.c_str());
-        Serial.print(", cmd: ");
-        Serial.println(std::strtol(s.c_str(), NULL, 16));
-        i++;
+        std::vector<std::string> cmd_tokens = split(s, ',');
+        std::vector<float> cmd_params;
+
+        int cmd_id = std::strtol(cmd_tokens[0].c_str(), NULL, 16);
+        cmd_tokens.erase(cmd_tokens.begin());
+        for (std::string token : cmd_tokens) {
+            cmd_params.push_back(std::strtof(token.c_str(), NULL));
+        }
+        commands.push_back({cmd_id, cmd_params});
+    }
+
+    for (command_t cmd : commands) {
+        Serial.print("\ncmd: ");
+        Serial.print(cmd.id);
+        Serial.print(", params: ");
+
+        for (float p : cmd.params) {
+            Serial.print(p);
+            Serial.print(", ");
+        }
     }
 
     delay(5000); // Small delay in case the received message is
@@ -173,7 +167,7 @@ void check_serial_input(void) {
 }
 
 void mag_set_calib(std::string input) {
-    set_calib_helper(split_and_strtof(input, ","), MagOffset, MagGain);
+    // set_calib_helper(split_and_strtof(input, ","), MagOffset, MagGain);
     kv_store_save_calibration("MagOffset", MagOffset);
     kv_store_save_calibration("MagGain", MagGain);
     Serial.println("Calibration set.");
