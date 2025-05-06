@@ -4,12 +4,10 @@
 #include <string>
 #include <vector>
 
-// TODO: Why are some constants as string and others as enum/int?
-
-static const std::string SERIAL_HANDSHAKE = "0x05";
-static const std::string SERIAL_DONE = "0x06";
-
 enum {
+    SERIAL_START = 0x0A,
+    SERIAL_DONE = 0x0F,
+
     SERIAL_PRINT_NOTHING = 0x10,
     SERIAL_PRINT_MAG_RAW = 0x11,
     SERIAL_PRINT_MAG_CALIB = 0x12,
@@ -28,7 +26,6 @@ enum {
 
     SERIAL_RESET_FACTORY_DEFAULTS = 0x60,
     SERIAL_RESET_KVSTORE = 0x70,
-
 };
 
 static const int SERIAL_BAUDRATE =

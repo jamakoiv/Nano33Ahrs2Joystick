@@ -92,28 +92,6 @@ std::map<uint8_t, input_func_ptr_t> input_functions = {
 
     {SERIAL_RESET_KVSTORE, &kv_store_reset}};
 
-bool serial_handshake(void) {
-    /*
-      Call and response.
-    */
-    static char serialBuffer[SERIAL_READ_BUFFER_SIZE];
-
-    std::strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
-    if (!Serial.available()) {
-        Serial.println("No serial data.");
-        return false;
-    }
-
-    Serial.readBytes(serialBuffer, SERIAL_HANDSHAKE.length());
-    if (std::string(serialBuffer) == SERIAL_HANDSHAKE) {
-        Serial.println(SERIAL_HANDSHAKE.c_str());
-        return true;
-    } else {
-        Serial.println("Not a handshake.");
-        return false;
-    }
-}
-
 std::string read_serial_input(void) {
     /*
 
@@ -153,17 +131,37 @@ void execute_command(std::vector<std::string> params) {
     }
 }
 
+typedef struct command_t {
+    int id;
+    std::vector<float> params;
+};
+
 void check_serial_input(void) {
     /*
       Check for commands in serial.
     */
-    static const std::string OPTIONS_DELIMITER = ",";
+    static const std::string COMMAND_DELIMITER = ";";
+    static const std::string PARAMETER_DELIMITER = ",";
 
     std::strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
-    int n = Serial.readBytesUntil(';', serialBuffer, SERIAL_READ_BUFFER_SIZE);
-    Serial.flush();
-    Serial.println(n);
-    Serial.println(serialBuffer);
+    std::vector<std::string> lines;
+    std::vector<command_t> commands;
+
+    while (Serial.readBytesUntil(';', serialBuffer, SERIAL_READ_BUFFER_SIZE)) {
+        lines.push_back(serialBuffer);
+        std::strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
+    }
+
+    int i = 0;
+    for (std::string s : lines) {
+        Serial.print("i: ");
+        Serial.print(i);
+        Serial.print(", str: ");
+        Serial.print(s.c_str());
+        Serial.print(", cmd: ");
+        Serial.println(std::strtol(s.c_str(), NULL, 16));
+        i++;
+    }
 
     delay(5000); // Small delay in case the received message is
                  // incomplete when we check Serial.available.
