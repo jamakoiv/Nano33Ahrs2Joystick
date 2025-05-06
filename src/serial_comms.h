@@ -28,15 +28,18 @@ enum {
     SERIAL_RESET_KVSTORE = 0x70,
 };
 
+typedef struct command_t {
+    int id;
+    std::vector<float> params;
+};
+
 static const int SERIAL_BAUDRATE =
     57600; // Not actually used when using USB-serial
 static const int SERIAL_READ_BUFFER_SIZE = 2048; // 2 kB
 static char serialBuffer[SERIAL_READ_BUFFER_SIZE];
 
-bool serial_handshake(void);
-std::string read_serial_input(void);
-void execute_command(std::vector<std::string> params);
-void check_serial_input(void);
+void execute_commands(std::vector<command_t> &commands);
+std::vector<command_t> check_serial_input(void);
 
 void printAHRSeuler(void);
 void printNothing(void);
@@ -48,22 +51,25 @@ void printMagRaw(void);
 void printGyroRaw(void);
 void print_output(void);
 
-void mag_set_calib(std::string input);
-void mag_get_calib(std::string input);
-void acc_set_calib(std::string input);
-void acc_get_calib(std::string input);
-void gyro_set_calib(std::string input);
-void gyro_get_calib(std::string input);
+void serial_start(std::vector<float> params);
+void serial_done(std::vector<float> params);
 
-void set_print_nothing(std::string input);
-void set_print_ahrs(std::string input);
-void set_print_mag_raw(std::string input);
-void set_print_mag_calib(std::string input);
-void set_print_acc_raw(std::string input);
-void set_print_acc_calib(std::string input);
-void set_print_gyro_raw(std::string input);
-void set_print_gyro_calib(std::string input);
+void mag_set_calib(std::vector<float> params);
+void mag_get_calib(std::vector<float> params);
+void acc_set_calib(std::vector<float> params);
+void acc_get_calib(std::vector<float> params);
+void gyro_set_calib(std::vector<float> params);
+void gyro_get_calib(std::vector<float> params);
 
-void kv_store_reset(std::string input);
+void set_print_nothing(std::vector<float> params);
+void set_print_ahrs(std::vector<float> params);
+void set_print_mag_raw(std::vector<float> params);
+void set_print_mag_calib(std::vector<float> params);
+void set_print_acc_raw(std::vector<float> params);
+void set_print_acc_calib(std::vector<float> params);
+void set_print_gyro_raw(std::vector<float> params);
+void set_print_gyro_calib(std::vector<float> params);
+
+void kv_store_reset(std::vector<float> params);
 
 #endif

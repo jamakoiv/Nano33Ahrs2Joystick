@@ -70,8 +70,11 @@ void print_output(void) {
 -------------------- SERIAL INPUT PART --------------------
 */
 
-using input_func_ptr_t = void (*)(std::string input);
+using input_func_ptr_t = void (*)(std::vector<float> params);
 std::map<uint8_t, input_func_ptr_t> input_functions = {
+    {SERIAL_START, &serial_start},
+    {SERIAL_DONE, &serial_done},
+
     {SERIAL_MAG_SET_CALIB, &mag_set_calib},
     {SERIAL_MAG_GET_CALIB, &mag_get_calib},
 
@@ -92,33 +95,20 @@ std::map<uint8_t, input_func_ptr_t> input_functions = {
 
     {SERIAL_RESET_KVSTORE, &kv_store_reset}};
 
-void execute_command(std::vector<std::string> params) {
-    // Guard against inputs which would crash the program at the
-    // "(it->second)(params[1])"
-    if (params.size() == 1)
-        params.emplace_back(" ");
+void execute_commands(std::vector<command_t> &commands) {
+    for (command_t cmd : commands) {
 
-    Serial.print("params[0]: ");
-    Serial.println(params[0].c_str());
-
-    uint32_t command =
-        static_cast<uint8_t>(strtol(params[0].c_str(), NULL, 16));
-
-    auto it = input_functions.find(command);
-    if (it == input_functions.end()) {
-        Serial.print("Command not found: 0x");
-        Serial.println(command, HEX);
-    } else {
-        (it->second)(params[1]);
+        auto it = input_functions.find(cmd.id);
+        if (it == input_functions.end()) {
+            Serial.print("Command id not found: ");
+            Serial.println(cmd.id);
+        } else {
+            it->second(cmd.params);
+        }
     }
 }
 
-typedef struct command_t {
-    int id;
-    std::vector<float> params;
-};
-
-void check_serial_input(void) {
+std::vector<command_t> check_serial_input(void) {
     /*
       Check for commands in serial.
     */
@@ -157,99 +147,104 @@ void check_serial_input(void) {
         }
     }
 
+    return commands;
+
     delay(5000); // Small delay in case the received message is
                  // incomplete when we check Serial.available.
                  // Make larger if you want to send data manually via terminal.
-
-    // auto input = read_serial_input();
-    // auto input_params = split_input(input, OPTIONS_DELIMITER);
-    // execute_command(input_params);
 }
 
-void mag_set_calib(std::string input) {
-    // set_calib_helper(split_and_strtof(input, ","), MagOffset, MagGain);
+void serial_start(std::vector<float> params) {
+    Serial.println("Serial start command.");
+}
+void serial_done(std::vector<float> params) {
+    Serial.println("Serial done command.");
+}
+
+void mag_set_calib(std::vector<float> params) {
+    set_calib_helper(params, MagOffset, MagGain);
     kv_store_save_calibration("MagOffset", MagOffset);
     kv_store_save_calibration("MagGain", MagGain);
     Serial.println("Calibration set.");
 }
 
-void mag_get_calib(std::string input) {
+void mag_get_calib(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
     std::string str = "Magnetic offset (x,y,z): " + MagOffset.to_string() +
                       "; Magnetic gain (x,y,z): " + MagGain.to_string();
     Serial.println(str.c_str());
 }
 
-void acc_set_calib(std::string input) {
-    set_calib_helper(split_and_strtof(input, ","), AccOffset, AccGain);
+void acc_set_calib(std::vector<float> params) {
+    set_calib_helper(params, AccOffset, AccGain);
     kv_store_save_calibration("AccOffset", AccOffset);
     kv_store_save_calibration("AccGain", AccGain);
     Serial.println("Calibration set.");
 }
 
-void acc_get_calib(std::string input) {
+void acc_get_calib(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
     std::string str = "Accelerometer offset (x,y,z): " + AccOffset.to_string();
     +"; Accelerometer gain (x,y,z): " + AccGain.to_string();
     Serial.println(str.c_str());
 }
 
-void gyro_set_calib(std::string input) {
-    set_calib_helper(split_and_strtof(input, ","), GyroOffset, GyroGain);
+void gyro_set_calib(std::vector<float> params) {
+    set_calib_helper(params, GyroOffset, GyroGain);
     kv_store_save_calibration("GyroOffset", GyroOffset);
     kv_store_save_calibration("GyroGain", GyroGain);
     Serial.println("Calibration set.");
 }
 
-void gyro_get_calib(std::string input) {
+void gyro_get_calib(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
     std::string str = "Gyroscope offset (x,y,z): " + GyroOffset.to_string();
     +"; Gyroscope gain (x,y,z): " + GyroGain.to_string();
     Serial.println(str.c_str());
 }
 
-void yaw_set_offset(std::string input) {
-    set_calib_helper(split_and_strtof(input, ","), AxisOffset);
+void yaw_set_offset(std::vector<float> params) {
+    set_calib_helper(params, AxisOffset);
     kv_store_save_calibration("AxisOffset", AxisOffset);
     Serial.println("Calibration set.");
 }
 
-void yaw_get_offset(std::string input) {
+void yaw_get_offset(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
     std::string str = "Axis Offset (yaw,pitch,roll): " + AxisOffset.to_string();
     Serial.println(str.c_str());
 }
 
 /* functions for settings print output mode. */
-void set_print_nothing(std::string input) {
+void set_print_nothing(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
     Serial.println("Output-mode set to NOTHING.");
 }
-void set_print_ahrs(std::string input) {
+void set_print_ahrs(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_AHRS;
     Serial.println("Output-mode set to AHRS.");
 }
-void set_print_mag_raw(std::string input) {
+void set_print_mag_raw(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_MAG_RAW;
     Serial.println("Output-mode set to MAGNETOMETER-RAW.");
 }
-void set_print_mag_calib(std::string input) {
+void set_print_mag_calib(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_MAG_CALIB;
     Serial.println("Output-mode set to MAGNETOMETER-CALIBRATED.");
 }
-void set_print_acc_raw(std::string input) {
+void set_print_acc_raw(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_ACC_RAW;
     Serial.println("Output-mode set to ACCELEROMETER-RAW.");
 }
-void set_print_acc_calib(std::string input) {
+void set_print_acc_calib(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_ACC_CALIB;
     Serial.println("Output-mode set to ACCELEROMETER-CALIBRATED.");
 }
-void set_print_gyro_raw(std::string input) {
+void set_print_gyro_raw(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_GYRO_RAW;
     Serial.println("Output-mode set to GYROSCOPE-RAW.");
 }
-void set_print_gyro_calib(std::string input) {
+void set_print_gyro_calib(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_GYRO_CALIB;
     Serial.println("Output-mode set to GYROSCOPE-RAW.");
 }

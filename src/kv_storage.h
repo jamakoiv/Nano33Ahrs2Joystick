@@ -2,6 +2,7 @@
 
 #include "MyVector/MyVector.h"
 #include <string>
+#include <vector>
 
 // NOTE: Enum is declared here, but the strings are declared in the cpp-file.
 
@@ -25,6 +26,6 @@ bool kv_store_save_calibration(const std::string &key,
                                const MyVector::vector &data);
 bool kv_store_load_calibration(const std::string &key, MyVector::vector &calib,
                                MyVector::vector &factory_default);
-void kv_store_reset(std::string input);
+void kv_store_reset(std::vector<float> params);
 
 #endif // !f __KV_STORAGE__

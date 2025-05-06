@@ -262,6 +262,7 @@ void loop() {
     Serial.println("Serial available");
 
     // serial_input_timer = millis();
-    check_serial_input();
+    auto commands = check_serial_input();
+    execute_commands(commands);
   }
 }

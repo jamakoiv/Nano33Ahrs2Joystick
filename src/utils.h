@@ -9,7 +9,7 @@
 std::vector<std::string> split(const std::string &s, char delim);
 std::vector<std::string> split_between(const std::string &s, char start_char,
                                        char stop_char);
-std::vector<std::string> split_input(std::string input,
+std::vector<std::string> split_input(std::vector<float> params,
                                      const std::string &delimiter);
 std::vector<float> split_and_strtof(std::string input,
                                     const std::string &delimiter);

@@ -93,7 +93,7 @@ bool kv_store_load_calibration(const std::string &key, vector &calib,
 
 // kv_store_reset function has to match the 'std::map<...> input_functions'
 // signature.
-void kv_store_reset(std::string input) {
+void kv_store_reset(std::vector<float> params) {
 
     // TODO: kv_store_initialized calls kv_reset as well.
     kv_reset(kv_path.c_str());
