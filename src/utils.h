@@ -6,6 +6,8 @@
 
 #include "MyVector/MyVector.h"
 
+std::string int_to_hex(int i);
+
 std::vector<std::string> split(const std::string &s, char delim);
 std::vector<std::string> split_between(const std::string &s, char start_char,
                                        char stop_char);

@@ -95,19 +95,6 @@ std::map<uint8_t, input_func_ptr_t> input_functions = {
 
     {SERIAL_RESET_KVSTORE, &kv_store_reset}};
 
-void execute_commands(std::vector<command_t> &commands) {
-    for (command_t cmd : commands) {
-
-        auto it = input_functions.find(cmd.id);
-        if (it == input_functions.end()) {
-            Serial.print("Command id not found: ");
-            Serial.println(cmd.id);
-        } else {
-            it->second(cmd.params);
-        }
-    }
-}
-
 std::vector<command_t> check_serial_input(void) {
     /*
       Check for commands in serial.
@@ -136,77 +123,87 @@ std::vector<command_t> check_serial_input(void) {
         commands.push_back({cmd_id, cmd_params});
     }
 
-    for (command_t cmd : commands) {
-        Serial.print("\ncmd: ");
-        Serial.print(cmd.id);
-        Serial.print(", params: ");
+    return commands;
+}
 
-        for (float p : cmd.params) {
-            Serial.print(p);
-            Serial.print(", ");
+void execute_commands(std::vector<command_t> &commands) {
+    for (command_t cmd : commands) {
+
+        auto it = input_functions.find(cmd.id);
+        if (it == input_functions.end()) {
+            Serial.print("Command id not found: ");
+            Serial.println(cmd.id);
+        } else {
+            it->second(cmd.params);
         }
     }
-
-    return commands;
-
-    delay(5000); // Small delay in case the received message is
-                 // incomplete when we check Serial.available.
-                 // Make larger if you want to send data manually via terminal.
 }
 
 void serial_start(std::vector<float> params) {
-    Serial.println("Serial start command.");
+    std::string s = int_to_hex(SERIAL_START) + ", Serial start.";
+    Serial.println(s.c_str());
 }
 void serial_done(std::vector<float> params) {
-    Serial.println("Serial done command.");
+    std::string s = int_to_hex(SERIAL_DONE) + ", Serial done.";
+    Serial.println(s.c_str());
 }
 
 void mag_set_calib(std::vector<float> params) {
     set_calib_helper(params, MagOffset, MagGain);
     kv_store_save_calibration("MagOffset", MagOffset);
     kv_store_save_calibration("MagGain", MagGain);
-    Serial.println("Calibration set.");
+
+    std::string s = int_to_hex(SERIAL_MAG_SET_CALIB) + ", Calibration set.";
+    Serial.println(s.c_str());
 }
 
 void mag_get_calib(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
-    std::string str = "Magnetic offset (x,y,z): " + MagOffset.to_string() +
-                      "; Magnetic gain (x,y,z): " + MagGain.to_string();
-    Serial.println(str.c_str());
+    std::string s = int_to_hex(SERIAL_MAG_SET_CALIB) +
+                    ", Magnetic offset (x,y,z): " + MagOffset.to_string() +
+                    ", Magnetic gain (x,y,z): " + MagGain.to_string();
+    Serial.println(s.c_str());
 }
 
 void acc_set_calib(std::vector<float> params) {
     set_calib_helper(params, AccOffset, AccGain);
     kv_store_save_calibration("AccOffset", AccOffset);
     kv_store_save_calibration("AccGain", AccGain);
-    Serial.println("Calibration set.");
+
+    std::string s = int_to_hex(SERIAL_ACC_SET_CALIB) + ", Calibration set.";
+    Serial.println(s.c_str());
 }
 
 void acc_get_calib(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
-    std::string str = "Accelerometer offset (x,y,z): " + AccOffset.to_string();
-    +"; Accelerometer gain (x,y,z): " + AccGain.to_string();
-    Serial.println(str.c_str());
+    std::string s = int_to_hex(SERIAL_MAG_GET_CALIB) +
+                    ", Accelerometer offset (x,y,z): " + AccOffset.to_string();
+    +", Accelerometer gain (x,y,z): " + AccGain.to_string();
+    Serial.println(s.c_str());
 }
 
 void gyro_set_calib(std::vector<float> params) {
     set_calib_helper(params, GyroOffset, GyroGain);
     kv_store_save_calibration("GyroOffset", GyroOffset);
     kv_store_save_calibration("GyroGain", GyroGain);
-    Serial.println("Calibration set.");
+
+    std::string s = int_to_hex(SERIAL_GYRO_SET_CALIB) + ", Calibration set.";
+    Serial.println(s.c_str());
 }
 
 void gyro_get_calib(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
-    std::string str = "Gyroscope offset (x,y,z): " + GyroOffset.to_string();
-    +"; Gyroscope gain (x,y,z): " + GyroGain.to_string();
-    Serial.println(str.c_str());
+    std::string s = int_to_hex(SERIAL_GYRO_GET_CALIB) +
+                    ", Gyroscope offset (x,y,z): " + GyroOffset.to_string();
+    +", Gyroscope gain (x,y,z): " + GyroGain.to_string();
+    Serial.println(s.c_str());
 }
 
 void yaw_set_offset(std::vector<float> params) {
     set_calib_helper(params, AxisOffset);
     kv_store_save_calibration("AxisOffset", AxisOffset);
-    Serial.println("Calibration set.");
+
+    Serial.println("Yaw offset set.");
 }
 
 void yaw_get_offset(std::vector<float> params) {

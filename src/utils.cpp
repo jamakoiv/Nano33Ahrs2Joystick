@@ -1,6 +1,14 @@
 #include "utils.h"
 #include <Serial.h>
+#include <iomanip>
 #include <sstream>
+
+std::string int_to_hex(int i) {
+    std::stringstream ss;
+    ss << "0x" << std::setfill('0') << std::setw(2) << std::hex << i;
+
+    return ss.str();
+}
 
 std::vector<std::string> split(const std::string &s, char delim) {
     std::vector<std::string> res;
@@ -94,6 +102,11 @@ void set_calib_helper(const std::vector<float> &data, MyVector::vector &offset,
     /*
 
     */
+
+    for (float f : data) {
+        Serial.println(f);
+    }
+
     if (data.size() < 6) {
         Serial.println("Invalid input: Could not parse 6 floats from input.");
     } else {
