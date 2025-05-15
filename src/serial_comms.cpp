@@ -108,7 +108,7 @@ std::vector<command_t> check_serial_input(void) {
     while (int bytes_read = Serial.readBytesUntil(';', serialBuffer,
                                                   SERIAL_READ_BUFFER_SIZE)) {
         command_t cmd;
-        parse_command(cmd, serialBuffer, bytes_read);
+        bytes2command(cmd, serialBuffer, bytes_read);
         commands.push_back(cmd);
 
         // empty the buffer.
@@ -131,16 +131,18 @@ void execute_commands(std::vector<command_t> &commands) {
     }
 }
 
-void parse_command(command_t &cmd, char *msg, int bytes_in_buffer) {
+void bytes2command(command_t &cmd, const char *msg, int bytes_in_buffer) {
     /*
      * Parse command send as array of bytes into command_t struct.
      * Sender side should pack the data in python struct format "<BBfff...".
      */
+
+    // NOTE: msg is defined as const char so you can also feed parameter
+    // from std::string.c_str().
     uint8_t n_header_bytes = 2;
     uint8_t n_data_bytes;
 
-    char *m = const_cast<char *>(msg);
-    uint8_t *p = reinterpret_cast<uint8_t *>(m);
+    uint8_t *p = reinterpret_cast<uint8_t *>(const_cast<char *>(msg));
     cmd.id = *p;
     p++;
     cmd.n_bytes = *p;
@@ -158,6 +160,28 @@ void parse_command(command_t &cmd, char *msg, int bytes_in_buffer) {
         cmd.params.push_back(*f);
         f++;
     }
+}
+
+void command2bytes(command_t &cmd, uint8_t *buffer) {
+    /*
+     * Parse command into array of bytes for sending over serial.
+     */
+    uint8_t stop_byte = ';';
+    uint8_t *p = buffer;
+
+    *p = cmd.id;
+    p++;
+    *p = cmd.n_bytes;
+    p++;
+
+    float *f = reinterpret_cast<float *>(p);
+    for (float param : cmd.params) {
+        *f = param;
+        f++;
+    }
+
+    p = reinterpret_cast<uint8_t *>(f);
+    *p = stop_byte;
 }
 
 void serial_start(std::vector<float> params) {

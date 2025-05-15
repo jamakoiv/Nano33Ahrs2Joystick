@@ -42,7 +42,8 @@ static char serialBuffer[SERIAL_READ_BUFFER_SIZE];
 
 void execute_commands(std::vector<command_t> &commands);
 std::vector<command_t> check_serial_input(void);
-void parse_command(command_t &cmd, char *bfr, int bytes_in_buffer);
+void bytes2command(command_t &cmd, const char *buffer, int bytes_in_buffer);
+void command2bytes(command_t &cmd, uint8_t *buffer);
 
 void printAHRSeuler(void);
 void printNothing(void);
