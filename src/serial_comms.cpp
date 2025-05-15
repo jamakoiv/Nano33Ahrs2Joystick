@@ -103,24 +103,16 @@ std::vector<command_t> check_serial_input(void) {
     static const std::string PARAMETER_DELIMITER = ",";
 
     std::strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
-    std::vector<std::string> lines;
     std::vector<command_t> commands;
 
-    while (Serial.readBytesUntil(';', serialBuffer, SERIAL_READ_BUFFER_SIZE)) {
-        lines.push_back(serialBuffer);
+    while (int bytes_read = Serial.readBytesUntil(';', serialBuffer,
+                                                  SERIAL_READ_BUFFER_SIZE)) {
+        command_t cmd;
+        parse_command(cmd, serialBuffer, bytes_read);
+        commands.push_back(cmd);
+
+        // empty the buffer.
         std::strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
-    }
-
-    for (std::string s : lines) {
-        std::vector<std::string> cmd_tokens = split(s, ',');
-        std::vector<float> cmd_params;
-
-        int cmd_id = std::strtol(cmd_tokens[0].c_str(), NULL, 16);
-        cmd_tokens.erase(cmd_tokens.begin());
-        for (std::string token : cmd_tokens) {
-            cmd_params.push_back(std::strtof(token.c_str(), NULL));
-        }
-        commands.push_back({cmd_id, cmd_params});
     }
 
     return commands;
@@ -131,11 +123,40 @@ void execute_commands(std::vector<command_t> &commands) {
 
         auto it = input_functions.find(cmd.id);
         if (it == input_functions.end()) {
-            Serial.print("Command id not found: ");
-            Serial.println(cmd.id);
+            Serial.print("Command id not found: 0x");
+            Serial.println(cmd.id, HEX);
         } else {
             it->second(cmd.params);
         }
+    }
+}
+
+void parse_command(command_t &cmd, char *msg, int bytes_in_buffer) {
+    /*
+     * Parse command send as array of bytes into command_t struct.
+     * Sender side should pack the data in python struct format "<BBfff...".
+     */
+    uint8_t n_header_bytes = 2;
+    uint8_t n_data_bytes;
+
+    char *m = const_cast<char *>(msg);
+    uint8_t *p = reinterpret_cast<uint8_t *>(m);
+    cmd.id = *p;
+    p++;
+    cmd.n_bytes = *p;
+    p++;
+
+    if (cmd.n_bytes != bytes_in_buffer) {
+        Serial.println(
+            "Warning: Number of bytes read by 'Serial.readBytesUntil' does not "
+            "match the number of bytes specified by the message.");
+    }
+
+    n_data_bytes = cmd.n_bytes - n_header_bytes;
+    float *f = reinterpret_cast<float *>(p);
+    for (int i = 0; i < n_data_bytes / sizeof(float); i++) {
+        cmd.params.push_back(*f);
+        f++;
     }
 }
 

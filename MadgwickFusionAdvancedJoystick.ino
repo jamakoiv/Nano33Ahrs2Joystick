@@ -259,6 +259,7 @@ void loop() {
   }
 
   if (Serial.available()) {
+    delay(6000);
     Serial.println("Serial available");
 
     // serial_input_timer = millis();

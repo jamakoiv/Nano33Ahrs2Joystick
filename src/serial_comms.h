@@ -1,6 +1,7 @@
 #ifndef __SERIAL_COMMS__
 #define __SERIAL_COMMS__
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 
@@ -29,7 +30,8 @@ enum {
 };
 
 typedef struct command_t {
-    int id;
+    uint8_t id;
+    uint8_t n_bytes;
     std::vector<float> params;
 };
 
@@ -40,6 +42,7 @@ static char serialBuffer[SERIAL_READ_BUFFER_SIZE];
 
 void execute_commands(std::vector<command_t> &commands);
 std::vector<command_t> check_serial_input(void);
+void parse_command(command_t &cmd, char *bfr, int bytes_in_buffer);
 
 void printAHRSeuler(void);
 void printNothing(void);
