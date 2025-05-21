@@ -185,11 +185,11 @@ void command2bytes(command_t &cmd, uint8_t *buffer) {
 }
 
 void serial_start(std::vector<float> params) {
-    std::string s = int_to_hex(SERIAL_START) + ", Serial start.";
+    std::string s = int_to_hex(SERIAL_START) + ", Serial start;";
     Serial.println(s.c_str());
 }
 void serial_done(std::vector<float> params) {
-    std::string s = int_to_hex(SERIAL_DONE) + ", Serial done.";
+    std::string s = int_to_hex(SERIAL_DONE) + ", Serial done;";
     Serial.println(s.c_str());
 }
 
@@ -198,16 +198,30 @@ void mag_set_calib(std::vector<float> params) {
     kv_store_save_calibration("MagOffset", MagOffset);
     kv_store_save_calibration("MagGain", MagGain);
 
-    std::string s = int_to_hex(SERIAL_MAG_SET_CALIB) + ", Calibration set.";
+    std::string s = int_to_hex(SERIAL_MAG_SET_CALIB) + ", Calibration set;";
     Serial.println(s.c_str());
 }
 
 void mag_get_calib(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
-    std::string s = int_to_hex(SERIAL_MAG_SET_CALIB) +
-                    ", Magnetic offset (x,y,z): " + MagOffset.to_string() +
-                    ", Magnetic gain (x,y,z): " + MagGain.to_string();
-    Serial.println(s.c_str());
+    // std::string s = int_to_hex(SERIAL_MAG_SET_CALIB) +
+    //                 ", Magnetic offset (x,y,z): " + MagOffset.to_string() +
+    //                 ", Magnetic gain (x,y,z): " + MagGain.to_string() + ";";
+    // Serial.println(s.c_str());
+
+    uint8_t buffer[1024];
+    command_t cmd;
+    cmd.id = SERIAL_MAG_GET_CALIB;
+    cmd.n_bytes = 2 + 6 * sizeof(float);
+    cmd.params.push_back(MagOffset.x);
+    cmd.params.push_back(MagOffset.y);
+    cmd.params.push_back(MagOffset.z);
+    cmd.params.push_back(MagGain.x);
+    cmd.params.push_back(MagGain.y);
+    cmd.params.push_back(MagGain.z);
+
+    command2bytes(cmd, buffer);
+    Serial.write(buffer, cmd.n_bytes + 1);
 }
 
 void acc_set_calib(std::vector<float> params) {
@@ -215,7 +229,7 @@ void acc_set_calib(std::vector<float> params) {
     kv_store_save_calibration("AccOffset", AccOffset);
     kv_store_save_calibration("AccGain", AccGain);
 
-    std::string s = int_to_hex(SERIAL_ACC_SET_CALIB) + ", Calibration set.";
+    std::string s = int_to_hex(SERIAL_ACC_SET_CALIB) + ", Calibration set;";
     Serial.println(s.c_str());
 }
 
@@ -223,7 +237,7 @@ void acc_get_calib(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
     std::string s = int_to_hex(SERIAL_MAG_GET_CALIB) +
                     ", Accelerometer offset (x,y,z): " + AccOffset.to_string();
-    +", Accelerometer gain (x,y,z): " + AccGain.to_string();
+    +", Accelerometer gain (x,y,z): " + AccGain.to_string() + ";";
     Serial.println(s.c_str());
 }
 
@@ -232,7 +246,7 @@ void gyro_set_calib(std::vector<float> params) {
     kv_store_save_calibration("GyroOffset", GyroOffset);
     kv_store_save_calibration("GyroGain", GyroGain);
 
-    std::string s = int_to_hex(SERIAL_GYRO_SET_CALIB) + ", Calibration set.";
+    std::string s = int_to_hex(SERIAL_GYRO_SET_CALIB) + ", Calibration set;";
     Serial.println(s.c_str());
 }
 
@@ -240,7 +254,7 @@ void gyro_get_calib(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
     std::string s = int_to_hex(SERIAL_GYRO_GET_CALIB) +
                     ", Gyroscope offset (x,y,z): " + GyroOffset.to_string();
-    +", Gyroscope gain (x,y,z): " + GyroGain.to_string();
+    +", Gyroscope gain (x,y,z): " + GyroGain.to_string() + ";";
     Serial.println(s.c_str());
 }
 
@@ -248,12 +262,13 @@ void yaw_set_offset(std::vector<float> params) {
     set_calib_helper(params, AxisOffset);
     kv_store_save_calibration("AxisOffset", AxisOffset);
 
-    Serial.println("Yaw offset set.");
+    Serial.println("Yaw offset set;");
 }
 
 void yaw_get_offset(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
-    std::string str = "Axis Offset (yaw,pitch,roll): " + AxisOffset.to_string();
+    std::string str =
+        "Axis Offset (yaw,pitch,roll): " + AxisOffset.to_string() + ";";
     Serial.println(str.c_str());
 }
 
