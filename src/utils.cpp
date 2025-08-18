@@ -102,13 +102,8 @@ void set_calib_helper(const std::vector<float> &data, MyVector::vector &offset,
     /*
 
     */
-
-    for (float f : data) {
-        Serial.println(f);
-    }
-
     if (data.size() < 6) {
-        Serial.println("Invalid input: Could not parse 6 floats from input.");
+        Serial.println("Invalid input: Could not parse 6 floats from input;");
     } else {
         offset.x = data[0];
         offset.y = data[1];

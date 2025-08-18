@@ -198,6 +198,8 @@ void serial_done(std::vector<float> params) {
 }
 
 void mag_set_calib(std::vector<float> params) {
+    SerialOutputMode = SERIAL_PRINT_NOTHING;
+
     set_calib_helper(params, MagOffset, MagGain);
     kv_store_save_calibration("MagOffset", MagOffset);
     kv_store_save_calibration("MagGain", MagGain);
@@ -222,6 +224,7 @@ void mag_get_calib(std::vector<float> params) {
 
     command2bytes(cmd, buffer);
     Serial.write(buffer, cmd.n_bytes + 1);
+    Serial.println("");
 }
 
 void acc_set_calib(std::vector<float> params) {
@@ -249,6 +252,7 @@ void acc_get_calib(std::vector<float> params) {
 
     command2bytes(cmd, buffer);
     Serial.write(buffer, cmd.n_bytes + 1);
+    Serial.println("");
 }
 
 void gyro_set_calib(std::vector<float> params) {
@@ -276,6 +280,7 @@ void gyro_get_calib(std::vector<float> params) {
 
     command2bytes(cmd, buffer);
     Serial.write(buffer, cmd.n_bytes + 1);
+    Serial.println("");
 }
 
 void yaw_set_offset(std::vector<float> params) {

@@ -198,7 +198,7 @@ void AHRS_check(void) {
 
 
 void setup() {
-    while (!Serial) {}
+    // while (!Serial) {}
     Serial.begin(SERIAL_BAUDRATE);
 
     IMU.setGyroscopeSettings( LSM9DS1_ODR_G_238HZ, LSM9DS1_FS_G_500DPS );
