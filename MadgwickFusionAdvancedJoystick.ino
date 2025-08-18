@@ -263,7 +263,7 @@ void loop() {
     //delay(200);
 
     // serial_input_timer = millis();
-    auto commands = check_serial_input();
+    std::vector<command_t> commands = check_serial_input();
     execute_commands(commands);
   }
 }
