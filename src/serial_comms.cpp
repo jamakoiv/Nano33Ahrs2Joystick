@@ -128,7 +128,7 @@ void execute_commands(std::vector<command_t> &commands) {
         if (it == input_functions.end()) {
             Serial.print("Command id not found: 0x");
             Serial.print(cmd.id, HEX);
-            Serial.println(";")
+            Serial.println(";");
         } else {
             it->second(cmd.params);
         }

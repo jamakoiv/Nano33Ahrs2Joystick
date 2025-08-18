@@ -66,6 +66,8 @@ void acc_set_calib(std::vector<float> params);
 void acc_get_calib(std::vector<float> params);
 void gyro_set_calib(std::vector<float> params);
 void gyro_get_calib(std::vector<float> params);
+void yaw_set_offset(std::vector<float> params);
+void yaw_get_offset(std::vector<float> params);
 
 void set_print_nothing(std::vector<float> params);
 void set_print_ahrs(std::vector<float> params);
