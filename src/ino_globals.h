@@ -1,37 +1,9 @@
 #include "Fusion/FusionAhrs.h"
-#include "MyVector/MyVector.h"
-
-using MyVector::vector;
+#include "Fusion/FusionMath.h"
 
 /*
  * Global variables from main file.
  */
-
-extern vector Acc;
-extern vector rawAcc;
-extern vector CurrentAcc;
-extern vector AccGain;
-extern vector AccOffset;
-extern vector AccGain_default;
-extern vector AccOffset_default;
-
-// Variables for gyroscope values and calibrations.
-extern vector Gyro;
-extern vector rawGyro;
-extern vector CurrentGyro;
-extern vector GyroGain;
-extern vector GyroOffset;
-extern vector GyroGain_default;
-extern vector GyroOffset_default;
-
-// Variables for magnetometer values and calibrations.
-extern vector Mag;
-extern vector rawMag;
-extern vector CurrentMag;
-extern vector MagGain;
-extern vector MagOffset;
-extern vector MagGain_default;
-extern vector MagOffset_default;
 
 extern FusionVector mag_raw;
 extern FusionVector mag_calibrated;
@@ -54,8 +26,8 @@ extern FusionVector gyro_gain_default;
 extern FusionVector gyro_offset;
 extern FusionVector gyro_offset_default;
 
-extern vector AxisOffset;
-extern vector AxisOffset_default;
+extern FusionVector AxisOffset;
+extern FusionVector AxisOffset_default;
 
 extern FusionAhrs AHRS;
 extern float CompassHeading;

@@ -1,4 +1,5 @@
 
+#include "Fusion/FusionMath.h"
 #ifndef __UTILS__
 
 #include <string>
@@ -16,9 +17,9 @@ std::vector<std::string> split_input(std::vector<float> params,
 std::vector<float> split_and_strtof(std::string input,
                                     const std::string &delimiter);
 
-void set_calib_helper(const std::vector<float> &data, MyVector::vector &offset);
-void set_calib_helper(const std::vector<float> &data, MyVector::vector &offset,
-                      MyVector::vector &gain);
+void set_calib_helper(const std::vector<float> &data, FusionVector &offset);
+void set_calib_helper(const std::vector<float> &data, FusionVector &offset,
+                      FusionVector &gain);
 
 float remap_yaw(float yaw, float d);
 

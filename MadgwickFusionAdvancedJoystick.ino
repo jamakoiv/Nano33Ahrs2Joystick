@@ -102,14 +102,11 @@ FusionVector hard_iron_default = {2.97, -26.39, 14.13};
 /* AxisOffset(yaw, pitch, roll). Add constant offset to the AHRS-Euler 
  * output as degrees. Generally you should leave these zero and mitigate 
  * output default position problems in the OS software side.
- * BUG: Due to MyVector::vector these must still be accessed as AxisOffset.x etc.
+ * INFO: Due to FusionVector these must still be accessed as vec.axis.x etc.
  */
-vector AxisOffset;
-vector AxisOffset_default(90.0f, 0.0f, 0.0f);
+FusionVector AxisOffset;
+FusionVector AxisOffset_default = {0.0f, 0.0f, 0.0f};
 
-const float GYRO_INTEG = 0.60f;
-const float ACC_INTEG = 0.60f;
-const float MAG_INTEG = 0.60f;
 
 void readAcceleration() {
     IMU.readAcceleration(acc_raw.axis.x, acc_raw.axis.y, acc_raw.axis.z);
@@ -168,9 +165,9 @@ void updateJoystickAxes(const FusionAhrs *const ahrs, Joystick *const joy, USBCo
     /*Update the joystick-axes using the AHRS angle data. */
     FusionEuler euler = FusionQuaternionToEuler( FusionAhrsGetQuaternion( ahrs ));
 
-    joy->setAxis( remap_yaw(euler.angle.yaw, AxisOffset.x), X);
-    joy->setAxis( euler.angle.pitch + AxisOffset.y, Y);
-    joy->setAxis( euler.angle.roll + AxisOffset.z, Z);
+    joy->setAxis( remap_yaw(euler.angle.yaw, AxisOffset.axis.x), X);
+    joy->setAxis( euler.angle.pitch + AxisOffset.axis.y, Y);
+    joy->setAxis( euler.angle.roll + AxisOffset.axis.z, Z);
 
     usb->updateHIDreport(joy);
 }
@@ -242,12 +239,12 @@ void setup() {
       }
     }
 
-    kv_store_load_calibration(kv_keys[cal_mag_offset], MagOffset, MagOffset_default); 
-    kv_store_load_calibration(kv_keys[cal_mag_gain], MagGain, MagGain_default); 
-    kv_store_load_calibration(kv_keys[cal_acc_offset], AccOffset, AccOffset_default); 
-    kv_store_load_calibration(kv_keys[cal_acc_gain], AccGain, AccGain_default); 
-    kv_store_load_calibration(kv_keys[cal_gyro_offset], GyroOffset, GyroOffset_default); 
-    kv_store_load_calibration(kv_keys[cal_gyro_gain], GyroGain, GyroGain_default); 
+    kv_store_load_calibration(kv_keys[cal_mag_offset], hard_iron, hard_iron_default); 
+    kv_store_load_calibration(kv_keys[cal_mag_gain], soft_iron, soft_iron_default); 
+    kv_store_load_calibration(kv_keys[cal_acc_offset], acc_offset, acc_offset_default); 
+    kv_store_load_calibration(kv_keys[cal_acc_gain], acc_gain, acc_gain_default); 
+    kv_store_load_calibration(kv_keys[cal_gyro_offset], gyro_offset, gyro_offset_default); 
+    kv_store_load_calibration(kv_keys[cal_gyro_gain], gyro_gain, gyro_gain_default); 
     kv_store_load_calibration(kv_keys[cal_euler_output_offset], AxisOffset, AxisOffset_default);
 
     Serial.println("System reset.");

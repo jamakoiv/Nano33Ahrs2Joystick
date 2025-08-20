@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "Fusion/FusionMath.h"
 #include <Serial.h>
 #include <iomanip>
 #include <sstream>
@@ -86,31 +87,30 @@ std::vector<float> split_and_strtof(std::string input,
     return res;
 }
 
-void set_calib_helper(const std::vector<float> &data,
-                      MyVector::vector &offset) {
+void set_calib_helper(const std::vector<float> &data, FusionVector &offset) {
     if (data.size() < 3) {
         Serial.println("Invalid input: Could not parse 3 floats from input.");
     } else {
-        offset.x = data[0];
-        offset.y = data[1];
-        offset.z = data[2];
+        offset.axis.x = data[0];
+        offset.axis.y = data[1];
+        offset.axis.z = data[2];
     }
 }
 
-void set_calib_helper(const std::vector<float> &data, MyVector::vector &offset,
-                      MyVector::vector &gain) {
+void set_calib_helper(const std::vector<float> &data, FusionVector &offset,
+                      FusionVector &gain) {
     /*
 
     */
     if (data.size() < 6) {
         Serial.println("Invalid input: Could not parse 6 floats from input;");
     } else {
-        offset.x = data[0];
-        offset.y = data[1];
-        offset.z = data[2];
-        gain.x = data[3];
-        gain.y = data[4];
-        gain.z = data[5];
+        offset.axis.x = data[0];
+        offset.axis.y = data[1];
+        offset.axis.z = data[2];
+        gain.axis.x = data[3];
+        gain.axis.y = data[4];
+        gain.axis.z = data[5];
     }
 }
 

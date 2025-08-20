@@ -1,3 +1,4 @@
+#include "Fusion/FusionMath.h"
 #ifndef __KV_STORAGE__
 
 #include "MyVector/MyVector.h"
@@ -23,9 +24,15 @@ extern std::string kv_keys[7];
 
 bool kv_store_initialized(void);
 bool kv_store_save_calibration(const std::string &key,
-                               const MyVector::vector &data);
-bool kv_store_load_calibration(const std::string &key, MyVector::vector &calib,
-                               MyVector::vector &factory_default);
+                               const FusionVector &data);
+bool kv_store_load_calibration(const std::string &key, FusionVector &calib,
+                               FusionVector &factory_default);
+
+bool kv_store_save_calibration(const std::string &key,
+                               const FusionMatrix &data);
+bool kv_store_load_calibration(const std::string &key, FusionMatrix &calib,
+                               FusionMatrix &factory_default);
+
 void kv_store_reset(std::vector<float> params);
 
 #endif // !f __KV_STORAGE__
