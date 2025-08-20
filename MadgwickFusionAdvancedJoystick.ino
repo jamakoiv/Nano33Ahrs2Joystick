@@ -76,13 +76,13 @@ FusionVector AxisOffset_default = {0.0f, 0.0f, 0.0f};
 void readAcceleration() {
     IMU.readAcceleration(acc_raw.axis.x, acc_raw.axis.y, acc_raw.axis.z);
     acc_calibrated = FusionVectorHadamardProduct(FusionVectorSubtract(acc_raw, acc_offset), acc_gain);
-    acc_calibrated = changeAxisSign(acc_calibrated, -1, -1, 1);
+    // acc_calibrated = changeAxisSign(acc_calibrated, -1, -1, 1);
 }
 
 void readGyroscope() {
     IMU.readGyroscope(gyro_raw.axis.x, gyro_raw.axis.y, gyro_raw.axis.z);
     gyro_calibrated = FusionVectorHadamardProduct(FusionVectorSubtract(gyro_raw, gyro_offset), gyro_gain);
-    gyro_calibrated = changeAxisSign(gyro_calibrated, 1, 1, -1 );
+    // gyro_calibrated = changeAxisSign(gyro_calibrated, 1, 1, -1 );
 }
 
 void readMagneticField() {

@@ -328,37 +328,12 @@ void yaw_set_offset(std::vector<float> params) {
 
         
         
-        
-        
     Serial.println("Yaw offset set;");
-        
-        
-        
-        
 }
-
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
 void yaw_get_offset(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
     std::string str =
         "Axis Offset (yaw,pitch,roll): " + std::to_string(AxisOffset.axis.x) +
-        
-        
         ", " + std::to_string(AxisOffset.axis.y) + ", " +
         std::to_string(AxisOffset.axis.z) + ";";
     Serial.println(str.c_str());
