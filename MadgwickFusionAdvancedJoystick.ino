@@ -260,7 +260,7 @@ void loop() {
 
   if (Serial.available()) {
     //Serial.println("Serial available");
-    //delay(200);
+    delay(100); // Small delay to allow for the entire command to be received.
 
     // serial_input_timer = millis();
     std::vector<command_t> commands = check_serial_input();
