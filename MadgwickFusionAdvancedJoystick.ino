@@ -16,7 +16,6 @@ USBCommsJoystick usb_comms;
 Joystick joystick;
 int SerialOutputMode = SERIAL_PRINT_AHRS;
 
-
 /*
   Fusion-library objects and variables.
 */

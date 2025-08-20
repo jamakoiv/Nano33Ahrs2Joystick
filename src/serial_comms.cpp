@@ -140,6 +140,10 @@ std::vector<command_t> check_serial_input(void) {
     std::strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
     std::vector<command_t> commands;
 
+    // BUG: If there ever happens to be a number for which the byte-representation contains ';', 
+    // like 46.75099945 which gives b'\x06\x01;B' the message is read incomplete.
+    // TODO: Change comms to use ASCII SOH <header_bytes> STX <data_bytes> ETX EOT instead
+    // of this self-made fragile system.
     while (int bytes_read = Serial.readBytesUntil(';', serialBuffer,
                                                   SERIAL_READ_BUFFER_SIZE)) {
         command_t cmd;
@@ -185,9 +189,8 @@ void bytes2command(command_t &cmd, const char *msg, int bytes_in_buffer) {
     p++;
 
     if (cmd.n_bytes != bytes_in_buffer) {
-        Serial.println(
-            "Warning: Number of bytes read by 'Serial.readBytesUntil' does not "
-            "match the number of bytes specified by the message;");
+        std::string err = "Warning: Number of bytes read by 'Serial.readBytesUntil' " + std::to_string(cmd.n_bytes) + " does not match the number of bytes specified by the message " + std::to_string(bytes_in_buffer) + ";";
+        Serial.println(err.c_str());
     }
 
     n_data_bytes = cmd.n_bytes - n_header_bytes;
@@ -254,6 +257,10 @@ void mag_get_calib(std::vector<float> params) {
     cmd.params.push_back(1.0/soft_iron.element.yy);
     cmd.params.push_back(1.0/soft_iron.element.zz);
 
+    // Serial.println(soft_iron.element.xx, 5);
+    // Serial.println(soft_iron.element.yy, 5);
+    // Serial.println(soft_iron.element.zz, 5);
+
     command2bytes(cmd, buffer);
     Serial.write(buffer, cmd.n_bytes + 1);
     Serial.println("");
@@ -319,9 +326,33 @@ void yaw_set_offset(std::vector<float> params) {
     set_calib_helper(params, AxisOffset);
     kv_store_save_calibration("AxisOffset", AxisOffset);
 
+        
+        
+        
+        
     Serial.println("Yaw offset set;");
+        
+        
+        
+        
 }
 
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
 void yaw_get_offset(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
     std::string str =
