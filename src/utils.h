@@ -1,11 +1,8 @@
-
-#include "Fusion/FusionMath.h"
 #ifndef __UTILS__
 
+#include "Fusion/FusionMath.h"
 #include <string>
 #include <vector>
-
-#include "MyVector/MyVector.h"
 
 std::string int_to_hex(int i);
 

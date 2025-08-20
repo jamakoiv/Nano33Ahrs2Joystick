@@ -1,6 +1,5 @@
 #include "src/Fusion/Fusion.h"
 #include "src/USBJoystick/USBCommsJoystick.h"
-#include "src/MyVector/MyVector.h"
 #include "src/LSM9DS1/LSM9DS1.h"
 
 #include "src/serial_comms.h"
@@ -8,8 +7,6 @@
 #include "src/utils.h"
 
 /*
- * TODO: Using MyVector::vector and std::vector together is confusing 
- *     and asking for trouble.
  * TODO: Maybe try having less global variables...
  * TODO: Axis ranges are defined in multiple places with magic numbers. Replace with
  *      central definition.
@@ -17,13 +14,8 @@
 
 USBCommsJoystick usb_comms;
 Joystick joystick;
-
 int SerialOutputMode = SERIAL_PRINT_AHRS;
 
-/*
- IMU measurement variables and calibration.
-*/
-using MyVector::vector;
 
 /*
   Fusion-library objects and variables.
@@ -44,14 +36,6 @@ const FusionAhrsSettings AHRSsettings = {
 } ;
 
 // Variables for acceleration values and calibrations.
-vector Acc; 
-vector rawAcc;
-vector CurrentAcc;
-vector AccGain;
-vector AccOffset;
-vector AccGain_default(1.00f, 1.00f, 1.00f);
-vector AccOffset_default(0.0325f, 0.0306f, 0.01819f); 
-
 FusionVector acc_raw;
 FusionVector acc_calibrated;
 FusionVector acc_gain;
@@ -60,14 +44,6 @@ FusionVector acc_offset;
 FusionVector acc_offset_default = {0.0325f, 0.0306f, 0.01819f}; 
 
 // Variables for gyroscope values and calibrations.
-vector Gyro;
-vector rawGyro;
-vector CurrentGyro;
-vector GyroGain;
-vector GyroOffset;
-vector GyroGain_default(1.125f, 1.125f, 1.125f); 
-vector GyroOffset_default(-0.50019f, -0.68556f, 0.13808f);     // 238 Hz values
-
 FusionVector gyro_raw;
 FusionVector gyro_calibrated;
 FusionVector gyro_gain;
@@ -75,17 +51,7 @@ FusionVector gyro_gain_default {1.125f, 1.125f, 1.125f};
 FusionVector gyro_offset;
 FusionVector gyro_offset_default = {0.50019f, 0.68556f, -0.13808f}; // 238 Hz values
 
-
 // Variables for magnetometer values and calibrations.
-
-vector Mag;
-vector rawMag;
-vector CurrentMag;
-vector MagGain;
-vector MagOffset;
-vector MagGain_default;
-vector MagOffset_default;
-
 FusionVector mag_raw;
 FusionVector mag_calibrated;
 FusionMatrix soft_iron;
@@ -126,22 +92,6 @@ void readMagneticField() {
     mag_calibrated = changeAxisSign(mag_calibrated, -1, 1, -1);
 }
 
-inline FusionVector MyVector_to_FusionVector(const vector& vec) {
-    /* Convert from MyVector::vector to FusionVector-object. */
-    FusionVector res;
-
-    res.axis.x = vec.x;
-    res.axis.y = vec.y;
-    res.axis.z = vec.z;
-
-    return res;
-}
-
-
-
-inline vector changeAxisSign(const vector& vec, int xSign, int ySign, int zSign) {
-    return vector( vec.x * xSign, vec.y * ySign, vec.z * zSign );
-}
 
 inline FusionVector changeAxisSign(FusionVector vec, int xSign, int ySign, int zSign) {
     FusionVector res = {vec.axis.x * xSign, vec.axis.y * ySign, vec.axis.z * zSign};
