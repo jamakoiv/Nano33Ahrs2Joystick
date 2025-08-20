@@ -46,7 +46,6 @@ typedef enum {
     FusionAxesAlignmentNZNXPY, /* -Z-X+Y */
     FusionAxesAlignmentNZNYNX, /* -Z-Y-X */
     FusionAxesAlignmentNZPXNY, /* -Z+X-Y */
-    FusionAxesAlignmentPXPYNZ, /* +X+Y-Z */
 } FusionAxesAlignment;
 
 //------------------------------------------------------------------------------
@@ -178,12 +177,8 @@ static inline FusionVector FusionAxesSwap(const FusionVector sensor, const Fusio
             result.axis.y = +sensor.axis.x;
             result.axis.z = -sensor.axis.y;
             return result;
-        case FusionAxesAlignmentPXPYNZ:
-            result.axis.x = +sensor.axis.x;
-            result.axis.y = +sensor.axis.y;
-            result.axis.z = -sensor.axis.z;
     }
-    return sensor;
+    return sensor; // avoid compiler warning
 }
 
 #endif

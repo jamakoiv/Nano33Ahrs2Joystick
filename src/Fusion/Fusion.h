@@ -1,7 +1,7 @@
 /**
  * @file Fusion.h
  * @author Seb Madgwick
- * @brief Main header file for the Fusion library.  This is the only file that
+ * @brief Main header file for the Fusion library. This is the only file that
  * needs to be included when using the library.
  */
 
@@ -19,6 +19,7 @@ extern "C" {
 #include "FusionAxes.h"
 #include "FusionCalibration.h"
 #include "FusionCompass.h"
+#include "FusionConvention.h"
 #include "FusionMath.h"
 #include "FusionOffset.h"
 

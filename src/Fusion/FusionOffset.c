@@ -9,7 +9,7 @@
 // Includes
 
 #include "FusionOffset.h"
-#include <math.h> // fabs
+#include <math.h>
 
 //------------------------------------------------------------------------------
 // Definitions
@@ -22,12 +22,12 @@
 /**
  * @brief Timeout in seconds.
  */
-#define TIMEOUT (2.0)
+#define TIMEOUT (5)
 
 /**
  * @brief Threshold in degrees per second.
  */
-#define THRESHOLD (5.0f)
+#define THRESHOLD (3.0f)
 
 //------------------------------------------------------------------------------
 // Functions
@@ -57,7 +57,7 @@ FusionVector FusionOffsetUpdate(FusionOffset *const offset, FusionVector gyrosco
     gyroscope = FusionVectorSubtract(gyroscope, offset->gyroscopeOffset);
 
     // Reset timer if gyroscope not stationary
-    if ((fabs(gyroscope.axis.x) > THRESHOLD) || (fabs(gyroscope.axis.y) > THRESHOLD) || (fabs(gyroscope.axis.z) > THRESHOLD)) {
+    if ((fabsf(gyroscope.axis.x) > THRESHOLD) || (fabsf(gyroscope.axis.y) > THRESHOLD) || (fabsf(gyroscope.axis.z) > THRESHOLD)) {
         offset->timer = 0;
         return gyroscope;
     }

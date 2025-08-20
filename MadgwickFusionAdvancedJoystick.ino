@@ -74,13 +74,15 @@ FusionVector mag_raw;
 FusionVector mag_calibrated;
 FusionMatrix soft_iron;
 FusionMatrix soft_iron_default = {
-  1.0/47.6492, 0.0, 0.0,
-  0.0, 1.0/46.8706, 0.0,
-  0.0, 0.0, 1.0/44.5058
+  1.0/46.34, 0.0, 0.0,
+  0.0, 1.0/45.84, 0.0,
+  0.0, 0.0, 1.0/44.18
 };
 
 FusionVector hard_iron;
-FusionVector hard_iron_default = {3.2489, -24.8092, 14.5910};
+FusionVector hard_iron_default = {2.97, -26.39, 14.13};
+
+// x0=3.2874, y0=-25.4467, z0=14.1876, a=46.3417, b=45.8475, c=44.1814
 
 /* AxisOffset(yaw, pitch, roll). Add constant offset to the AHRS-Euler 
  * output as degrees. Generally you should leave these zero and mitigate 
