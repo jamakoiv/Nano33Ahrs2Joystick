@@ -28,9 +28,10 @@ float CompassHeading;
 const FusionAhrsSettings AHRSsettings = {
         .convention = FusionConventionNed, /* North-East-Down */
         .gain = 0.50f,
+        // .gain = 3.00f,
         .gyroscopeRange = 500.0,  // In degrees per second.
         .accelerationRejection = 10.0f,
-        .magneticRejection = 20.0f,
+        .magneticRejection = 10.0f,
         .recoveryTriggerPeriod = 5*SAMPLE_RATE
 } ;
 
@@ -62,7 +63,7 @@ FusionMatrix soft_iron_default = {
 FusionVector hard_iron;
 FusionVector hard_iron_default = {2.97, -26.39, 14.13};
 
-// x0=3.2874, y0=-25.4467, z0=14.1876, a=46.3417, b=45.8475, c=44.1814
+// x0=3.2874, y0=-25.4467, z0=14.1876, a=46.3417, b=45.8475, c=44.1814:software
 
 /* AxisOffset(yaw, pitch, roll). Add constant offset to the AHRS-Euler 
  * output as degrees. Generally you should leave these zero and mitigate 
@@ -76,13 +77,13 @@ FusionVector AxisOffset_default = {0.0f, 0.0f, 0.0f};
 void readAcceleration() {
     IMU.readAcceleration(acc_raw.axis.x, acc_raw.axis.y, acc_raw.axis.z);
     acc_calibrated = FusionVectorHadamardProduct(FusionVectorSubtract(acc_raw, acc_offset), acc_gain);
-    // acc_calibrated = changeAxisSign(acc_calibrated, -1, -1, 1);
+    acc_calibrated = changeAxisSign(acc_calibrated, 1, 1, -1);
 }
 
 void readGyroscope() {
     IMU.readGyroscope(gyro_raw.axis.x, gyro_raw.axis.y, gyro_raw.axis.z);
     gyro_calibrated = FusionVectorHadamardProduct(FusionVectorSubtract(gyro_raw, gyro_offset), gyro_gain);
-    // gyro_calibrated = changeAxisSign(gyro_calibrated, 1, 1, -1 );
+    gyro_calibrated = changeAxisSign(gyro_calibrated, 1, 1, -1 );
 }
 
 void readMagneticField() {
