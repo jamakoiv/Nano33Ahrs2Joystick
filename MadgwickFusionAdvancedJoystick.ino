@@ -61,13 +61,26 @@ vector GyroGain_default(1.125f, 1.125f, 1.125f);
 vector GyroOffset_default(-0.50019f, -0.68556f, 0.13808f);     // 238 Hz values
 
 // Variables for magnetometer values and calibrations.
+
 vector Mag;
 vector rawMag;
 vector CurrentMag;
 vector MagGain;
 vector MagOffset;
-vector MagGain_default(1.0f, 1.0f, 1.0f);
-vector MagOffset_default(-7.257f, 39.747f, -11.817f);
+vector MagGain_default;
+vector MagOffset_default;
+
+FusionVector mag_raw;
+FusionVector mag_calibrated;
+FusionMatrix soft_iron;
+FusionMatrix soft_iron_default = {
+  1.0/47.6492, 0.0, 0.0,
+  0.0, 1.0/46.8706, 0.0,
+  0.0, 0.0, 1.0/44.5058
+};
+
+FusionVector hard_iron;
+FusionVector hard_iron_default = {3.2489, -24.8092, 14.5910};
 
 /* AxisOffset(yaw, pitch, roll). Add constant offset to the AHRS-Euler 
  * output as degrees. Generally you should leave these zero and mitigate 
@@ -100,15 +113,12 @@ FusionVector readGyroscope(vector& rawGyro) {
     return MyVector_to_FusionVector( CurrentGyro );
 }
 
-FusionVector readMagneticField(vector& rawMag) {
-    IMU.readMagneticField( rawMag.x, rawMag.y, rawMag.z );
-    // Serial.println(rawMag->x);
-    Mag = (rawMag - MagOffset) * MagGain;
-    Mag = changeAxisSign( Mag, -1, 1, -1 );
-    CurrentMag = CurrentMag*MAG_INTEG + Mag*(1-MAG_INTEG);
-    // Serial.println(CurrentMag.x);
+FusionVector readMagneticField(FusionVector &raw) {
+    IMU.readMagneticField(raw.axis.x, raw.axis.y, raw.axis.z);
+    mag_calibrated = FusionCalibrationMagnetic(raw, soft_iron_default, hard_iron_default);
+    FusionVector res = changeAxisSign(mag_calibrated, -1, 1, -1);
 
-    return MyVector_to_FusionVector( CurrentMag );
+    return res;
 }
 
 inline FusionVector MyVector_to_FusionVector(const vector& vec) {
@@ -122,8 +132,15 @@ inline FusionVector MyVector_to_FusionVector(const vector& vec) {
     return res;
 }
 
+
+
 inline vector changeAxisSign(const vector& vec, int xSign, int ySign, int zSign) {
     return vector( vec.x * xSign, vec.y * ySign, vec.z * zSign );
+}
+
+inline FusionVector changeAxisSign(FusionVector vec, int xSign, int ySign, int zSign) {
+    FusionVector res = {vec.axis.x * xSign, vec.axis.y * ySign, vec.axis.z * zSign};
+    return res;
 }
 
 float updateTimeStamp(void) {
@@ -165,7 +182,7 @@ void AHRS_check(void) {
     deltaTime = updateTimeStamp(); 
 
     accelerometer = readAcceleration(rawAcc);   
-    magnetometer = readMagneticField(rawMag);
+    magnetometer = readMagneticField(mag_raw);
     gyroscope = readGyroscope(rawGyro);
 
     // Compensate for the long-term gyroscope drift.

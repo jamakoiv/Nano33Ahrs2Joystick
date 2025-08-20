@@ -1,6 +1,7 @@
 #ifndef __SERIAL_COMMS__
 #define __SERIAL_COMMS__
 
+#include <sstream>
 #include <stdint.h>
 #include <string>
 #include <vector>

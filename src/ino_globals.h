@@ -33,6 +33,13 @@ extern vector MagOffset;
 extern vector MagGain_default;
 extern vector MagOffset_default;
 
+extern FusionVector mag_raw;
+extern FusionVector mag_calibrated;
+extern FusionMatrix soft_iron;
+extern FusionMatrix soft_iron_default;
+extern FusionVector hard_iron;
+extern FusionVector hard_iron_default;
+
 extern vector AxisOffset;
 extern vector AxisOffset_default;
 

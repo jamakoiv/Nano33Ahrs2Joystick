@@ -45,11 +45,22 @@ void printAHRSeuler(void) {
 void printNothing(void) { return; }
 
 void printAccCalib(void) { Serial.println(CurrentAcc.to_string().c_str()); }
-void printMagCalib(void) { Serial.println(CurrentMag.to_string().c_str()); }
+// void printMagCalib(void) { Serial.println(CurrentMag.to_string().c_str()); }
+void printMagCalib(void) {
+    char buf[1024];
+    sprintf(buf, "%f, %f, %f", mag_calibrated.axis.x, mag_calibrated.axis.y,
+            mag_calibrated.axis.z);
+    Serial.println(buf);
+}
 void printGyroCalib(void) { Serial.println(CurrentGyro.to_string().c_str()); }
 
 void printAccRaw(void) { Serial.println(rawAcc.to_string().c_str()); }
-void printMagRaw(void) { Serial.println(rawMag.to_string().c_str()); }
+void printMagRaw(void) {
+    char buf[1024];
+    sprintf(buf, "%f, %f, %f", mag_raw.axis.x, mag_raw.axis.y, mag_raw.axis.z);
+    Serial.println(buf);
+}
+
 void printGyroRaw(void) { Serial.println(rawGyro.to_string().c_str()); }
 
 void print_output(void) {
