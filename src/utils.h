@@ -20,6 +20,8 @@ std::vector<float> split_and_strtof(std::string input,
 void set_calib_helper(const std::vector<float> &data, FusionVector &offset);
 void set_calib_helper(const std::vector<float> &data, FusionVector &offset,
                       FusionVector &gain);
+void set_calib_helper(const std::vector<float> &data, FusionVector &offset,
+                      FusionMatrix &gain);
 
 float remap_yaw(float yaw, float d);
 

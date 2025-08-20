@@ -35,9 +35,9 @@ void printAHRSeuler(void) {
     std::string str =
         "Roll: " + std::to_string(euler.angle.roll) + ", " +
         "Pitch: " + std::to_string(euler.angle.pitch) + ", " +
-        "Yaw: " + std::to_string(euler.angle.yaw) + ", " +
-        "corr: " + std::to_string(remap_yaw(euler.angle.yaw, AxisOffset.x)) +
-        ", " + "Xoff: " + std::to_string(AxisOffset.x) + ", " +
+        "Yaw: " + std::to_string(euler.angle.yaw) + ", " + "corr: " +
+        std::to_string(remap_yaw(euler.angle.yaw, AxisOffset.axis.x)) + ", " +
+        "Xoff: " + std::to_string(AxisOffset.axis.x) + ", " +
         "Compass: " + std::to_string(CompassHeading);
     Serial.println(str.c_str());
 }
@@ -232,9 +232,9 @@ void serial_done(std::vector<float> params) {
 void mag_set_calib(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
-    set_calib_helper(params, MagOffset, MagGain);
-    kv_store_save_calibration("MagOffset", MagOffset);
-    kv_store_save_calibration("MagGain", MagGain);
+    set_calib_helper(params, hard_iron, soft_iron);
+    kv_store_save_calibration("MagOffset", hard_iron);
+    kv_store_save_calibration("MagGain", soft_iron);
 
     std::string s = int_to_hex(SERIAL_MAG_SET_CALIB) + ", Calibration set;";
     Serial.println(s.c_str());
@@ -247,12 +247,12 @@ void mag_get_calib(std::vector<float> params) {
     command_t cmd;
     cmd.id = SERIAL_MAG_GET_CALIB;
     cmd.n_bytes = 2 + 6 * sizeof(float);
-    cmd.params.push_back(MagOffset.x);
-    cmd.params.push_back(MagOffset.y);
-    cmd.params.push_back(MagOffset.z);
-    cmd.params.push_back(MagGain.x);
-    cmd.params.push_back(MagGain.y);
-    cmd.params.push_back(MagGain.z);
+    cmd.params.push_back(hard_iron.axis.x);
+    cmd.params.push_back(hard_iron.axis.y);
+    cmd.params.push_back(hard_iron.axis.z);
+    cmd.params.push_back(soft_iron.element.xx);
+    cmd.params.push_back(soft_iron.element.yy);
+    cmd.params.push_back(soft_iron.element.zz);
 
     command2bytes(cmd, buffer);
     Serial.write(buffer, cmd.n_bytes + 1);
@@ -260,9 +260,9 @@ void mag_get_calib(std::vector<float> params) {
 }
 
 void acc_set_calib(std::vector<float> params) {
-    set_calib_helper(params, AccOffset, AccGain);
-    kv_store_save_calibration("AccOffset", AccOffset);
-    kv_store_save_calibration("AccGain", AccGain);
+    set_calib_helper(params, acc_offset, acc_gain);
+    kv_store_save_calibration("AccOffset", acc_offset);
+    kv_store_save_calibration("AccGain", acc_gain);
 
     std::string s = int_to_hex(SERIAL_ACC_SET_CALIB) + ", Calibration set;";
     Serial.println(s.c_str());
@@ -275,12 +275,12 @@ void acc_get_calib(std::vector<float> params) {
     command_t cmd;
     cmd.id = SERIAL_ACC_GET_CALIB;
     cmd.n_bytes = 2 + 6 * sizeof(float);
-    cmd.params.push_back(AccOffset.x);
-    cmd.params.push_back(AccOffset.y);
-    cmd.params.push_back(AccOffset.z);
-    cmd.params.push_back(AccGain.x);
-    cmd.params.push_back(AccGain.y);
-    cmd.params.push_back(AccGain.z);
+    cmd.params.push_back(acc_offset.axis.x);
+    cmd.params.push_back(acc_offset.axis.y);
+    cmd.params.push_back(acc_offset.axis.z);
+    cmd.params.push_back(acc_gain.axis.x);
+    cmd.params.push_back(acc_gain.axis.y);
+    cmd.params.push_back(acc_gain.axis.z);
 
     command2bytes(cmd, buffer);
     Serial.write(buffer, cmd.n_bytes + 1);
@@ -288,9 +288,9 @@ void acc_get_calib(std::vector<float> params) {
 }
 
 void gyro_set_calib(std::vector<float> params) {
-    set_calib_helper(params, GyroOffset, GyroGain);
-    kv_store_save_calibration("GyroOffset", GyroOffset);
-    kv_store_save_calibration("GyroGain", GyroGain);
+    set_calib_helper(params, gyro_offset, gyro_gain);
+    kv_store_save_calibration("GyroOffset", gyro_offset);
+    kv_store_save_calibration("GyroGain", gyro_gain);
 
     std::string s = int_to_hex(SERIAL_GYRO_SET_CALIB) + ", Calibration set;";
     Serial.println(s.c_str());
@@ -303,12 +303,12 @@ void gyro_get_calib(std::vector<float> params) {
     command_t cmd;
     cmd.id = SERIAL_GYRO_GET_CALIB;
     cmd.n_bytes = 2 + 6 * sizeof(float);
-    cmd.params.push_back(GyroOffset.x);
-    cmd.params.push_back(GyroOffset.y);
-    cmd.params.push_back(GyroOffset.z);
-    cmd.params.push_back(GyroGain.x);
-    cmd.params.push_back(GyroGain.y);
-    cmd.params.push_back(GyroGain.z);
+    cmd.params.push_back(gyro_offset.axis.x);
+    cmd.params.push_back(gyro_offset.axis.y);
+    cmd.params.push_back(gyro_offset.axis.z);
+    cmd.params.push_back(gyro_gain.axis.x);
+    cmd.params.push_back(gyro_gain.axis.y);
+    cmd.params.push_back(gyro_gain.axis.z);
 
     command2bytes(cmd, buffer);
     Serial.write(buffer, cmd.n_bytes + 1);
@@ -325,7 +325,7 @@ void yaw_set_offset(std::vector<float> params) {
 void yaw_get_offset(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
     std::string str =
-        "Axis Offset (yaw,pitch,roll): " + AxisOffset.to_string() + ";";
+        "Axis Offset (yaw,pitch,roll): " + std::to_string(AxisOffset.axis.x) + ", " + std::to_string(AxisOffset.axis.y) + ", " + std::to_string(AxisOffset.axis.z) + ";";
     Serial.println(str.c_str());
 }
 

@@ -114,6 +114,26 @@ void set_calib_helper(const std::vector<float> &data, FusionVector &offset,
     }
 }
 
+void set_calib_helper(const std::vector<float> &data, FusionVector &offset,
+                      FusionMatrix &gain) {
+    if (data.size() < 12) {
+        Serial.println("Invalid input: Could not parse 6 floats from input;");
+    } else {
+        offset.axis.x = data[0];
+        offset.axis.y = data[1];
+        offset.axis.z = data[2];
+        gain.element.xx = data[3];
+        gain.element.xy = data[3];
+        gain.element.xz = data[3];
+        gain.element.yx = data[4];
+        gain.element.yy = data[5];
+        gain.element.yz = data[6];
+        gain.element.zx = data[7];
+        gain.element.zy = data[8];
+        gain.element.zz = data[9];
+    }
+}
+
 float remap_yaw(float yaw, float d) {
     float overlap = 0;
     float res = yaw + d;
