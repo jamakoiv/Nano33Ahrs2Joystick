@@ -35,11 +35,12 @@ float CompassHeading;
 
 // Set AHRS algorithm settings
 const FusionAhrsSettings AHRSsettings = {
+        .convention = FusionConventionNed, /* North-East-Down */
         .gain = 0.50f,
+        .gyroscopeRange = 500.0,  // In degrees per second.
         .accelerationRejection = 10.0f,
         .magneticRejection = 20.0f,
-        .rejectionTimeout = 5*SAMPLE_RATE
-        //.rejectionTimeout = 0
+        .recoveryTriggerPeriod = 5*SAMPLE_RATE
 } ;
 
 // Variables for acceleration values and calibrations.
@@ -192,7 +193,7 @@ void AHRS_check(void) {
 
     // Run the AHRS-algorithm.
     FusionAhrsUpdate(&AHRS, gyroscope, accelerometer, magnetometer, deltaTime); 
-    CompassHeading = FusionCompassCalculateHeading(accelerometer, magnetometer);
+    CompassHeading = FusionCompassCalculateHeading(FusionConventionNed, accelerometer, magnetometer);
   }
 
   /* If acceleration and gyroscope data are ready. */
