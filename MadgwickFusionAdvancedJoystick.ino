@@ -111,25 +111,19 @@ float updateTimeStamp(void) {
     return dt;
 }
 
-void updateJoystickAxes(const FusionAhrs *const ahrs, Joystick *const joy, USBCommsJoystick *const usb) {
-    /*Update the joystick-axes using the AHRS angle data. */
-    FusionEuler euler = FusionQuaternionToEuler( FusionAhrsGetQuaternion( ahrs ));
-
-    joy->setAxis( remap_yaw(euler.angle.yaw, AxisOffset.axis.x), X);
-    joy->setAxis( euler.angle.pitch + AxisOffset.axis.y, Y);
-    joy->setAxis( euler.angle.roll + AxisOffset.axis.z, Z);
-
-    usb->updateHIDreport(joy);
-}
 
 void AHRS_check(void) {
-  static float deltaTime;
   /*
-    TODO: Try to reduce code duplication.
+   * Retrieve data from sensors and feed them to the AHRS algorithm 
   */
+  //  TODO: Try to reduce code duplication.
 
-  /* If acceleration, gyroscopy and magnetometer data are ready. 
-   Accelerometer and gyroscope run with higher sample rate, magnetometer with 20 Hz. */
+  static float deltaTime;
+
+  /* 
+  Accelerometer and gyroscope run with higher sample rate than the magnetometer,
+  so we run the AHRS algorithm without the magnetometer if it is not ready.
+  */
   if (IMU.accelerationAvailable() && IMU.gyroscopeAvailable() && IMU.magneticFieldAvailable()) {
     deltaTime = updateTimeStamp(); 
 
@@ -145,7 +139,6 @@ void AHRS_check(void) {
     CompassHeading = FusionCompassCalculateHeading(FusionConventionNed, acc_calibrated, mag_calibrated);
   }
 
-  /* If acceleration and gyroscope data are ready. */
   else if (IMU.accelerationAvailable() && IMU.gyroscopeAvailable()) {
     deltaTime = updateTimeStamp(); 
 
@@ -161,6 +154,19 @@ void AHRS_check(void) {
 */
 
 
+void updateJoystickAxes(const FusionAhrs *const ahrs, Joystick *const joy, USBCommsJoystick *const usb) {
+    /*
+     * Update the joystick-axes using the AHRS angle data. 
+    */
+
+    FusionEuler euler = FusionQuaternionToEuler( FusionAhrsGetQuaternion( ahrs ));
+
+    joy->setAxis( remap_yaw(euler.angle.yaw, AxisOffset.axis.x), X);
+    joy->setAxis( euler.angle.pitch + AxisOffset.axis.y, Y);
+    joy->setAxis( euler.angle.roll + AxisOffset.axis.z, Z);
+
+    usb->updateHIDreport(joy);
+}
 
 
 void setup() {
@@ -204,6 +210,9 @@ void loop() {
   static uint32_t serial_output_timer = millis();
   static uint32_t serial_input_timer = millis();
   
+  /*
+   * Main functionality. Run the AHRS algorithm and update the current orientation to the joystick.
+   */
   //Serial.println("AHRS");
   AHRS_check();
   //Serial.println("Update joystick.");

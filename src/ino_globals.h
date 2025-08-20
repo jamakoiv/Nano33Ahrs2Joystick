@@ -2,8 +2,11 @@
 #include "Fusion/FusionMath.h"
 
 /*
- * Global variables from main file.
+ * Global variables from main ino-file.
  */
+
+// TODO: The existance of this file is a massive code smell. Try to get rid of
+// it eventually.
 
 extern FusionVector mag_raw;
 extern FusionVector mag_calibrated;
