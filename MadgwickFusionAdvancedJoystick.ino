@@ -52,6 +52,13 @@ vector AccOffset;
 vector AccGain_default(1.00f, 1.00f, 1.00f);
 vector AccOffset_default(0.0325f, 0.0306f, 0.01819f); 
 
+FusionVector acc_raw;
+FusionVector acc_calibrated;
+FusionVector acc_gain;
+FusionVector acc_gain_default {1.0, 1.0, 1.0};
+FusionVector acc_offset;
+FusionVector acc_offset_default = {0.0325f, 0.0306f, 0.01819f}; 
+
 // Variables for gyroscope values and calibrations.
 vector Gyro;
 vector rawGyro;
@@ -60,6 +67,14 @@ vector GyroGain;
 vector GyroOffset;
 vector GyroGain_default(1.125f, 1.125f, 1.125f); 
 vector GyroOffset_default(-0.50019f, -0.68556f, 0.13808f);     // 238 Hz values
+
+FusionVector gyro_raw;
+FusionVector gyro_calibrated;
+FusionVector gyro_gain;
+FusionVector gyro_gain_default {1.125f, 1.125f, 1.125f};
+FusionVector gyro_offset;
+FusionVector gyro_offset_default = {0.50019f, 0.68556f, -0.13808f}; // 238 Hz values
+
 
 // Variables for magnetometer values and calibrations.
 
@@ -79,7 +94,6 @@ FusionMatrix soft_iron_default = {
   0.0, 1.0/45.84, 0.0,
   0.0, 0.0, 1.0/44.18
 };
-
 FusionVector hard_iron;
 FusionVector hard_iron_default = {2.97, -26.39, 14.13};
 
@@ -97,31 +111,22 @@ const float GYRO_INTEG = 0.60f;
 const float ACC_INTEG = 0.60f;
 const float MAG_INTEG = 0.60f;
 
-FusionVector readAcceleration(vector& rawAcc) {
-    /* Read and smooth the IMU-data. Uses leaky integrator smoothing. */
-    IMU.readAcceleration( rawAcc.x, rawAcc.y, rawAcc.z );
-    Acc = (rawAcc + AccOffset) * AccGain;
-    Acc = changeAxisSign(Acc, -1, -1, 1);
-    CurrentAcc = CurrentAcc*ACC_INTEG + Acc*(1-ACC_INTEG);
-
-    return MyVector_to_FusionVector( CurrentAcc );
+void readAcceleration() {
+    IMU.readAcceleration(acc_raw.axis.x, acc_raw.axis.y, acc_raw.axis.z);
+    acc_calibrated = FusionVectorHadamardProduct(FusionVectorSubtract(acc_raw, acc_offset), acc_gain);
+    acc_calibrated = changeAxisSign(acc_calibrated, -1, -1, 1);
 }
 
-FusionVector readGyroscope(vector& rawGyro) {
-    IMU.readGyroscope( rawGyro.x, rawGyro.y, rawGyro.z );
-    Gyro = (rawGyro + GyroOffset) * GyroGain;
-    Gyro = changeAxisSign( Gyro, 1, 1, -1 );
-    CurrentGyro = CurrentGyro*GYRO_INTEG + Gyro*(1-GYRO_INTEG);
-
-    return MyVector_to_FusionVector( CurrentGyro );
+void readGyroscope() {
+    IMU.readGyroscope(gyro_raw.axis.x, gyro_raw.axis.y, gyro_raw.axis.z);
+    gyro_calibrated = FusionVectorHadamardProduct(FusionVectorSubtract(gyro_raw, gyro_offset), gyro_gain);
+    gyro_calibrated = changeAxisSign(gyro_calibrated, 1, 1, -1 );
 }
 
-FusionVector readMagneticField(FusionVector &raw) {
-    IMU.readMagneticField(raw.axis.x, raw.axis.y, raw.axis.z);
-    mag_calibrated = FusionCalibrationMagnetic(raw, soft_iron_default, hard_iron_default);
-    FusionVector res = changeAxisSign(mag_calibrated, -1, 1, -1);
-
-    return res;
+void readMagneticField() {
+    IMU.readMagneticField(mag_raw.axis.x, mag_raw.axis.y, mag_raw.axis.z);
+    mag_calibrated = FusionCalibrationMagnetic(mag_raw, soft_iron, hard_iron);
+    mag_calibrated = changeAxisSign(mag_calibrated, -1, 1, -1);
 }
 
 inline FusionVector MyVector_to_FusionVector(const vector& vec) {
@@ -171,9 +176,6 @@ void updateJoystickAxes(const FusionAhrs *const ahrs, Joystick *const joy, USBCo
 }
 
 void AHRS_check(void) {
-  static FusionVector gyroscope;
-  static FusionVector accelerometer;
-  static FusionVector magnetometer; 
   static float deltaTime;
   /*
     TODO: Try to reduce code duplication.
@@ -184,30 +186,27 @@ void AHRS_check(void) {
   if (IMU.accelerationAvailable() && IMU.gyroscopeAvailable() && IMU.magneticFieldAvailable()) {
     deltaTime = updateTimeStamp(); 
 
-    accelerometer = readAcceleration(rawAcc);   
-    magnetometer = readMagneticField(mag_raw);
-    gyroscope = readGyroscope(rawGyro);
+    readAcceleration();   
+    readMagneticField();
+    readGyroscope();
 
     // Compensate for the long-term gyroscope drift.
-    gyroscope = FusionOffsetUpdate(&AHRS_gyro_offset, gyroscope); 
+    gyro_calibrated = FusionOffsetUpdate(&AHRS_gyro_offset, gyro_calibrated); 
 
     // Run the AHRS-algorithm.
-    FusionAhrsUpdate(&AHRS, gyroscope, accelerometer, magnetometer, deltaTime); 
-    CompassHeading = FusionCompassCalculateHeading(FusionConventionNed, accelerometer, magnetometer);
+    FusionAhrsUpdate(&AHRS, gyro_calibrated, acc_calibrated, mag_calibrated, deltaTime); 
+    CompassHeading = FusionCompassCalculateHeading(FusionConventionNed, acc_calibrated, mag_calibrated);
   }
 
   /* If acceleration and gyroscope data are ready. */
   else if (IMU.accelerationAvailable() && IMU.gyroscopeAvailable()) {
     deltaTime = updateTimeStamp(); 
 
-    accelerometer = readAcceleration(rawAcc);   
-    gyroscope = readGyroscope(rawGyro);
+    readAcceleration();
+    readGyroscope();
     
-    // Compensate for the long-term gyroscope drift.
-    gyroscope = FusionOffsetUpdate(&AHRS_gyro_offset, gyroscope); 
-
-    // Run the AHRS-algorithm
-    FusionAhrsUpdateNoMagnetometer(&AHRS, gyroscope, accelerometer, deltaTime); 
+    gyro_calibrated = FusionOffsetUpdate(&AHRS_gyro_offset, gyro_calibrated); 
+    FusionAhrsUpdateNoMagnetometer(&AHRS, gyro_calibrated, acc_calibrated, deltaTime); 
   }
 }
 /*

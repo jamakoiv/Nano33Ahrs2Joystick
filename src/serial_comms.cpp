@@ -44,24 +44,45 @@ void printAHRSeuler(void) {
 
 void printNothing(void) { return; }
 
-void printAccCalib(void) { Serial.println(CurrentAcc.to_string().c_str()); }
-// void printMagCalib(void) { Serial.println(CurrentMag.to_string().c_str()); }
+void printAccCalib(void) {
+    char buf[1024];
+    sprintf(buf, "%f, %f, %f", acc_calibrated.axis.x, acc_calibrated.axis.y,
+            acc_calibrated.axis.z);
+    Serial.println(buf);
+}
+
 void printMagCalib(void) {
     char buf[1024];
     sprintf(buf, "%f, %f, %f", mag_calibrated.axis.x, mag_calibrated.axis.y,
             mag_calibrated.axis.z);
     Serial.println(buf);
 }
-void printGyroCalib(void) { Serial.println(CurrentGyro.to_string().c_str()); }
 
-void printAccRaw(void) { Serial.println(rawAcc.to_string().c_str()); }
+void printGyroCalib(void) {
+    char buf[1024];
+    sprintf(buf, "%f, %f, %f", gyro_calibrated.axis.x, gyro_calibrated.axis.y,
+            gyro_calibrated.axis.z);
+    Serial.println(buf);
+}
+
+void printAccRaw(void) {
+    char buf[1024];
+    sprintf(buf, "%f, %f, %f", acc_raw.axis.x, acc_raw.axis.y, acc_raw.axis.z);
+    Serial.println(buf);
+}
+
 void printMagRaw(void) {
     char buf[1024];
     sprintf(buf, "%f, %f, %f", mag_raw.axis.x, mag_raw.axis.y, mag_raw.axis.z);
     Serial.println(buf);
 }
 
-void printGyroRaw(void) { Serial.println(rawGyro.to_string().c_str()); }
+void printGyroRaw(void) {
+    char buf[1024];
+    sprintf(buf, "%f, %f, %f", gyro_raw.axis.x, gyro_raw.axis.y,
+            gyro_raw.axis.z);
+    Serial.println(buf);
+}
 
 void print_output(void) {
     auto it = output_functions.find(SerialOutputMode);
@@ -339,7 +360,7 @@ void set_print_gyro_raw(std::vector<float> params) {
 }
 void set_print_gyro_calib(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_GYRO_CALIB;
-    Serial.println("Output-mode set to GYROSCOPE-RAW;");
+    Serial.println("Output-mode set to GYROSCOPE-CALIBRATED;");
 }
 /*
 -------------------- END OF SERIAL INPUT PART --------------------
