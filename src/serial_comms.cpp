@@ -250,9 +250,9 @@ void mag_get_calib(std::vector<float> params) {
     cmd.params.push_back(hard_iron.axis.x);
     cmd.params.push_back(hard_iron.axis.y);
     cmd.params.push_back(hard_iron.axis.z);
-    cmd.params.push_back(soft_iron.element.xx);
-    cmd.params.push_back(soft_iron.element.yy);
-    cmd.params.push_back(soft_iron.element.zz);
+    cmd.params.push_back(1.0/soft_iron.element.xx);
+    cmd.params.push_back(1.0/soft_iron.element.yy);
+    cmd.params.push_back(1.0/soft_iron.element.zz);
 
     command2bytes(cmd, buffer);
     Serial.write(buffer, cmd.n_bytes + 1);
@@ -325,7 +325,11 @@ void yaw_set_offset(std::vector<float> params) {
 void yaw_get_offset(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
     std::string str =
-        "Axis Offset (yaw,pitch,roll): " + std::to_string(AxisOffset.axis.x) + ", " + std::to_string(AxisOffset.axis.y) + ", " + std::to_string(AxisOffset.axis.z) + ";";
+        "Axis Offset (yaw,pitch,roll): " + std::to_string(AxisOffset.axis.x) +
+        
+        
+        ", " + std::to_string(AxisOffset.axis.y) + ", " +
+        std::to_string(AxisOffset.axis.z) + ";";
     Serial.println(str.c_str());
 }
 
