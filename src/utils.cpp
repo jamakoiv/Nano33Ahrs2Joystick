@@ -1,6 +1,5 @@
 #include "utils.h"
 #include "Fusion/FusionMath.h"
-#include <Serial.h>
 #include <iomanip>
 #include <sstream>
 
@@ -87,23 +86,22 @@ std::vector<float> split_and_strtof(std::string input,
     return res;
 }
 
-void set_calib_helper(const std::vector<float> &data, FusionVector &offset) {
+int set_calib_helper(const std::vector<float> &data, FusionVector &offset) {
     if (data.size() < 3) {
-        Serial.println("Invalid input: Could not parse 3 floats from input.");
+        return -1;
     } else {
         offset.axis.x = data[0];
         offset.axis.y = data[1];
         offset.axis.z = data[2];
+
+        return 0;
     }
 }
 
-void set_calib_helper(const std::vector<float> &data, FusionVector &offset,
-                      FusionVector &gain) {
-    /*
-
-    */
+int set_calib_helper(const std::vector<float> &data, FusionVector &offset,
+                     FusionVector &gain) {
     if (data.size() < 6) {
-        Serial.println("Invalid input: Could not parse 6 floats from input;");
+        return -1;
     } else {
         offset.axis.x = data[0];
         offset.axis.y = data[1];
@@ -111,13 +109,15 @@ void set_calib_helper(const std::vector<float> &data, FusionVector &offset,
         gain.axis.x = data[3];
         gain.axis.y = data[4];
         gain.axis.z = data[5];
+
+        return 0;
     }
 }
 
-void set_calib_helper(const std::vector<float> &data, FusionVector &offset,
-                      FusionMatrix &gain) {
+int set_calib_helper(const std::vector<float> &data, FusionVector &offset,
+                     FusionMatrix &gain) {
     if (data.size() < 6) {
-        Serial.println("Invalid input: Could not parse 6 floats from input;");
+        return -1;
     } else {
         offset.axis.x = data[0];
         offset.axis.y = data[1];
@@ -128,6 +128,8 @@ void set_calib_helper(const std::vector<float> &data, FusionVector &offset,
         gain.element.xx = 1.0 / data[3];
         gain.element.yy = 1.0 / data[4];
         gain.element.zz = 1.0 / data[5];
+
+        return 0;
     }
 }
 
