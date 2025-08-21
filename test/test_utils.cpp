@@ -1,4 +1,4 @@
-#include "../MadgwickFusionAdvancedJoystick/src/utils.h"
+#include "../main/src/utils.h"
 #include <cassert>
 
 void test_set_calib_helper_vector() {
