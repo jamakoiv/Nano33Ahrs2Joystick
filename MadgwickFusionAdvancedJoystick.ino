@@ -14,7 +14,7 @@
 
 USBCommsJoystick usb_comms;
 Joystick joystick;
-int SerialOutputMode = SERIAL_PRINT_AHRS;
+int SerialOutputMode = SERIAL_PRINT_MAG_CALIB;
 
 /*
   Fusion-library objects and variables.
@@ -76,19 +76,22 @@ FusionVector AxisOffset_default = {0.0f, 0.0f, 0.0f};
 
 void readAcceleration() {
     IMU.readAcceleration(acc_raw.axis.x, acc_raw.axis.y, acc_raw.axis.z);
-    acc_calibrated = FusionVectorHadamardProduct(FusionVectorSubtract(acc_raw, acc_offset), acc_gain);
+    // acc_calibrated = FusionVectorHadamardProduct(FusionVectorSubtract(acc_raw, acc_offset), acc_gain);
+    acc_calibrated = FusionVectorHadamardProduct(FusionVectorSubtract(acc_raw, acc_offset_default), acc_gain_default);
     acc_calibrated = changeAxisSign(acc_calibrated, 1, 1, -1);
 }
 
 void readGyroscope() {
     IMU.readGyroscope(gyro_raw.axis.x, gyro_raw.axis.y, gyro_raw.axis.z);
-    gyro_calibrated = FusionVectorHadamardProduct(FusionVectorSubtract(gyro_raw, gyro_offset), gyro_gain);
+    // gyro_calibrated = FusionVectorHadamardProduct(FusionVectorSubtract(gyro_raw, gyro_offset), gyro_gain);
+    gyro_calibrated = FusionVectorHadamardProduct(FusionVectorSubtract(gyro_raw, gyro_offset_default), gyro_gain_default);
     gyro_calibrated = changeAxisSign(gyro_calibrated, 1, 1, -1 );
 }
 
 void readMagneticField() {
     IMU.readMagneticField(mag_raw.axis.x, mag_raw.axis.y, mag_raw.axis.z);
-    mag_calibrated = FusionCalibrationMagnetic(mag_raw, soft_iron, hard_iron);
+    // mag_calibrated = FusionCalibrationMagnetic(mag_raw, soft_iron, hard_iron);
+    mag_calibrated = FusionCalibrationMagnetic(mag_raw, soft_iron_default, hard_iron_default);
     mag_calibrated = changeAxisSign(mag_calibrated, -1, 1, -1);
 }
 
@@ -170,8 +173,10 @@ void updateJoystickAxes(const FusionAhrs *const ahrs, Joystick *const joy, USBCo
 
 
 void setup() {
-    // while (!Serial) {}
+    while (!Serial) {}
     Serial.begin(SERIAL_BAUDRATE);
+    delay(100);
+    Serial.println("Starting board.");
 
     IMU.setGyroscopeSettings( LSM9DS1_ODR_G_238HZ, LSM9DS1_FS_G_500DPS );
     IMU.setAccelerometerSettings( LSM9DS1_ODR_XL_119HZ, LSM9DS1_FS_XL_4G );
@@ -195,15 +200,26 @@ void setup() {
       }
     }
 
-    kv_store_load_calibration(kv_keys[cal_mag_offset], hard_iron, hard_iron_default); 
-    kv_store_load_calibration(kv_keys[cal_mag_gain], soft_iron, soft_iron_default); 
-    kv_store_load_calibration(kv_keys[cal_acc_offset], acc_offset, acc_offset_default); 
-    kv_store_load_calibration(kv_keys[cal_acc_gain], acc_gain, acc_gain_default); 
-    kv_store_load_calibration(kv_keys[cal_gyro_offset], gyro_offset, gyro_offset_default); 
-    kv_store_load_calibration(kv_keys[cal_gyro_gain], gyro_gain, gyro_gain_default); 
-    kv_store_load_calibration(kv_keys[cal_euler_output_offset], AxisOffset, AxisOffset_default);
+    Serial.println("Retrieve calibrations from KVStore.");
+    delay(100);
+    // Serial.println("1");
+    // kv_store_load_calibration(kv_keys[cal_mag_offset], hard_iron, hard_iron_default); 
+    // Serial.println("2");
+    // kv_store_load_calibration(kv_keys[cal_mag_gain], soft_iron, soft_iron_default); 
+    // Serial.println("3");
+    // kv_store_load_calibration(kv_keys[cal_acc_offset], acc_offset, acc_offset_default); 
+    // Serial.println("4");
+    // kv_store_load_calibration(kv_keys[cal_acc_gain], acc_gain, acc_gain_default); 
+    // Serial.println("5");
+    // kv_store_load_calibration(kv_keys[cal_gyro_offset], gyro_offset, gyro_offset_default); 
+    // Serial.println("6");
+    // kv_store_load_calibration(kv_keys[cal_gyro_gain], gyro_gain, gyro_gain_default); 
+    // Serial.println("7");
+    // kv_store_load_calibration(kv_keys[cal_euler_output_offset], AxisOffset, AxisOffset_default);
+    // Serial.println("8");
 
     Serial.println("System reset.");
+    delay(100);
 }
 
 void loop() {
