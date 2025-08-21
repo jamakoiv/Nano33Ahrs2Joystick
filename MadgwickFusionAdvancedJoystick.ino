@@ -202,21 +202,15 @@ void setup() {
 
     Serial.println("Retrieve calibrations from KVStore.");
     delay(100);
-    // Serial.println("1");
-    // kv_store_load_calibration(kv_keys[cal_mag_offset], hard_iron, hard_iron_default); 
-    // Serial.println("2");
-    // kv_store_load_calibration(kv_keys[cal_mag_gain], soft_iron, soft_iron_default); 
-    // Serial.println("3");
-    // kv_store_load_calibration(kv_keys[cal_acc_offset], acc_offset, acc_offset_default); 
-    // Serial.println("4");
-    // kv_store_load_calibration(kv_keys[cal_acc_gain], acc_gain, acc_gain_default); 
-    // Serial.println("5");
-    // kv_store_load_calibration(kv_keys[cal_gyro_offset], gyro_offset, gyro_offset_default); 
-    // Serial.println("6");
-    // kv_store_load_calibration(kv_keys[cal_gyro_gain], gyro_gain, gyro_gain_default); 
-    // Serial.println("7");
-    // kv_store_load_calibration(kv_keys[cal_euler_output_offset], AxisOffset, AxisOffset_default);
-    // Serial.println("8");
+
+    // kv_storage_reset({}); // Reset the KVStore to factory defaults.
+    kv_store_load_calibration(kv_keys[cal_mag_offset], hard_iron, hard_iron_default);
+    kv_store_load_calibration(kv_keys[cal_mag_gain], soft_iron, soft_iron_default);
+    kv_store_load_calibration(kv_keys[cal_acc_offset], acc_offset, acc_offset_default);
+    kv_store_load_calibration(kv_keys[cal_acc_gain], acc_gain, acc_gain_default);
+    kv_store_load_calibration(kv_keys[cal_gyro_offset], gyro_offset, gyro_offset_default);
+    kv_store_load_calibration(kv_keys[cal_gyro_gain], gyro_gain, gyro_gain_default);
+    kv_store_load_calibration(kv_keys[cal_euler_output_offset], AxisOffset, AxisOffset_default);
 
     Serial.println("System reset.");
     delay(100);

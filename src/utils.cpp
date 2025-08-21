@@ -52,21 +52,11 @@ std::vector<std::string> split_input(std::string input,
       Split string at 'delimiter' and return the pieces in a
       std::vector<std::string>.
     */
-    Serial.println("split_input.");
     std::vector<std::string> res;
-    Serial.println("split_input..");
-    Serial.println(input.c_str());
-    Serial.println(delimiter.c_str());
 
     auto pos = input.find(delimiter);
-    Serial.println("split_input...");
-    Serial.println(pos);
-    Serial.println("split_input....");
 
     while (pos != std::string::npos) {
-        Serial.println(pos);
-        Serial.println(input.substr(0, pos).c_str());
-
         res.emplace_back(input.substr(0, pos));
         input.erase(0, pos + 1);
         pos = input.find(delimiter);
@@ -88,14 +78,9 @@ std::vector<float> split_and_strtof(std::string input,
       Split string, convert elements to float and return them as
       std::vector<float>.
     */
-    Serial.println("split_and_strtof.");
     std::vector<float> res;
-    Serial.println("split_and_strtof..");
     auto input_str_vec = split_input(input, delimiter);
-    Serial.println("split_and_strtof...");
     for (std::string str : input_str_vec) {
-        Serial.println(str.c_str());
-
         res.emplace_back(strtof(str.c_str(), NULL));
     }
 

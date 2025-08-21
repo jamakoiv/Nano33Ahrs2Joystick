@@ -69,38 +69,28 @@ bool kv_store_load_calibration(const std::string key, FusionVector &calib,
       Returns true if calibration was loaded from KVStore succesfully.
       Returns false if loading failed and defaults were used instead.
     */
-    Serial.println("Vector version");
-
     static char kv_get_buffer[KV_BUFFER_SIZE];
     static std::string VALUES_DELIMITER = ",";
 
     size_t bytes_received;
     kv_info_t info;
     auto full_key = kv_path + key;
-
-    Serial.println("A");
-
     calib = factory_default;
 
     auto res = kv_get_info(full_key.c_str(), &info);
-    Serial.println("B");
     if (res == MBED_ERROR_ITEM_NOT_FOUND)
         return false;
 
-    Serial.println("C");
     res = kv_get(full_key.c_str(), kv_get_buffer, info.size, &bytes_received);
     if (res != MBED_SUCCESS)
         return false;
 
-    Serial.println("D");
     auto values =
         split_and_strtof(std::string(kv_get_buffer), VALUES_DELIMITER);
     if (values.size() != 3)
         return false;
 
-    Serial.println("E");
     calib = (FusionVector){values[0], values[1], values[2]};
-    Serial.println("F");
     return true;
 }
 
@@ -108,13 +98,7 @@ bool kv_store_load_calibration(const std::string key, FusionVector &calib,
 bool kv_store_save_calibration(const std::string key,
                                const FusionMatrix &data) {
     std::string data_str = std::to_string(data.element.xx) + "," +
-                           std::to_string(data.element.xy) + "," +
-                           std::to_string(data.element.xy) + "," +
-                           std::to_string(data.element.yz) + "," +
                            std::to_string(data.element.yy) + "," +
-                           std::to_string(data.element.yz) + "," +
-                           std::to_string(data.element.zx) + "," +
-                           std::to_string(data.element.zy) + "," +
                            std::to_string(data.element.zz);
 
     auto full_key = kv_path + key;
@@ -135,43 +119,32 @@ bool kv_store_load_calibration(const std::string key, FusionMatrix &calib,
       Returns true if calibration was loaded from KVStore succesfully.
       Returns false if loading failed and defaults were used instead.
     */
-
-    Serial.println("Matrix version");
-
     static char kv_get_buffer[KV_BUFFER_SIZE];
     static std::string VALUES_DELIMITER = ",";
 
-    Serial.println("A");
     size_t bytes_received;
     kv_info_t info;
     auto full_key = kv_path + key;
 
-    Serial.println("B");
     calib = factory_default;
 
-    Serial.println("C");
     auto res = kv_get_info(full_key.c_str(), &info);
     if (res == MBED_ERROR_ITEM_NOT_FOUND)
         return false;
 
-    Serial.println("D");
     res = kv_get(full_key.c_str(), kv_get_buffer, info.size, &bytes_received);
     if (res != MBED_SUCCESS)
         return false;
 
-    Serial.println(kv_get_buffer);
-    Serial.println("E");
     auto values =
         split_and_strtof(std::string(kv_get_buffer), VALUES_DELIMITER);
-    Serial.println("EE");
-    if (values.size() != 9)
+    if (values.size() != 3)
         return false;
 
-    Serial.println("F");
-    calib =
-        (FusionMatrix){values[0], values[1], values[2], values[3], values[4],
-                       values[5], values[6], values[7], values[8]};
-    Serial.println("G");
+    calib.element.xx = values[0];
+    calib.element.yy = values[1];
+    calib.element.zz = values[2];
+
     return true;
 }
 
