@@ -1,7 +1,6 @@
 #include <cstring>
 #include <map>
 
-#include "Arduino.h"
 #include "Fusion/Fusion.h"
 #include "ino_globals.h"
 #include "kv_storage.h"
@@ -140,10 +139,11 @@ std::vector<command_t> check_serial_input(void) {
     std::strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
     std::vector<command_t> commands;
 
-    // BUG: If there ever happens to be a number for which the byte-representation contains ';', 
-    // like 46.75099945 which gives b'\x06\x01;B' the message is read incomplete.
-    // TODO: Change comms to use ASCII SOH <header_bytes> STX <data_bytes> ETX EOT instead
-    // of this self-made fragile system.
+    // BUG: If there ever happens to be a number for which the
+    // byte-representation contains ';', like 46.75099945 which gives
+    // b'\x06\x01;B' the message is read incomplete.
+    // TODO: Change comms to use ASCII SOH <header_bytes> STX <data_bytes> ETX
+    // EOT instead of this self-made fragile system.
     while (int bytes_read = Serial.readBytesUntil(';', serialBuffer,
                                                   SERIAL_READ_BUFFER_SIZE)) {
         command_t cmd;
@@ -189,7 +189,11 @@ void bytes2command(command_t &cmd, const char *msg, int bytes_in_buffer) {
     p++;
 
     if (cmd.n_bytes != bytes_in_buffer) {
-        std::string err = "Warning: Number of bytes read by 'Serial.readBytesUntil' " + std::to_string(cmd.n_bytes) + " does not match the number of bytes specified by the message " + std::to_string(bytes_in_buffer) + ";";
+        std::string err =
+            "Warning: Number of bytes read by 'Serial.readBytesUntil' " +
+            std::to_string(cmd.n_bytes) +
+            " does not match the number of bytes specified by the message " +
+            std::to_string(bytes_in_buffer) + ";";
         Serial.println(err.c_str());
     }
 
@@ -223,6 +227,10 @@ void command2bytes(command_t &cmd, uint8_t *buffer) {
     *p = stop_byte;
 }
 
+int parse_inbound_bytes(char *buffer, int bytes_in_buffer) {}
+
+int parse_outbound_bytes(char *buffer, int bytes_in_buffer) {}
+
 void serial_start(std::vector<float> params) {
     std::string s = int_to_hex(SERIAL_START) + ", Serial start;";
     Serial.println(s.c_str());
@@ -253,9 +261,9 @@ void mag_get_calib(std::vector<float> params) {
     cmd.params.push_back(hard_iron.axis.x);
     cmd.params.push_back(hard_iron.axis.y);
     cmd.params.push_back(hard_iron.axis.z);
-    cmd.params.push_back(1.0/soft_iron.element.xx);
-    cmd.params.push_back(1.0/soft_iron.element.yy);
-    cmd.params.push_back(1.0/soft_iron.element.zz);
+    cmd.params.push_back(1.0 / soft_iron.element.xx);
+    cmd.params.push_back(1.0 / soft_iron.element.yy);
+    cmd.params.push_back(1.0 / soft_iron.element.zz);
 
     // Serial.println(soft_iron.element.xx, 5);
     // Serial.println(soft_iron.element.yy, 5);
@@ -326,8 +334,6 @@ void yaw_set_offset(std::vector<float> params) {
     set_calib_helper(params, AxisOffset);
     kv_store_save_calibration("AxisOffset", AxisOffset);
 
-        
-        
     Serial.println("Yaw offset set;");
 }
 void yaw_get_offset(std::vector<float> params) {
