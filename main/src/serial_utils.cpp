@@ -22,8 +22,8 @@ std::set<char> TRANSMISSION_CONTROL_CHARS = {SOH, STX, ETX, EOT, ESC};
  */
 string create_message(string header, string body) {
 
-    string msg = string(SOH, 1) + header + string(STX, 1) + body +
-                 string(ETX, 1) + string(EOT, 1);
+    string msg = string(1, SOH) + header + string(1, STX) + body +
+                 string(1, ETX) + string(1, EOT);
 
     return msg;
 }
