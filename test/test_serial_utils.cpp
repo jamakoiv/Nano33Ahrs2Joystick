@@ -10,8 +10,7 @@ void test_parse_outbound_bytes() {
     print_hex(test_msg);
     print_hex(correct);
 
-    string res;
-    parse_outbound_bytes(test_msg, res);
+    string res = parse_outbound_bytes(test_msg);
     print_hex(res);
     assert(correct == res);
 }
@@ -25,8 +24,7 @@ void test_parse_inbound_bytes() {
     print_hex(test_msg);
     print_hex(correct);
 
-    string res;
-    parse_inbound_bytes(test_msg, res);
+    string res = parse_inbound_bytes(test_msg);
     print_hex(res);
     assert(correct == res);
 }
