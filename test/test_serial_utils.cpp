@@ -46,11 +46,35 @@ void test_create_message() {
     assert(res == correct);
 }
 
-void test_sanity_check_message() {}
+void test_sanity_check_message() {
+    string correct{0x01, 0x31, 0x05, 0x02, 0x20, 0x21,
+                   0x22, 0x23, 0x24, 0x03, 0x04};
+
+    int res = sanity_check_message(correct);
+    assert(res == 0);
+}
+
+void test_sanity_check_message_fail1() {
+    string fail{0x31, 0x05, 0x02, 0x20, 0x21, 0x22, 0x23, 0x24, 0x03, 0x04};
+
+    int res = sanity_check_message(fail);
+    assert(res == -1);
+}
+
+void test_sanity_check_message_fail2() {
+    string fail{0x02, 0x31, 0x05, 0x01, 0x20, 0x21,
+                0x22, 0x23, 0x24, 0x03, 0x04};
+
+    int res = sanity_check_message(fail);
+    assert(res == -2);
+}
 
 int main() {
     test_parse_inbound_bytes();
     test_parse_outbound_bytes();
     test_create_message();
+
     test_sanity_check_message();
+    test_sanity_check_message_fail1();
+    test_sanity_check_message_fail2();
 }
