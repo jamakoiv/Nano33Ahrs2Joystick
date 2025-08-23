@@ -1,15 +1,10 @@
 cmake_minimum_required(VERSION 3.30)
 project(tests)
 
-add_library(arduino_compat ../main/src/arduino_compat.cpp)
-
 add_library(utils ../main/src/utils.cpp)
-add_library(test_utils test_utils.cpp)
-link_libraries(test_utils utils)
+add_executable(test_utils test_utils.cpp)
+target_link_libraries(test_utils PRIVATE utils)
 
-add_library(serial_comms ../main/src/serial_comms.cpp)
-add_library(test_serial_comms test_serial_comms.cpp)
-link_libraries(test_serial_comms serial_comms)
-
-add_executable(tests tests.cpp)
-link_libraries(tests test_utils)
+add_library(serial_utils ../main/src/serial_utils.cpp)
+add_executable(test_serial_utils test_serial_utils.cpp)
+target_link_libraries(test_serial_utils PRIVATE serial_utils)
