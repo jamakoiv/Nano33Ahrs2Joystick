@@ -18,6 +18,11 @@ string create_message(string header, string body);
 int sanity_check_message(string msg);
 
 /*
+ *
+ */
+std::tuple<string, string> retrieve_header_and_body(string msg);
+
+/*
  * Preface all characters found in the list TRANSMISSION_CONTROL_CHARS with
  * the escape byte ASCII_ESC and add ESCAPE_OFFSET to the byte.
  *

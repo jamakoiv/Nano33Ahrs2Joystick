@@ -46,6 +46,24 @@ void test_create_message() {
     assert(res == correct);
 }
 
+void test_retrieve_header_and_body() {
+    string msg{0x01, 0x31, 0x05, 0x02, 0x20, 0x21,
+               0x22, 0x23, 0x24, 0x03, 0x04};
+
+    string correct_header{0x31, 0x05};
+    string correct_body{0x20, 0x21, 0x22, 0x23, 0x24};
+
+    auto [header, body] = retrieve_header_and_body(msg);
+
+    print_hex(header);
+    print_hex(correct_header);
+    assert(header == correct_header);
+
+    print_hex(body);
+    print_hex(correct_body);
+    assert(body == correct_body);
+}
+
 void test_sanity_check_message() {
     string correct{0x01, 0x31, 0x05, 0x02, 0x20, 0x21,
                    0x22, 0x23, 0x24, 0x03, 0x04};
@@ -72,7 +90,10 @@ void test_sanity_check_message_fail2() {
 int main() {
     test_parse_inbound_bytes();
     test_parse_outbound_bytes();
+
     test_create_message();
+
+    test_retrieve_header_and_body();
 
     test_sanity_check_message();
     test_sanity_check_message_fail1();

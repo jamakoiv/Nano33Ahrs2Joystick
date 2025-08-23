@@ -28,6 +28,18 @@ string create_message(string header, string body) {
     return msg;
 }
 
+std::tuple<string, string> retrieve_header_and_body(string msg) {
+    size_t SOH_pos = msg.find(SOH);
+    size_t STX_pos = msg.find(STX);
+    size_t ETX_pos = msg.find(ETX);
+    size_t EOT_pos = msg.find(EOT);
+
+    string header = msg.substr(SOH_pos + 1, STX_pos - SOH_pos - 1);
+    string body = msg.substr(STX_pos + 1, ETX_pos - STX_pos - 1);
+
+    return std::make_tuple(header, body);
+}
+
 /*
  * Check that the message has all the necessary control characters in the
  * correct order.
