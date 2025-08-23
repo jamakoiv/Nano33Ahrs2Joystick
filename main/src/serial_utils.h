@@ -1,9 +1,27 @@
 #include <string>
+#include <tuple>
 
 using std::string;
+using std::tuple;
 
 /*
+ * Functions for creating messages for binary transmissions.
  *
+ * Sending messages:
+ *
+ * string header = parse_outbound_bytes(raw_header);
+ * string body = parse_outbound_bytes(raw_body);
+ * string msg = create_message(header, body);
+ * Serial.println(msg.c_str());
+ *
+ * Receiving messages:
+ *
+ * Serial.readline(stop_byte, buffer, n_max);
+ * string msg(buffer);
+ * if (sanity_check_message(msg) == 0) {
+ *      print("Malformed message");
+ * }
+ * auto [header, body] = retrieve_header_and_body(msg);
  */
 
 /*
@@ -18,9 +36,10 @@ string create_message(string header, string body);
 int sanity_check_message(string msg);
 
 /*
- *
+ * Extract the header and body from message following form described
+ * in 'create_message'.
  */
-std::tuple<string, string> retrieve_header_and_body(string msg);
+tuple<string, string> retrieve_header_and_body(string msg);
 
 /*
  * Preface all characters found in the list TRANSMISSION_CONTROL_CHARS with
