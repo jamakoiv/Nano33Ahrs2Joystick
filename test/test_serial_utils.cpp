@@ -31,7 +31,26 @@ void test_parse_inbound_bytes() {
     assert(correct == res);
 }
 
+void test_create_message() {
+    string header{0x31, 0x05};
+    string body{0x20, 0x21, 0x22, 0x23, 0x24};
+
+    string correct{0x01, 0x31, 0x05, 0x02, 0x20, 0x21,
+                   0x22, 0x23, 0x24, 0x03, 0x04};
+
+    string res = create_message(header, body);
+
+    print_hex(correct);
+    print_hex(res);
+
+    assert(res == correct);
+}
+
+void test_sanity_check_message() {}
+
 int main() {
     test_parse_inbound_bytes();
     test_parse_outbound_bytes();
+    test_create_message();
+    test_sanity_check_message();
 }
