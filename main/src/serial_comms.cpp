@@ -112,6 +112,9 @@ void print_output(void) {
 /*
 -------------------- SERIAL INPUT PART --------------------
 */
+
+// TODO: We cannot replace Serial.read from this. Need to move it to somewhere
+// where we can better contain all Arduino-specific code to one place.
 std::vector<command_t> check_serial_input(void) {
     /*
       Check for commands in serial.
@@ -142,7 +145,6 @@ std::vector<command_t> check_serial_input(void) {
 
 void execute_commands(std::vector<command_t> &commands) {
     for (command_t cmd : commands) {
-
         switch (cmd.id) {
         case SERIAL_SET_PRINT_MODE:
             set_print_mode(cmd.params);
