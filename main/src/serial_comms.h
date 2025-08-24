@@ -7,21 +7,27 @@
 #include <vector>
 
 enum {
-    SERIAL_PRINT_NOTHING = 0x10,
-    SERIAL_PRINT_MAG_RAW = 0x11,
-    SERIAL_PRINT_MAG_CALIB = 0x12,
-    SERIAL_PRINT_ACC_RAW = 0x13,
-    SERIAL_PRINT_ACC_CALIB = 0x14,
-    SERIAL_PRINT_GYRO_RAW = 0x15,
-    SERIAL_PRINT_GYRO_CALIB = 0x16,
-    SERIAL_PRINT_AHRS = 0x17,
+
+    SERIAL_SET_PRINT_MODE = 0x10,
+    SERIAL_PRINT_NOTHING = 0x15,
+    SERIAL_PRINT_AHRS = 0x16,
+    SERIAL_PRINT_AHRS_DEBUG = 0x17,
 
     SERIAL_MAG_SET_CALIB = 0x30,
     SERIAL_MAG_GET_CALIB = 0x31,
+    SERIAL_PRINT_MAG_RAW = 0x35,
+    SERIAL_PRINT_MAG_CALIB = 0x36,
+
     SERIAL_ACC_SET_CALIB = 0x40,
     SERIAL_ACC_GET_CALIB = 0x41,
+    SERIAL_PRINT_ACC_RAW = 0x45,
+    SERIAL_PRINT_ACC_CALIB = 0x46,
+
     SERIAL_GYRO_SET_CALIB = 0x50,
     SERIAL_GYRO_GET_CALIB = 0x51,
+    SERIAL_PRINT_GYRO_RAW = 0x55,
+    SERIAL_PRINT_GYRO_CALIB = 0x56,
+
     SERIAL_SET_OFFSET = 0x80,
     SERIAL_GET_OFFSET = 0x81,
 
@@ -45,18 +51,8 @@ std::vector<command_t> check_serial_input(void);
 void bytes2command(command_t &cmd, const char *buffer, int bytes_in_buffer);
 void command2bytes(command_t &cmd, uint8_t *buffer);
 
-void printAHRSeuler(void);
-void printNothing(void);
-void printAccCalib(void);
-void printMagCalib(void);
-void printGyroCalib(void);
-void printAccRaw(void);
-void printMagRaw(void);
-void printGyroRaw(void);
 void print_output(void);
-
-void serial_start(std::vector<float> params);
-void serial_done(std::vector<float> params);
+void set_print_mode(std::vector<float> params);
 
 void mag_set_calib(std::vector<float> params);
 void mag_get_calib(std::vector<float> params);
@@ -66,13 +62,6 @@ void gyro_set_calib(std::vector<float> params);
 void gyro_get_calib(std::vector<float> params);
 void yaw_set_offset(std::vector<float> params);
 void yaw_get_offset(std::vector<float> params);
-
-void set_print_mag_raw(std::vector<float> params);
-void set_print_mag_calib(std::vector<float> params);
-void set_print_acc_raw(std::vector<float> params);
-void set_print_acc_calib(std::vector<float> params);
-void set_print_gyro_raw(std::vector<float> params);
-void set_print_gyro_calib(std::vector<float> params);
 
 void kv_store_reset(std::vector<float> params);
 

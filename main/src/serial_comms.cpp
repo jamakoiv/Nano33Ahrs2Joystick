@@ -85,14 +85,39 @@ void printGyroRaw(void) {
     Serial.println(buf);
 }
 
+// INFO: Better than the old 'get pointer to function from map and call that'...
 void print_output(void) {
-    auto it = output_functions.find(SerialOutputMode);
-    if (it == output_functions.end()) {
-        Serial.println("Output command not found.");
-    } else {
-        (it->second)();
-    }
-    // output_functions[SerialOutputMode]();
+    switch (SerialOutputMode) {
+    case SERIAL_PRINT_NOTHING:
+        printNothing();
+        break;
+    case SERIAL_PRINT_AHRS:
+        printAHRSeuler();
+        break;
+    case SERIAL_PRINT_AHRS_DEBUG:
+        // printAHRSeulerDebug();
+        break;
+    case SERIAL_PRINT_ACC_CALIB:
+        printAccCalib();
+        break;
+    case SERIAL_PRINT_MAG_CALIB:
+        printMagCalib();
+        break;
+    case SERIAL_PRINT_GYRO_CALIB:
+        printGyroCalib();
+        break;
+    case SERIAL_PRINT_ACC_RAW:
+        printAccRaw();
+        break;
+    case SERIAL_PRINT_MAG_RAW:
+        printMagRaw();
+        break;
+    case SERIAL_PRINT_GYRO_RAW:
+        printGyroRaw();
+        break;
+    default:
+        Serial.println("Error: Output mode not found;");
+    };
 }
 /*
 -------------------- END OF SERIAL OUTPUT PART ------------------
@@ -105,6 +130,8 @@ void print_output(void) {
 
 using input_func_ptr_t = void (*)(std::vector<float> params);
 std::map<uint8_t, input_func_ptr_t> input_functions = {
+    {SERIAL_SET_PRINT_MODE, &set_print_mode},
+
     {SERIAL_MAG_SET_CALIB, &mag_set_calib},
     {SERIAL_MAG_GET_CALIB, &mag_get_calib},
 
@@ -116,15 +143,6 @@ std::map<uint8_t, input_func_ptr_t> input_functions = {
 
     {SERIAL_SET_OFFSET, &yaw_set_offset},
     {SERIAL_GET_OFFSET, &yaw_get_offset},
-
-    {SERIAL_PRINT_NOTHING, &set_print_nothing},
-    {SERIAL_PRINT_AHRS, &set_print_ahrs},
-    {SERIAL_PRINT_MAG_RAW, &set_print_mag_raw},
-    {SERIAL_PRINT_MAG_CALIB, &set_print_mag_calib},
-    {SERIAL_PRINT_ACC_RAW, &set_print_acc_raw},
-    {SERIAL_PRINT_ACC_CALIB, &set_print_acc_calib},
-    {SERIAL_PRINT_GYRO_RAW, &set_print_gyro_raw},
-    {SERIAL_PRINT_GYRO_CALIB, &set_print_gyro_calib},
 
     {SERIAL_RESET_KVSTORE, &kv_store_reset}};
 
@@ -331,39 +349,20 @@ void yaw_get_offset(std::vector<float> params) {
     Serial.println(str.c_str());
 }
 
-/* functions for settings print output mode. */
-void set_print_nothing(std::vector<float> params) {
-    SerialOutputMode = SERIAL_PRINT_NOTHING;
-    Serial.println("Output-mode set to NOTHING;");
+void set_print_mode(std::vector<float> params) {
+    if (params.size() < 1) {
+        Serial.println("Error: No parameters given;");
+        return;
+    }
+    uint8_t mode = static_cast<uint8_t>(params[0]);
+    if (output_functions.find(mode) == output_functions.end()) {
+        Serial.println("Error: Output mode not found;");
+        return;
+    }
+    SerialOutputMode = mode;
+    Serial.println("Output mode set;");
 }
-void set_print_ahrs(std::vector<float> params) {
-    SerialOutputMode = SERIAL_PRINT_AHRS;
-    Serial.println("Output-mode set to AHRS;");
-}
-void set_print_mag_raw(std::vector<float> params) {
-    SerialOutputMode = SERIAL_PRINT_MAG_RAW;
-    Serial.println("Output-mode set to MAGNETOMETER-RAW;");
-}
-void set_print_mag_calib(std::vector<float> params) {
-    SerialOutputMode = SERIAL_PRINT_MAG_CALIB;
-    Serial.println("Output-mode set to MAGNETOMETER-CALIBRATED;");
-}
-void set_print_acc_raw(std::vector<float> params) {
-    SerialOutputMode = SERIAL_PRINT_ACC_RAW;
-    Serial.println("Output-mode set to ACCELEROMETER-RAW;");
-}
-void set_print_acc_calib(std::vector<float> params) {
-    SerialOutputMode = SERIAL_PRINT_ACC_CALIB;
-    Serial.println("Output-mode set to ACCELEROMETER-CALIBRATED;");
-}
-void set_print_gyro_raw(std::vector<float> params) {
-    SerialOutputMode = SERIAL_PRINT_GYRO_RAW;
-    Serial.println("Output-mode set to GYROSCOPE-RAW;");
-}
-void set_print_gyro_calib(std::vector<float> params) {
-    SerialOutputMode = SERIAL_PRINT_GYRO_CALIB;
-    Serial.println("Output-mode set to GYROSCOPE-CALIBRATED;");
-}
+
 /*
 -------------------- END OF SERIAL INPUT PART --------------------
 */
