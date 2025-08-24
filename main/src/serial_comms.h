@@ -7,9 +7,6 @@
 #include <vector>
 
 enum {
-    SERIAL_START = 0x0A,
-    SERIAL_DONE = 0x0F,
-
     SERIAL_PRINT_NOTHING = 0x10,
     SERIAL_PRINT_MAG_RAW = 0x11,
     SERIAL_PRINT_MAG_CALIB = 0x12,
@@ -30,13 +27,6 @@ enum {
 
     SERIAL_RESET_FACTORY_DEFAULTS = 0x60,
     SERIAL_RESET_KVSTORE = 0x70,
-
-    ASCII_SOH = 0x01, //  Start of header
-    ASCII_STX = 0x02, //  Start of data
-    ASCII_ETX = 0x03, //  End of data
-    ASCII_EOT = 0x04, //  End of transmission
-    ASCII_ESC = 0x1B, //  Escape next character
-    ESCAPE_OFFSET = 0x20
 };
 
 typedef struct command_t {
@@ -54,9 +44,6 @@ void execute_commands(std::vector<command_t> &commands);
 std::vector<command_t> check_serial_input(void);
 void bytes2command(command_t &cmd, const char *buffer, int bytes_in_buffer);
 void command2bytes(command_t &cmd, uint8_t *buffer);
-
-int parse_inbound_bytes(char *buffer, int bytes_in_buffer);
-int parse_outbound_bytes(char *buffer, int bytes_in_buffer);
 
 void printAHRSeuler(void);
 void printNothing(void);

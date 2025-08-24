@@ -105,9 +105,6 @@ void print_output(void) {
 
 using input_func_ptr_t = void (*)(std::vector<float> params);
 std::map<uint8_t, input_func_ptr_t> input_functions = {
-    {SERIAL_START, &serial_start},
-    {SERIAL_DONE, &serial_done},
-
     {SERIAL_MAG_SET_CALIB, &mag_set_calib},
     {SERIAL_MAG_GET_CALIB, &mag_get_calib},
 
@@ -227,19 +224,6 @@ void command2bytes(command_t &cmd, uint8_t *buffer) {
 
     p = reinterpret_cast<uint8_t *>(f);
     *p = stop_byte;
-}
-
-int parse_inbound_bytes(char *buffer, int bytes_in_buffer) {}
-
-int parse_outbound_bytes(char *buffer, int bytes_in_buffer) {}
-
-void serial_start(std::vector<float> params) {
-    std::string s = int_to_hex(SERIAL_START) + ", Serial start;";
-    Serial.println(s.c_str());
-}
-void serial_done(std::vector<float> params) {
-    std::string s = int_to_hex(SERIAL_DONE) + ", Serial done;";
-    Serial.println(s.c_str());
 }
 
 void mag_set_calib(std::vector<float> params) {
