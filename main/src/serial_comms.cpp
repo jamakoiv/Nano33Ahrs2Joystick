@@ -1,5 +1,4 @@
 #include <cstring>
-#include <map>
 
 #include "Fusion/Fusion.h"
 #include "ino_globals.h"
@@ -8,6 +7,9 @@
 #include "serial_utils.h"
 #include "utils.h"
 #include <Arduino.h>
+
+// TODO: Do we need to do any printing in this file, or just have every print
+// function to return a string and print in the main-file?
 
 // TODO: Serial input & output use a lot of global variables, hard to refactor
 // into separate file.
@@ -19,56 +21,24 @@ void printAHRSeuler(void) {
     const FusionEuler euler =
         FusionQuaternionToEuler(FusionAhrsGetQuaternion(&AHRS));
 
-    std::string str =
-        "Roll: " + std::to_string(euler.angle.roll) + ", " +
-        "Pitch: " + std::to_string(euler.angle.pitch) + ", " +
-        "Yaw: " + std::to_string(euler.angle.yaw) + ", " + "corr: " +
-        std::to_string(remap_yaw(euler.angle.yaw, AxisOffset.axis.x)) + ", " +
-        "Xoff: " + std::to_string(AxisOffset.axis.x) + ", " +
-        "Compass: " + std::to_string(CompassHeading);
+    std::string str = "Roll: " + std::to_string(euler.angle.roll) + ", " +
+                      "Pitch: " + std::to_string(euler.angle.pitch) + ", " +
+                      "Yaw: " + std::to_string(euler.angle.yaw) + ", " +
+                      "Compass: " + std::to_string(CompassHeading);
     Serial.println(str.c_str());
+}
+
+void printAHRSeulerDebug(void) {
+    // TODO: implement.
 }
 
 void printNothing(void) { return; }
 
-void printAccCalib(void) {
-    char buf[1024];
-    sprintf(buf, "%f, %f, %f", acc_calibrated.axis.x, acc_calibrated.axis.y,
-            acc_calibrated.axis.z);
-    Serial.println(buf);
-}
-
-void printMagCalib(void) {
-    char buf[1024];
-    sprintf(buf, "%f, %f, %f", mag_calibrated.axis.x, mag_calibrated.axis.y,
-            mag_calibrated.axis.z);
-    Serial.println(buf);
-}
-
-void printGyroCalib(void) {
-    char buf[1024];
-    sprintf(buf, "%f, %f, %f", gyro_calibrated.axis.x, gyro_calibrated.axis.y,
-            gyro_calibrated.axis.z);
-    Serial.println(buf);
-}
-
-void printAccRaw(void) {
-    char buf[1024];
-    sprintf(buf, "%f, %f, %f", acc_raw.axis.x, acc_raw.axis.y, acc_raw.axis.z);
-    Serial.println(buf);
-}
-
-void printMagRaw(void) {
-    char buf[1024];
-    sprintf(buf, "%f, %f, %f", mag_raw.axis.x, mag_raw.axis.y, mag_raw.axis.z);
-    Serial.println(buf);
-}
-
-void printGyroRaw(void) {
-    char buf[1024];
-    sprintf(buf, "%f, %f, %f", gyro_raw.axis.x, gyro_raw.axis.y,
-            gyro_raw.axis.z);
-    Serial.println(buf);
+void printFusionVector(FusionVector vec) {
+    std::string str = std::to_string(vec.axis.x) + ", " +
+                      std::to_string(vec.axis.y) + ", " +
+                      std::to_string(vec.axis.z);
+    Serial.println(str.c_str());
 }
 
 // INFO: Better than the old 'get pointer to function from map and call that'...
@@ -84,22 +54,22 @@ void print_output(void) {
         // printAHRSeulerDebug();
         break;
     case SERIAL_PRINT_ACC_CALIB:
-        printAccCalib();
+        printFusionVector(acc_calibrated);
         break;
     case SERIAL_PRINT_MAG_CALIB:
-        printMagCalib();
+        printFusionVector(mag_calibrated);
         break;
     case SERIAL_PRINT_GYRO_CALIB:
-        printGyroCalib();
+        printFusionVector(gyro_calibrated);
         break;
     case SERIAL_PRINT_ACC_RAW:
-        printAccRaw();
+        printFusionVector(acc_raw);
         break;
     case SERIAL_PRINT_MAG_RAW:
-        printMagRaw();
+        printFusionVector(mag_raw);
         break;
     case SERIAL_PRINT_GYRO_RAW:
-        printGyroRaw();
+        printFusionVector(gyro_raw);
         break;
     default:
         Serial.println("Error: Output mode not found;");
