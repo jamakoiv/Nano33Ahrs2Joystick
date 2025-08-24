@@ -1,4 +1,4 @@
-#include "test_serial_utils.h"
+#include "../main/src/serial_utils.h"
 #include <cassert>
 
 void test_parse_outbound_bytes() {
