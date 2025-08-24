@@ -5,7 +5,9 @@
 #include "ino_globals.h"
 #include "kv_storage.h"
 #include "serial_comms.h"
+#include "serial_utils.h"
 #include "utils.h"
+#include <Arduino.h>
 
 // TODO: Serial input & output use a lot of global variables, hard to refactor
 // into separate file.

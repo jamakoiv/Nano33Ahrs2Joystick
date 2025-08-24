@@ -70,6 +70,7 @@ string parse_outbound_bytes(const string &msg) {
         }
         res.push_back(msg_byte);
     next_loop:
+        (void)0;
     }
 
     return res;
