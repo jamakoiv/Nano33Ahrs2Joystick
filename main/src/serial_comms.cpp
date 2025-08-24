@@ -15,20 +15,6 @@
  ---------------- SERIAL OUTPUT PART ------------------------------
 */
 
-using output_func_ptr_t = void (*)(void);
-std::map<uint8_t, output_func_ptr_t> output_functions = {
-    {SERIAL_PRINT_AHRS, &printAHRSeuler},
-    {SERIAL_PRINT_NOTHING, &printNothing},
-
-    {SERIAL_PRINT_ACC_CALIB, &printAccCalib},
-    {SERIAL_PRINT_MAG_CALIB, &printMagCalib},
-    {SERIAL_PRINT_GYRO_CALIB, &printGyroCalib},
-
-    {SERIAL_PRINT_ACC_RAW, &printAccRaw},
-    {SERIAL_PRINT_MAG_RAW, &printMagRaw},
-    {SERIAL_PRINT_GYRO_RAW, &printGyroRaw},
-};
-
 void printAHRSeuler(void) {
     const FusionEuler euler =
         FusionQuaternionToEuler(FusionAhrsGetQuaternion(&AHRS));
@@ -354,13 +340,10 @@ void set_print_mode(std::vector<float> params) {
         Serial.println("Error: No parameters given;");
         return;
     }
-    uint8_t mode = static_cast<uint8_t>(params[0]);
-    if (output_functions.find(mode) == output_functions.end()) {
-        Serial.println("Error: Output mode not found;");
-        return;
-    }
-    SerialOutputMode = mode;
-    Serial.println("Output mode set;");
+
+    SerialOutputMode = static_cast<uint8_t>(params[0]);
+    std::string s = "Output mode set to " + int_to_hex(SerialOutputMode) + ";";
+    Serial.println(s.c_str());
 }
 
 /*
