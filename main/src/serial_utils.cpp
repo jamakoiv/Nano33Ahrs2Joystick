@@ -24,6 +24,18 @@ string create_message(const string header, const string body) {
     return msg;
 }
 
+std::tuple<string, string> retrieve_header_and_body(const string msg) {
+    size_t SOH_pos = msg.find(SOH);
+    size_t STX_pos = msg.find(STX);
+    size_t ETX_pos = msg.find(ETX);
+    size_t EOT_pos = msg.find(EOT);
+
+    string header = msg.substr(SOH_pos + 1, STX_pos - SOH_pos - 1);
+    string body = msg.substr(STX_pos + 1, ETX_pos - STX_pos - 1);
+
+    return std::make_tuple(header, body);
+}
+
 int sanity_check_message(const string msg) {
     size_t SOH_pos = msg.find(SOH);
     size_t STX_pos = msg.find(STX);
@@ -42,17 +54,6 @@ int sanity_check_message(const string msg) {
     }
 
     return 0;
-}
-std::tuple<string, string> retrieve_header_and_body(const string msg) {
-    size_t SOH_pos = msg.find(SOH);
-    size_t STX_pos = msg.find(STX);
-    size_t ETX_pos = msg.find(ETX);
-    size_t EOT_pos = msg.find(EOT);
-
-    string header = msg.substr(SOH_pos + 1, STX_pos - SOH_pos - 1);
-    string body = msg.substr(STX_pos + 1, ETX_pos - STX_pos - 1);
-
-    return std::make_tuple(header, body);
 }
 
 string parse_outbound_bytes(const string msg) {

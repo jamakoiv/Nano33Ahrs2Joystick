@@ -2,6 +2,8 @@
 
 void test_create_message();
 
+void test_retrieve_header_and_body();
+
 void test_sanity_check_message();
 void test_sanity_check_message_fail1();
 void test_sanity_check_message_fail2();
