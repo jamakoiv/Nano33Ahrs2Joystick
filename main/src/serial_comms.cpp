@@ -1,18 +1,21 @@
-#include <cstring>
-
+#include "serial_comms.h"
 #include "Fusion/Fusion.h"
 #include "ino_globals.h"
 #include "kv_storage.h"
-#include "serial_comms.h"
-#include "serial_utils.h"
 #include "utils.h"
+
 #include <Arduino.h>
+#include <cstring>
+
+using std::string;
+using std::vector;
 
 // TODO: Do we need to do any printing in this file, or just have every print
 // function to return a string and print in the main-file?
-
+//
 // TODO: Serial input & output use a lot of global variables, hard to refactor
 // into separate file.
+
 /*
  ---------------- SERIAL OUTPUT PART ------------------------------
 */
@@ -21,10 +24,10 @@ void printAHRSeuler(void) {
     const FusionEuler euler =
         FusionQuaternionToEuler(FusionAhrsGetQuaternion(&AHRS));
 
-    std::string str = "Roll: " + std::to_string(euler.angle.roll) + ", " +
-                      "Pitch: " + std::to_string(euler.angle.pitch) + ", " +
-                      "Yaw: " + std::to_string(euler.angle.yaw) + ", " +
-                      "Compass: " + std::to_string(CompassHeading);
+    string str = "Roll: " + std::to_string(euler.angle.roll) + ", " +
+                 "Pitch: " + std::to_string(euler.angle.pitch) + ", " +
+                 "Yaw: " + std::to_string(euler.angle.yaw) + ", " +
+                 "Compass: " + std::to_string(CompassHeading);
     Serial.println(str.c_str());
 }
 
@@ -35,9 +38,8 @@ void printAHRSeulerDebug(void) {
 void printNothing(void) { return; }
 
 void printFusionVector(FusionVector vec) {
-    std::string str = std::to_string(vec.axis.x) + ", " +
-                      std::to_string(vec.axis.y) + ", " +
-                      std::to_string(vec.axis.z);
+    string str = std::to_string(vec.axis.x) + ", " +
+                 std::to_string(vec.axis.y) + ", " + std::to_string(vec.axis.z);
     Serial.println(str.c_str());
 }
 
@@ -89,15 +91,15 @@ void print_output(void) {
 
 // TODO: We cannot replace Serial.read from this. Need to move it to somewhere
 // where we can better contain all Arduino-specific code to one place.
-std::vector<command_t> check_serial_input(void) {
+vector<command_t> check_serial_input(void) {
     /*
       Check for commands in serial.
     */
-    static const std::string COMMAND_DELIMITER = ";";
-    static const std::string PARAMETER_DELIMITER = ",";
+    static const string COMMAND_DELIMITER(";");
+    static const string PARAMETER_DELIMITER(",");
 
     std::strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
-    std::vector<command_t> commands;
+    vector<command_t> commands;
 
     // BUG: If there ever happens to be a number for which the
     // byte-representation contains ';', like 46.75099945 which gives
@@ -117,7 +119,7 @@ std::vector<command_t> check_serial_input(void) {
     return commands;
 }
 
-void execute_commands(std::vector<command_t> &commands) {
+void execute_commands(vector<command_t> &commands) {
     for (command_t cmd : commands) {
         switch (cmd.id) {
         case SERIAL_SET_PRINT_MODE:
@@ -175,7 +177,7 @@ void bytes2command(command_t &cmd, const char *msg, int bytes_in_buffer) {
     p++;
 
     if (cmd.n_bytes != bytes_in_buffer) {
-        std::string err =
+        string err =
             "Warning: Number of bytes read by 'Serial.readBytesUntil' " +
             std::to_string(cmd.n_bytes) +
             " does not match the number of bytes specified by the message " +
@@ -213,18 +215,18 @@ void command2bytes(command_t &cmd, uint8_t *buffer) {
     *p = stop_byte;
 }
 
-void mag_set_calib(std::vector<float> params) {
+void mag_set_calib(vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     set_calib_helper(params, hard_iron, soft_iron);
     kv_store_save_calibration("MagOffset", hard_iron);
     kv_store_save_calibration("MagGain", soft_iron);
 
-    std::string s = int_to_hex(SERIAL_MAG_SET_CALIB) + ", Calibration set;";
+    string s = int_to_hex(SERIAL_MAG_SET_CALIB) + ", Calibration set;";
     Serial.println(s.c_str());
 }
 
-void mag_get_calib(std::vector<float> params) {
+void mag_get_calib(vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     uint8_t buffer[1024];
@@ -247,16 +249,16 @@ void mag_get_calib(std::vector<float> params) {
     Serial.println("");
 }
 
-void acc_set_calib(std::vector<float> params) {
+void acc_set_calib(vector<float> params) {
     set_calib_helper(params, acc_offset, acc_gain);
     kv_store_save_calibration("AccOffset", acc_offset);
     kv_store_save_calibration("AccGain", acc_gain);
 
-    std::string s = int_to_hex(SERIAL_ACC_SET_CALIB) + ", Calibration set;";
+    string s = int_to_hex(SERIAL_ACC_SET_CALIB) + ", Calibration set;";
     Serial.println(s.c_str());
 }
 
-void acc_get_calib(std::vector<float> params) {
+void acc_get_calib(vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     uint8_t buffer[1024];
@@ -275,16 +277,16 @@ void acc_get_calib(std::vector<float> params) {
     Serial.println("");
 }
 
-void gyro_set_calib(std::vector<float> params) {
+void gyro_set_calib(vector<float> params) {
     set_calib_helper(params, gyro_offset, gyro_gain);
     kv_store_save_calibration("GyroOffset", gyro_offset);
     kv_store_save_calibration("GyroGain", gyro_gain);
 
-    std::string s = int_to_hex(SERIAL_GYRO_SET_CALIB) + ", Calibration set;";
+    string s = int_to_hex(SERIAL_GYRO_SET_CALIB) + ", Calibration set;";
     Serial.println(s.c_str());
 }
 
-void gyro_get_calib(std::vector<float> params) {
+void gyro_get_calib(vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     uint8_t buffer[1024];
@@ -303,29 +305,29 @@ void gyro_get_calib(std::vector<float> params) {
     Serial.println("");
 }
 
-void yaw_set_offset(std::vector<float> params) {
+void yaw_set_offset(vector<float> params) {
     set_calib_helper(params, AxisOffset);
     kv_store_save_calibration("AxisOffset", AxisOffset);
 
     Serial.println("Yaw offset set;");
 }
-void yaw_get_offset(std::vector<float> params) {
+void yaw_get_offset(vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
-    std::string str =
+    string str =
         "Axis Offset (yaw,pitch,roll): " + std::to_string(AxisOffset.axis.x) +
         ", " + std::to_string(AxisOffset.axis.y) + ", " +
         std::to_string(AxisOffset.axis.z) + ";";
     Serial.println(str.c_str());
 }
 
-void set_print_mode(std::vector<float> params) {
+void set_print_mode(vector<float> params) {
     if (params.size() < 1) {
         Serial.println("Error: No parameters given;");
         return;
     }
 
     SerialOutputMode = static_cast<uint8_t>(params[0]);
-    std::string s = "Output mode set to " + int_to_hex(SerialOutputMode) + ";";
+    string s = "Output mode set to " + int_to_hex(SerialOutputMode) + ";";
     Serial.println(s.c_str());
 }
 
