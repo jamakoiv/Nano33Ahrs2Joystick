@@ -30,6 +30,6 @@ bool kv_store_save_calibration(const std::string key, const FusionMatrix &data);
 bool kv_store_load_calibration(const std::string key, FusionMatrix &calib,
                                FusionMatrix &factory_default);
 
-void kv_store_reset(std::vector<float> params);
+void kv_store_reset(void);
 
 #endif // !f __KV_STORAGE__

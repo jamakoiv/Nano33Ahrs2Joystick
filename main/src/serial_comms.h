@@ -7,7 +7,6 @@
 #include <vector>
 
 enum {
-
     SERIAL_SET_PRINT_MODE = 0x10,
     SERIAL_PRINT_NOTHING = 0x15,
     SERIAL_PRINT_AHRS = 0x16,
@@ -31,7 +30,6 @@ enum {
     SERIAL_SET_OFFSET = 0x80,
     SERIAL_GET_OFFSET = 0x81,
 
-    SERIAL_RESET_FACTORY_DEFAULTS = 0x60,
     SERIAL_RESET_KVSTORE = 0x70,
 };
 
@@ -62,7 +60,5 @@ void gyro_set_calib(std::vector<float> params);
 void gyro_get_calib(std::vector<float> params);
 void yaw_set_offset(std::vector<float> params);
 void yaw_get_offset(std::vector<float> params);
-
-void kv_store_reset(std::vector<float> params);
 
 #endif

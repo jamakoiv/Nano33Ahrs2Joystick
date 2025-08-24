@@ -109,29 +109,9 @@ void print_output(void) {
 -------------------- END OF SERIAL OUTPUT PART ------------------
 */
 
-// Updates deltaTime variable.
 /*
 -------------------- SERIAL INPUT PART --------------------
 */
-
-using input_func_ptr_t = void (*)(std::vector<float> params);
-std::map<uint8_t, input_func_ptr_t> input_functions = {
-    {SERIAL_SET_PRINT_MODE, &set_print_mode},
-
-    {SERIAL_MAG_SET_CALIB, &mag_set_calib},
-    {SERIAL_MAG_GET_CALIB, &mag_get_calib},
-
-    {SERIAL_ACC_SET_CALIB, &acc_set_calib},
-    {SERIAL_ACC_GET_CALIB, &acc_get_calib},
-
-    {SERIAL_GYRO_SET_CALIB, &gyro_set_calib},
-    {SERIAL_GYRO_GET_CALIB, &gyro_get_calib},
-
-    {SERIAL_SET_OFFSET, &yaw_set_offset},
-    {SERIAL_GET_OFFSET, &yaw_get_offset},
-
-    {SERIAL_RESET_KVSTORE, &kv_store_reset}};
-
 std::vector<command_t> check_serial_input(void) {
     /*
       Check for commands in serial.
@@ -163,13 +143,40 @@ std::vector<command_t> check_serial_input(void) {
 void execute_commands(std::vector<command_t> &commands) {
     for (command_t cmd : commands) {
 
-        auto it = input_functions.find(cmd.id);
-        if (it == input_functions.end()) {
-            Serial.print("Command id not found: 0x");
-            Serial.print(cmd.id, HEX);
-            Serial.println(";");
-        } else {
-            it->second(cmd.params);
+        switch (cmd.id) {
+        case SERIAL_SET_PRINT_MODE:
+            set_print_mode(cmd.params);
+            break;
+        case SERIAL_MAG_SET_CALIB:
+            mag_set_calib(cmd.params);
+            break;
+        case SERIAL_MAG_GET_CALIB:
+            mag_get_calib(cmd.params);
+            break;
+        case SERIAL_ACC_SET_CALIB:
+            acc_set_calib(cmd.params);
+            break;
+        case SERIAL_ACC_GET_CALIB:
+            acc_get_calib(cmd.params);
+            break;
+        case SERIAL_GYRO_SET_CALIB:
+            gyro_set_calib(cmd.params);
+            break;
+        case SERIAL_GYRO_GET_CALIB:
+            gyro_get_calib(cmd.params);
+            break;
+        case SERIAL_SET_OFFSET:
+            yaw_set_offset(cmd.params);
+            break;
+        case SERIAL_GET_OFFSET:
+            yaw_get_offset(cmd.params);
+            break;
+        case SERIAL_RESET_KVSTORE:
+            kv_store_reset();
+            break;
+
+        default:
+            break;
         }
     }
 }
