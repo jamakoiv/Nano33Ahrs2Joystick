@@ -41,6 +41,10 @@ void printFusionVector(FusionVector vec) {
     Serial.println(str.c_str());
 }
 
+void printFusionMatrix(FusionMatrix mat) {
+    // TODO: implement.
+};
+
 // INFO: Better than the old 'get pointer to function from map and call that'...
 void print_output(void) {
     switch (SerialOutputMode) {
