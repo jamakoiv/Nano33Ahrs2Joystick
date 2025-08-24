@@ -35,11 +35,11 @@ enum {
     SERIAL_RESET_KVSTORE = 0x70,
 };
 
-typedef struct command_t {
+typedef struct {
     uint8_t id;
     uint8_t n_bytes;
     vector<float> params;
-};
+} command_t;
 
 static const int SERIAL_BAUDRATE =
     57600; // Not actually used when using USB-serial
