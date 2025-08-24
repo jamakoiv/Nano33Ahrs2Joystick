@@ -27,19 +27,19 @@ using std::tuple;
 /*
  * Create message in form <SOH><header><STX><body><ETX><EOT>.
  */
-string create_message(const string header, const string body);
+string create_message(const string &header, const string &body);
 
 /*
  * Check that the message has all the necessary control characters in the
  * correct order.
  */
-int sanity_check_message(const string msg);
+int sanity_check_message(const string &msg);
 
 /*
  * Extract the header and body from message following form described
  * in 'create_message'.
  */
-tuple<string, string> retrieve_header_and_body(const string msg);
+tuple<string, string> retrieve_header_and_body(const string &msg);
 
 /*
  * Preface all characters found in the list TRANSMISSION_CONTROL_CHARS with
@@ -47,7 +47,7 @@ tuple<string, string> retrieve_header_and_body(const string msg);
  *
  * Example: \x04\x3f => \x1b\x24\x3f
  */
-string parse_outbound_bytes(const string msg);
+string parse_outbound_bytes(const string &msg);
 
 /*
  * Remove all ASCII_ESC bytes from the message buffer and remove the
@@ -55,9 +55,9 @@ string parse_outbound_bytes(const string msg);
  *
  * Example: \x1b\x24\x3f => \x04\x3f
  */
-string parse_inbound_bytes(const string msg);
+string parse_inbound_bytes(const string &msg);
 
 /*
  * Helper function for checking byte values.
  */
-void print_hex(const string msg);
+void print_hex(const string &msg);

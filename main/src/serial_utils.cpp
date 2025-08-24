@@ -17,14 +17,14 @@ enum ASCII {
 };
 std::set<char> TRANSMISSION_CONTROL_CHARS = {SOH, STX, ETX, EOT, ESC};
 
-string create_message(const string header, const string body) {
+string create_message(const string &header, const string &body) {
     string msg = string(1, SOH) + header + string(1, STX) + body +
                  string(1, ETX) + string(1, EOT);
 
     return msg;
 }
 
-std::tuple<string, string> retrieve_header_and_body(const string msg) {
+std::tuple<string, string> retrieve_header_and_body(const string &msg) {
     size_t SOH_pos = msg.find(SOH);
     size_t STX_pos = msg.find(STX);
     size_t ETX_pos = msg.find(ETX);
@@ -36,7 +36,7 @@ std::tuple<string, string> retrieve_header_and_body(const string msg) {
     return std::make_tuple(header, body);
 }
 
-int sanity_check_message(const string msg) {
+int sanity_check_message(const string &msg) {
     size_t SOH_pos = msg.find(SOH);
     size_t STX_pos = msg.find(STX);
     size_t ETX_pos = msg.find(ETX);
@@ -56,7 +56,7 @@ int sanity_check_message(const string msg) {
     return 0;
 }
 
-string parse_outbound_bytes(const string msg) {
+string parse_outbound_bytes(const string &msg) {
     string res;
     res.reserve(msg.length() + 20);
 
@@ -75,7 +75,7 @@ string parse_outbound_bytes(const string msg) {
     return res;
 }
 
-string parse_inbound_bytes(const string msg) {
+string parse_inbound_bytes(const string &msg) {
     string res;
     res.reserve(msg.length());
 
@@ -95,7 +95,7 @@ string parse_inbound_bytes(const string msg) {
     return res;
 }
 
-void print_hex(const string msg) {
+void print_hex(const string &msg) {
     for (const auto &c : msg) {
         std::cout << std::hex << std::setw(2) << std::setfill('0')
                   << (static_cast<int>(c) & 0xff) << " ";
