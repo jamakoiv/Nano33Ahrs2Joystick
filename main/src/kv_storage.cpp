@@ -68,13 +68,6 @@ bool kv_store_save_calibration(const string key, const FusionVector &data) {
 
 bool kv_store_load_calibration(const string key, FusionVector &calib,
                                FusionVector &factory_default) {
-    /*
-      Load calibration values from the KVstore. If the KVStore key does not
-      exist, set calibration to given factory defaults.
-
-      Returns true if calibration was loaded from KVStore succesfully.
-      Returns false if loading failed and defaults were used instead.
-    */
     static char kv_get_buffer[KV_BUFFER_SIZE];
     static string VALUES_DELIMITER = ",";
 
@@ -116,13 +109,6 @@ bool kv_store_save_calibration(const string key, const FusionMatrix &data) {
 
 bool kv_store_load_calibration(const string key, FusionMatrix &calib,
                                FusionMatrix &factory_default) {
-    /*
-      Load calibration values from the KVstore. If the KVStore key does not
-      exist, set calibration to given factory defaults.
-
-      Returns true if calibration was loaded from KVStore succesfully.
-      Returns false if loading failed and defaults were used instead.
-    */
     static char kv_get_buffer[KV_BUFFER_SIZE];
     static string VALUES_DELIMITER = ",";
 
