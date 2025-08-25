@@ -159,6 +159,8 @@ void execute_commands(vector<command_t> &commands) {
     }
 }
 
+// TODO: Rewrite to take header and body from
+// 'retrieve_header_and_body'-function.
 void bytes2command(command_t &cmd, const char *msg, int bytes_in_buffer) {
     /*
      * Parse command send as array of bytes into command_t struct.
@@ -193,6 +195,7 @@ void bytes2command(command_t &cmd, const char *msg, int bytes_in_buffer) {
     }
 }
 
+// TODO: Rewrite to use 'create_message' function from serial_utils.h.
 void command2bytes(command_t &cmd, uint8_t *buffer) {
     /*
      * Parse command into array of bytes for sending over serial.
