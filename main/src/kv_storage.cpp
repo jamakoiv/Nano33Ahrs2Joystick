@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <kvstore_global_api.h>
+#include <map>
 #include <mbed_error.h>
 #include <string>
 
@@ -10,9 +11,13 @@
 
 using std::string;
 
-// TODO: Should probably use map instead of array[enum] -combination.
-string kv_keys[7] = {"MagOffset",  "MagGain",  "AccOffset",   "AccGain",
-                     "GyroOffset", "GyroGain", "OutputOffset"};
+std::map<int, string> kv_keys = {{cal_mag_offset, "MagOffset"},
+                                 {cal_mag_gain, "MagGain"},
+                                 {cal_acc_offset, "AccOffset"},
+                                 {cal_acc_gain, "AccGain"},
+                                 {cal_gyro_offset, "GyroOffset"},
+                                 {cal_gyro_gain, "GyroGain"},
+                                 {cal_euler_output_offset, "OutputOffset"}};
 
 /*
 "AxisOffset"-------------------- KV-STORE PART --------------------

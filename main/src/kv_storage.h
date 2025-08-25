@@ -1,11 +1,13 @@
 #ifndef __KV_STORAGE__
 
 #include "Fusion/FusionMath.h"
+#include <map>
 #include <string>
 
 using std::string;
 
-// NOTE: Enum is declared here, but the strings are declared in the cpp-file.
+// INFO: Use the enum when accessing kv_keys. This should guard againts typos
+// when accessing kv-storage.
 enum {
     cal_mag_offset,
     cal_mag_gain,
@@ -16,10 +18,7 @@ enum {
     cal_euler_output_offset
 };
 
-// std::string kv_keys[7] = {"MagOffset", "MagGain", "AccOffset", "AccGain",
-// "GyroOffset", "GyroGain", "OutputOffset"};
-
-extern string kv_keys[7];
+extern std::map<int, string> kv_keys;
 
 bool kv_store_initialized(void);
 bool kv_store_save_calibration(const string key, const FusionVector &data);
