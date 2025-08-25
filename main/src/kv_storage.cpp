@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <kvstore_global_api.h>
 #include <mbed_error.h>
-#include <stdint.h>
 #include <string>
 
 #include "Fusion/FusionMath.h"
@@ -19,7 +18,7 @@ string kv_keys[7] = {"MagOffset",  "MagGain",  "AccOffset",   "AccGain",
 "AxisOffset"-------------------- KV-STORE PART --------------------
 */
 
-const uint8_t KV_BUFFER_SIZE = 64;
+const int KV_BUFFER_SIZE = 64;
 const string kv_path = "/kv/";
 const string kv_init_key = kv_path + "KVStore_global_api_init";
 
