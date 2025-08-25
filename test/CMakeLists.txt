@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.30)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(tests)
 
 add_library(utils ../main/src/utils.cpp)
