@@ -1,3 +1,6 @@
+#ifndef __SERIAL_UTILS__
+#define __SERIAL_UTILS__
+
 #include <string>
 #include <tuple>
 
@@ -61,3 +64,5 @@ string parse_inbound_bytes(const string &msg);
  * Helper function for checking byte values.
  */
 void print_hex(const string &msg);
+
+#endif // __SERIAL_UTILS_
