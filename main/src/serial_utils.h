@@ -11,46 +11,27 @@ using std::tuple;
 
 typedef struct {
     uint8_t id;
+    uint8_t n_params;
     uint8_t n_bytes;
     std::vector<float> params;
 } command_t;
 
 /*
  * Functions for creating messages for binary transmissions.
- *
- * Sending messages:
- *
- * auto [raw_header, raw_body] = command_2_strings(cmd);
- * string header = parse_outbound_bytes(raw_header);
- * string body = parse_outbound_bytes(raw_body);
- * string msg = create_message(header, body);
- * Serial.println(msg.c_str());
- *
- * Receiving messages:
- *
- * Serial.readline(stop_byte, buffer, n_max);
- * string msg(buffer);
- * if (sanity_check_message(msg) == 0) {
- *      print("Malformed message");
- * }
- * auto [header, body] = retrieve_header_and_body(msg);
  */
 
 /*
  * Create header and body from command.
  */
-std::tuple<string, string> command_2_strings(const command_t &cmd);
+std::tuple<string, string> command2bytes(const command_t &cmd);
 
 /*
  * Create command from supplied header and body.
  */
-command_t strings_2_command(const string &header, const string &body);
+command_t bytes2command(const string &header, const string &body);
 
-/*
- * Create message in form <SOH><header><STX><body><ETX><EOT>.
- */
-// TODO: We can probably replace this with create_message(const command_t &cmd).
-string create_message(const string &header, const string &body);
+string create_message(const command_t &cmd);
+command_t retrieve_command(const string &msg);
 
 /*
  * Check that the message has all the necessary control characters in the

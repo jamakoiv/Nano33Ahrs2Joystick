@@ -24,13 +24,13 @@ union float_bytes_t {
     char b[sizeof(float)];
 };
 
-std::tuple<string, string> command_2_strings(const command_t &cmd) {
+std::tuple<string, string> command2bytes(const command_t &cmd) {
     string header;
     float_bytes_t float_bytes;
 
     header.reserve(3);
     header.push_back(cmd.id);
-    header.push_back(cmd.n_bytes);
+    header.push_back(cmd.n_params);
 
     // TODO: No endianess handling, will break on some platform combinations.
     string body;
@@ -43,18 +43,16 @@ std::tuple<string, string> command_2_strings(const command_t &cmd) {
     return std::make_tuple(header, body);
 }
 
-command_t strings_2_command(const string &header, const string &body) {
+command_t bytes2command(const string &header, const string &body) {
     command_t cmd;
     float_bytes_t float_bytes;
 
     cmd.id = header[0];
-    cmd.n_bytes = header[1];
+    cmd.n_params = header[1];
 
-    int n_params = (cmd.n_bytes - 2) / sizeof(float);
-    cmd.params.reserve(n_params);
-
+    cmd.params.reserve(cmd.n_params);
     const char *tmp_array = body.c_str();
-    for (int i = 0; i < n_params; i++, tmp_array += sizeof(float)) {
+    for (int i = 0; i < cmd.n_params; i++, tmp_array += sizeof(float)) {
         std::memcpy(float_bytes.b, tmp_array, sizeof(float));
         cmd.params.push_back(float_bytes.f);
     }
@@ -62,12 +60,35 @@ command_t strings_2_command(const string &header, const string &body) {
     return cmd;
 }
 
-string create_message(const string &header, const string &body) {
+string create_message(const command_t &cmd) {
+    auto [raw_header, raw_body] = command2bytes(cmd);
+    string header = parse_outbound_bytes(raw_header);
+    string body = parse_outbound_bytes(raw_body);
+
     string msg = string(1, SOH) + header + string(1, STX) + body +
                  string(1, ETX) + string(1, EOT);
-
     return msg;
 }
+
+command_t retrieve_command(const string &msg) {
+    if (sanity_check_message(msg) != 0) {
+        return command_t{0, 0};
+    }
+
+    auto [raw_header, raw_body] = retrieve_header_and_body(msg);
+    string header = parse_inbound_bytes(raw_header);
+    string body = parse_inbound_bytes(raw_body);
+
+    command_t cmd = bytes2command(header, body);
+    return cmd;
+}
+
+// string create_message(const string &header, const string &body) {
+//     string msg = string(1, SOH) + header + string(1, STX) + body +
+//                  string(1, ETX) + string(1, EOT);
+//
+//     return msg;
+// }
 
 std::tuple<string, string> retrieve_header_and_body(const string &msg) {
     size_t SOH_pos = msg.find(SOH);
