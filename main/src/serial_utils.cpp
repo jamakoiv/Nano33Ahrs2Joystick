@@ -124,10 +124,10 @@ int sanity_check_message(const string &msg) {
 
 string parse_outbound_bytes(const string &msg) {
     string res;
-    res.reserve(msg.length() + 20);
+    res.reserve(msg.length() + 20); // TODO: Make a better estimate.
 
-    for (auto msg_byte : msg) {
-        for (auto ctrl_byte : TRANSMISSION_CONTROL_CHARS) {
+    for (char msg_byte : msg) {
+        for (char ctrl_byte : TRANSMISSION_CONTROL_CHARS) {
             if (msg_byte == ctrl_byte) {
                 res.push_back(ESC);
                 res.push_back(msg_byte + ESCAPE_OFFSET);
@@ -136,7 +136,7 @@ string parse_outbound_bytes(const string &msg) {
         }
         res.push_back(msg_byte);
     next_loop:
-        (void)0;
+        continue;
     }
 
     return res;
@@ -147,7 +147,7 @@ string parse_inbound_bytes(const string &msg) {
     res.reserve(msg.length());
 
     bool escape_found;
-    for (auto msg_byte : msg) {
+    for (char msg_byte : msg) {
         if (msg_byte == ESC) {
             escape_found = true;
             continue;
