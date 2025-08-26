@@ -49,6 +49,7 @@ command_t strings_2_command(const string &header, const string &body);
 /*
  * Create message in form <SOH><header><STX><body><ETX><EOT>.
  */
+// TODO: We can probably replace this with create_message(const command_t &cmd).
 string create_message(const string &header, const string &body);
 
 /*
