@@ -18,13 +18,16 @@ enum ASCII {
 };
 std::set<char> TRANSMISSION_CONTROL_CHARS = {SOH, STX, ETX, EOT, ESC};
 
+// INFO: Technically undefined behaviour, but works on GCC-suite (and clang).
 union float_bytes_t {
     float f;
     char b[sizeof(float)];
-} float_bytes;
+};
 
 std::tuple<string, string> command_2_strings(const command_t &cmd) {
     string header;
+    float_bytes_t float_bytes;
+
     header.reserve(3);
     header.push_back(cmd.id);
     header.push_back(cmd.n_bytes);
@@ -42,6 +45,7 @@ std::tuple<string, string> command_2_strings(const command_t &cmd) {
 
 command_t strings_2_command(const string &header, const string &body) {
     command_t cmd;
+    float_bytes_t float_bytes;
 
     cmd.id = header[0];
     cmd.n_bytes = header[1];
