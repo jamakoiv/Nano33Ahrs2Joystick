@@ -93,7 +93,7 @@ void test_command2bytes() {
 }
 
 void test_bytes2command() {
-    std::string header{0x31, 0x03};
+    std::string header("\x31\x03");
     std::string body("\x7b\x14\x8e\x3f\x7b\x14\x0e\x40\xb8\x1e\x55\x40");
 
     command_t correct_cmd;
