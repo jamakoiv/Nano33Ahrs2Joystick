@@ -54,6 +54,8 @@ command_t strings_2_command(const string &header, const string &body) {
         std::memcpy(float_bytes.b, tmp_array, sizeof(float));
         cmd.params.push_back(float_bytes.f);
     }
+
+    return cmd;
 }
 
 string create_message(const string &header, const string &body) {
