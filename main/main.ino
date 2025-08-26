@@ -243,6 +243,10 @@ void loop() {
     //Serial.println(reinterpret_cast<int>(sendBlocking_ptr));
   }
 
+  // NOTE: For Arduino Nano33 BLE the serial input buffer is 256 bytes.
+  // Currently all messages fit nicely in this limit, and we can assume every message fits
+  // in the buffer and keep the delay. 
+  // If things change we must get rid of the delay and read input continuously.
   if (Serial.available()) {
     //Serial.println("Serial available");
     delay(100); // Small delay to allow for the entire command to be received.
