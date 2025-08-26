@@ -1,5 +1,6 @@
 #include "../main/src/serial_utils.h"
 #include <cassert>
+#include <iostream>
 
 void test_parse_outbound_bytes() {
     string test_msg{0x01, 'a', 'b', 0x02, 'c', 'd', 0x03, 'e', 'f', 0x04};
@@ -85,6 +86,51 @@ void test_sanity_check_message_fail2() {
     assert(res == -2);
 }
 
+void test_command_2_strings() {
+    command_t cmd;
+    cmd.id = 0x31;
+    cmd.n_bytes = 14;
+    cmd.params = {1.11, 2.22, 3.33};
+
+    std::string correct_header{0x31, 0x0E};
+    std::string correct_body(
+        "\x7b\x14\x8e\x3f\x7b\x14\x0e\x40\xb8\x1e\x55\x40");
+
+    auto [header, body] = command_2_strings(cmd);
+
+    assert(header == correct_header);
+    assert(body == correct_body);
+
+    print_hex(correct_header);
+    print_hex(header);
+    print_hex(correct_body);
+    print_hex(body);
+}
+
+void test_strings_2_command() {
+    std::string header{0x31, 0x0E};
+    std::string body("\x7b\x14\x8e\x3f\x7b\x14\x0e\x40\xb8\x1e\x55\x40");
+
+    command_t correct_cmd;
+    correct_cmd.id = 0x31;
+    correct_cmd.n_bytes = 14;
+    correct_cmd.params = {1.11, 2.22, 3.33};
+
+    command_t res = strings_2_command(header, body);
+
+    assert(res.id == correct_cmd.id);
+    assert(res.n_bytes == correct_cmd.n_bytes);
+
+    for (float f : res.params) {
+        std::cout << f << std::endl;
+    }
+
+    assert(res.params.size() == correct_cmd.params.size());
+    assert(res.params[0] == correct_cmd.params[0]);
+    assert(res.params[1] == correct_cmd.params[1]);
+    assert(res.params[2] == correct_cmd.params[2]);
+}
+
 int main() {
     test_parse_inbound_bytes();
     test_parse_outbound_bytes();
@@ -96,4 +142,7 @@ int main() {
     test_sanity_check_message();
     test_sanity_check_message_fail1();
     test_sanity_check_message_fail2();
+
+    test_command_2_strings();
+    test_strings_2_command();
 }
