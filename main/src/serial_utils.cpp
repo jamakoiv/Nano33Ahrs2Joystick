@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <cstring>
 #include <iomanip>
 #include <iostream>
@@ -76,8 +77,19 @@ command_t retrieve_command(const string &msg) {
     }
 
     auto [raw_header, raw_body] = retrieve_header_and_body(msg);
+
+    Serial.print("[retrieve_command] raw_header: ");
+    Serial.println(raw_header.c_str());
+    Serial.print("[retrieve_command] raw_body: ");
+    Serial.println(raw_body.c_str());
+
     string header = parse_inbound_bytes(raw_header);
     string body = parse_inbound_bytes(raw_body);
+
+    Serial.print("[retrieve_command] header: ");
+    Serial.println(header.c_str());
+    Serial.print("[retrieve_command] body: ");
+    Serial.println(body.c_str());
 
     command_t cmd = bytes2command(header, body);
     return cmd;
@@ -98,6 +110,11 @@ std::tuple<string, string> retrieve_header_and_body(const string &msg) {
 
     string header = msg.substr(SOH_pos + 1, STX_pos - SOH_pos - 1);
     string body = msg.substr(STX_pos + 1, ETX_pos - STX_pos - 1);
+
+    Serial.print("[retrieve_header_and_body] header: ");
+    Serial.println(header.c_str());
+    Serial.print("[retrieve_header_and_body] body: ");
+    Serial.println(body.c_str());
 
     return std::make_tuple(header, body);
 }
@@ -146,7 +163,7 @@ string parse_inbound_bytes(const string &msg) {
     string res;
     res.reserve(msg.length());
 
-    bool escape_found;
+    bool escape_found = false;
     for (char msg_byte : msg) {
         if (msg_byte == ESC) {
             escape_found = true;

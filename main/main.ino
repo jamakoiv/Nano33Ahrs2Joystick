@@ -16,6 +16,8 @@ USBCommsJoystick usb_comms;
 Joystick joystick;
 int SerialOutputMode = SERIAL_PRINT_MAG_CALIB;
 
+char serial_tmp_buffer[256];
+
 /*
   Fusion-library objects and variables.
 */
@@ -216,6 +218,31 @@ void setup() {
     delay(100);
 }
 
+vector<command_t> check_serial_input(void) {
+    // NOTE: We assume 
+    const char EOT = 0x04;
+
+    std::strncpy(serial_tmp_buffer, NULL, 256);
+    vector<command_t> commands;
+
+    while (int bytes_read = Serial.readBytesUntil(EOT, serial_tmp_buffer, 256)) {
+        std::string msg(serial_tmp_buffer);
+        // TODO: Currently our processing assumes the EOT-byte is present in the message,
+        // but readBytesUntil does not include the terminator-byte in the read data.
+        msg.push_back(EOT); 
+        Serial.println(msg.c_str());
+
+        command_t cmd = retrieve_command(msg);
+        Serial.println(cmd.id);
+        Serial.println(cmd.n_params);
+        commands.push_back(cmd);
+
+        std::strncpy(serialBuffer, NULL, 256);
+    }
+
+    return commands;
+}
+
 void loop() {
   static uint32_t serial_output_timer = millis();
   static uint32_t serial_input_timer = millis();
@@ -248,11 +275,11 @@ void loop() {
   // in the buffer and keep the delay. 
   // If things change we must get rid of the delay and read input continuously.
   if (Serial.available()) {
-    //Serial.println("Serial available");
-    delay(100); // Small delay to allow for the entire command to be received.
+    Serial.println("Serial available");
+    delay(100);
 
-    // serial_input_timer = millis();
     std::vector<command_t> commands = check_serial_input();
     execute_commands(commands);
   }
 }
+
