@@ -1,17 +1,26 @@
 #ifndef __SERIAL_UTILS__
 #define __SERIAL_UTILS__
 
+#include <stdint.h>
 #include <string>
 #include <tuple>
+#include <vector>
 
 using std::string;
 using std::tuple;
+
+typedef struct {
+    uint8_t id;
+    uint8_t n_bytes;
+    std::vector<float> params;
+} command_t;
 
 /*
  * Functions for creating messages for binary transmissions.
  *
  * Sending messages:
  *
+ * auto [raw_header, raw_body] = command_2_strings(cmd);
  * string header = parse_outbound_bytes(raw_header);
  * string body = parse_outbound_bytes(raw_body);
  * string msg = create_message(header, body);
@@ -26,6 +35,16 @@ using std::tuple;
  * }
  * auto [header, body] = retrieve_header_and_body(msg);
  */
+
+/*
+ * Create header and body from command.
+ */
+std::tuple<string, string> command_2_strings(const command_t &cmd);
+
+/*
+ * Create command from supplied header and body.
+ */
+command_t strings_2_command(const string &header, const string &body);
 
 /*
  * Create message in form <SOH><header><STX><body><ETX><EOT>.

@@ -1,3 +1,4 @@
+#include <cstring>
 #include <iomanip>
 #include <iostream>
 #include <set>
@@ -16,6 +17,44 @@ enum ASCII {
     ESCAPE_OFFSET = 0x20,
 };
 std::set<char> TRANSMISSION_CONTROL_CHARS = {SOH, STX, ETX, EOT, ESC};
+
+union float_bytes_t {
+    float f;
+    char b[sizeof(float)];
+} float_bytes;
+
+std::tuple<string, string> command_2_strings(const command_t &cmd) {
+    string header;
+    header.reserve(3);
+    header.push_back(cmd.id);
+    header.push_back(cmd.n_bytes);
+
+    // TODO: No endianess handling, will break on some platform combinations.
+    string body;
+    body.reserve(cmd.params.size() * sizeof(float));
+    for (float f : cmd.params) {
+        float_bytes.f = f;
+        body.append(float_bytes.b, sizeof(float));
+    }
+
+    return std::make_tuple(header, body);
+}
+
+command_t strings_2_command(const string &header, const string &body) {
+    command_t cmd;
+
+    cmd.id = header[0];
+    cmd.n_bytes = header[1];
+
+    int n_params = (cmd.n_bytes - 2) / sizeof(float);
+    cmd.params.reserve(n_params);
+
+    const char *tmp_array = body.c_str();
+    for (int i = 0; i < n_params; i++, tmp_array += sizeof(float)) {
+        std::memcpy(float_bytes.b, tmp_array, sizeof(float));
+        cmd.params.push_back(float_bytes.f);
+    }
+}
 
 string create_message(const string &header, const string &body) {
     string msg = string(1, SOH) + header + string(1, STX) + body +

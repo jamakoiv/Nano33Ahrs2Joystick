@@ -108,12 +108,12 @@ vector<command_t> check_serial_input(void) {
     // EOT instead of this self-made fragile system.
     while (int bytes_read = Serial.readBytesUntil(';', serialBuffer,
                                                   SERIAL_READ_BUFFER_SIZE)) {
-        command_t cmd;
-        bytes2command(cmd, serialBuffer, bytes_read);
-        commands.push_back(cmd);
-
-        // empty the buffer.
-        std::strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
+        //        command_t cmd;
+        //         bytes2command(cmd, serialBuffer, bytes_read);
+        //         commands.push_back(cmd);
+        //
+        //         // empty the buffer.
+        //         std::strncpy(serialBuffer, NULL, SERIAL_READ_BUFFER_SIZE);
     }
 
     return commands;
@@ -182,7 +182,8 @@ void bytes2command(command_t &cmd, const char *msg, int bytes_in_buffer) {
         string err =
             "Warning: Number of bytes read by 'Serial.readBytesUntil' " +
             std::to_string(cmd.n_bytes) +
-            " does not match the number of bytes specified by the message " +
+            " does not match the number of bytes specified by the "
+            "message " +
             std::to_string(bytes_in_buffer) + ";";
         Serial.println(err.c_str());
     }

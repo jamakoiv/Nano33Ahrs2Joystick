@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "serial_utils.h"
+
 using std::string;
 using std::vector;
 
@@ -35,12 +37,6 @@ enum {
     SERIAL_RESET_KVSTORE = 0x70,
 };
 
-typedef struct {
-    uint8_t id;
-    uint8_t n_bytes;
-    vector<float> params;
-} command_t;
-
 static const int SERIAL_BAUDRATE =
     57600; // Not actually used when using USB-serial
 static const int SERIAL_READ_BUFFER_SIZE = 2048; // 2 kB
@@ -48,8 +44,6 @@ static char serialBuffer[SERIAL_READ_BUFFER_SIZE];
 
 void execute_commands(vector<command_t> &commands);
 vector<command_t> check_serial_input(void);
-void bytes2command(command_t &cmd, const char *buffer, int bytes_in_buffer);
-void command2bytes(command_t &cmd, uint8_t *buffer);
 
 void print_output(void);
 void set_print_mode(vector<float> params);
