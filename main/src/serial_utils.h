@@ -10,10 +10,10 @@ using std::string;
 using std::tuple;
 
 typedef struct {
-    uint8_t id;
-    uint8_t n_params;
-    uint8_t n_bytes;
+    int8_t id;
+    int8_t n_params;
     std::vector<float> params;
+    std::string err;
 } command_t;
 
 /*
