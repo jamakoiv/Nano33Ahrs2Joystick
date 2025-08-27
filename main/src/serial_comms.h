@@ -42,19 +42,21 @@ static const int SERIAL_BAUDRATE =
 static const int SERIAL_READ_BUFFER_SIZE = 2048; // 2 kB
 static char serialBuffer[SERIAL_READ_BUFFER_SIZE];
 
-void execute_command(command_t &commands);
+string execute_command(command_t &commands);
 
-void print_output(void);
-void set_print_mode(vector<float> params);
+string print_output(void);
+string set_print_mode(vector<float> params);
 
-void mag_set_calib(vector<float> params);
-void acc_set_calib(vector<float> params);
-void gyro_set_calib(vector<float> params);
-void yaw_set_offset(vector<float> params);
+string mag_set_calib(vector<float> params);
+string acc_set_calib(vector<float> params);
+string gyro_set_calib(vector<float> params);
+string yaw_set_offset(vector<float> params);
 
-void acc_get_calib(void);
-void mag_get_calib(void);
-void gyro_get_calib(void);
-void yaw_get_offset(void);
+string acc_get_calib(void);
+string mag_get_calib(void);
+string gyro_get_calib(void);
+string yaw_get_offset(void);
+
+string _kv_store_reset(void);
 
 #endif

@@ -244,6 +244,8 @@ command_t serial_check_for_command(void) {
     while (true) {
       c = Serial.read();
       if (c == EOT) { 
+        Serial.print("c = ");
+        Serial.println(c, HEX);
         serial_tmp_buffer[i++] = c;
         break;
       } else if (c == NO_DATA) {
@@ -258,7 +260,7 @@ command_t serial_check_for_command(void) {
       serial_tmp_buffer[i++] = c;
     }
     serial_tmp_buffer[i++] = '\0'; // Not 100% sure if necessary here when we feed it to std::string.
-    std::string msg(serial_tmp_buffer);
+    std::string msg(serial_tmp_buffer, i);
     Serial.println(msg.c_str());
 
     command_t cmd = retrieve_command(msg);
@@ -283,7 +285,9 @@ void loop() {
 
   if (millis() - serial_output_timer > 200) {
     serial_output_timer = millis();
-    print_output();
+    std::string output = print_output();
+    
+    Serial.println(output.c_str());
   }
 
   // NOTE: For Arduino Nano33 BLE the serial input buffer is 256 bytes.
@@ -295,8 +299,10 @@ void loop() {
 
     // INFO: With this implementation we read and execute single command every iteration, meaning the queue is useless.
     commands.push(serial_check_for_command());
-    execute_command(commands.front());
+    std::string output = execute_command(commands.front());
     commands.pop();
+
+    Serial.println(output.c_str());
   }
 }
 

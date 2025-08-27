@@ -22,27 +22,25 @@ using std::vector;
  ---------------- SERIAL OUTPUT PART ------------------------------
 */
 
-void printAHRSeuler(void) {
+string printAHRSeuler(void) {
     const FusionEuler euler =
         FusionQuaternionToEuler(FusionAhrsGetQuaternion(&AHRS));
 
-    string str = "Roll: " + std::to_string(euler.angle.roll) + ", " +
+    string msg = "Roll: " + std::to_string(euler.angle.roll) + ", " +
                  "Pitch: " + std::to_string(euler.angle.pitch) + ", " +
                  "Yaw: " + std::to_string(euler.angle.yaw) + ", " +
                  "Compass: " + std::to_string(CompassHeading);
-    Serial.println(str.c_str());
+    return msg;
 }
 
 void printAHRSeulerDebug(void) {
     // TODO: implement.
 }
 
-void printNothing(void) { return; }
-
-void printFusionVector(FusionVector vec) {
+string printFusionVector(FusionVector vec) {
     string str = std::to_string(vec.axis.x) + ", " +
                  std::to_string(vec.axis.y) + ", " + std::to_string(vec.axis.z);
-    Serial.println(str.c_str());
+    return str;
 }
 
 void printFusionMatrix(FusionMatrix mat) {
@@ -50,37 +48,31 @@ void printFusionMatrix(FusionMatrix mat) {
 };
 
 // INFO: Better than the old 'get pointer to function from map and call that'...
-void print_output(void) {
+string print_output(void) {
     switch (SerialOutputMode) {
     case SERIAL_PRINT_NOTHING:
-        printNothing();
-        break;
+        return string();
     case SERIAL_PRINT_AHRS:
-        printAHRSeuler();
-        break;
+        return printAHRSeuler();
     case SERIAL_PRINT_AHRS_DEBUG:
-        // printAHRSeulerDebug();
+        // return printAHRSeulerDebug();
         break;
     case SERIAL_PRINT_ACC_CALIB:
-        printFusionVector(acc_calibrated);
-        break;
+        return printFusionVector(acc_calibrated);
     case SERIAL_PRINT_MAG_CALIB:
-        printFusionVector(mag_calibrated);
-        break;
+        return printFusionVector(mag_calibrated);
     case SERIAL_PRINT_GYRO_CALIB:
-        printFusionVector(gyro_calibrated);
-        break;
+        return printFusionVector(gyro_calibrated);
     case SERIAL_PRINT_ACC_RAW:
-        printFusionVector(acc_raw);
-        break;
+        return printFusionVector(acc_raw);
     case SERIAL_PRINT_MAG_RAW:
-        printFusionVector(mag_raw);
-        break;
+        return printFusionVector(mag_raw);
     case SERIAL_PRINT_GYRO_RAW:
-        printFusionVector(gyro_raw);
-        break;
+        return printFusionVector(gyro_raw);
     default:
-        Serial.println("Error: Output mode not found;");
+        string msg = "Error: Output mode " + std::to_string(SerialOutputMode) +
+                     " is not valid.";
+        return msg;
     };
 }
 /*
@@ -94,37 +86,37 @@ void print_output(void) {
 // TODO: Maybe replace individual MAG_GET, ACC_GET... MAG_SET, ACC_SET commands
 // with generic CALIBRATION_GET & CALIBRATION_GET -functions which take target
 // as parameter.
-void execute_command(command_t &cmd) {
+string execute_command(command_t &cmd) {
     switch (cmd.id) {
     case SERIAL_SET_PRINT_MODE:
-        set_print_mode(cmd.params);
+        return set_print_mode(cmd.params);
         break;
     case SERIAL_MAG_SET_CALIB:
-        mag_set_calib(cmd.params);
+        return mag_set_calib(cmd.params);
         break;
     case SERIAL_MAG_GET_CALIB:
-        mag_get_calib();
+        return mag_get_calib();
         break;
     case SERIAL_ACC_SET_CALIB:
-        acc_set_calib(cmd.params);
+        return acc_set_calib(cmd.params);
         break;
     case SERIAL_ACC_GET_CALIB:
-        acc_get_calib();
+        return acc_get_calib();
         break;
     case SERIAL_GYRO_SET_CALIB:
-        gyro_set_calib(cmd.params);
+        return gyro_set_calib(cmd.params);
         break;
     case SERIAL_GYRO_GET_CALIB:
-        gyro_get_calib();
+        return gyro_get_calib();
         break;
     case SERIAL_SET_OFFSET:
-        yaw_set_offset(cmd.params);
+        return yaw_set_offset(cmd.params);
         break;
     case SERIAL_GET_OFFSET:
-        yaw_get_offset();
+        return yaw_get_offset();
         break;
     case SERIAL_RESET_KVSTORE:
-        kv_store_reset();
+        return _kv_store_reset();
         break;
 
     default:
@@ -228,7 +220,7 @@ void get_calibration_magnetic(command_t &cmd,
     cmd.params.push_back(hard_iron_offset.axis.z);
 }
 
-void mag_set_calib(vector<float> params) {
+string mag_set_calib(vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     set_calibration_magnetic(params, soft_iron, hard_iron);
@@ -236,10 +228,10 @@ void mag_set_calib(vector<float> params) {
     kv_store_save_calibration("MagGain", soft_iron);
 
     string s = int_to_hex(SERIAL_MAG_SET_CALIB) + ", Calibration set;";
-    Serial.println(s.c_str());
+    return s;
 }
 
-void mag_get_calib(void) {
+string mag_get_calib(void) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     command_t cmd;
@@ -247,10 +239,10 @@ void mag_get_calib(void) {
     get_calibration_magnetic(cmd, soft_iron, hard_iron);
 
     string msg = create_message(cmd);
-    Serial.println(msg.c_str());
+    return msg;
 }
 
-void acc_set_calib(vector<float> params) {
+string acc_set_calib(vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     set_calibration_inertial(params, acc_misalignment, acc_gain, acc_offset);
@@ -258,10 +250,10 @@ void acc_set_calib(vector<float> params) {
     kv_store_save_calibration("AccGain", acc_gain);
 
     string s = int_to_hex(SERIAL_ACC_SET_CALIB) + ", Calibration set;";
-    Serial.println(s.c_str());
+    return s;
 }
 
-void acc_get_calib(void) {
+string acc_get_calib(void) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     command_t cmd;
@@ -269,10 +261,10 @@ void acc_get_calib(void) {
     get_calibration_inertial(cmd, acc_misalignment, acc_gain, acc_offset);
 
     string msg = create_message(cmd);
-    Serial.println(msg.c_str());
+    return msg;
 }
 
-void gyro_set_calib(vector<float> params) {
+string gyro_set_calib(vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     set_calibration_inertial(params, gyro_misalignment, gyro_gain, gyro_offset);
@@ -280,10 +272,10 @@ void gyro_set_calib(vector<float> params) {
     kv_store_save_calibration("GyroGain", gyro_gain);
 
     string s = int_to_hex(SERIAL_GYRO_SET_CALIB) + ", Calibration set;";
-    Serial.println(s.c_str());
+    return s;
 }
 
-void gyro_get_calib(void) {
+string gyro_get_calib(void) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     command_t cmd;
@@ -291,10 +283,10 @@ void gyro_get_calib(void) {
     get_calibration_inertial(cmd, gyro_misalignment, gyro_gain, gyro_offset);
 
     string msg = create_message(cmd);
-    Serial.println(msg.c_str());
+    return msg;
 }
 
-void yaw_set_offset(vector<float> params) {
+string yaw_set_offset(vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     AxisOffset.axis.x = params[0];
@@ -302,9 +294,10 @@ void yaw_set_offset(vector<float> params) {
     AxisOffset.axis.x = params[2];
 
     kv_store_save_calibration("AxisOffset", AxisOffset);
-    Serial.println("Yaw offset set;");
+    string msg("Yaw offset set;");
+    return msg;
 }
-void yaw_get_offset(void) {
+string yaw_get_offset(void) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     command_t cmd;
@@ -315,18 +308,26 @@ void yaw_get_offset(void) {
     cmd.params.push_back(AxisOffset.axis.z);
 
     string msg = create_message(cmd);
-    Serial.println(msg.c_str());
+    return msg;
 }
 
-void set_print_mode(vector<float> params) {
+string set_print_mode(vector<float> params) {
     if (params.size() < 1) {
-        Serial.println("Error: No parameters given;");
-        return;
+        string err("Error: No serial output mode given");
+        return err;
     }
 
     SerialOutputMode = static_cast<uint8_t>(params[0]);
     string msg = "Output mode set to " + int_to_hex(SerialOutputMode) + ";";
-    Serial.println(msg.c_str());
+    return msg;
+}
+
+// TODO: Stupid wrapper function...
+string _kv_store_reset() {
+    kv_store_reset();
+
+    string msg("Resetting KV-store");
+    return msg;
 }
 
 /*
