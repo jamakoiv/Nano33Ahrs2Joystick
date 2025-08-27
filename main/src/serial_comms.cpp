@@ -1,5 +1,6 @@
 #include "serial_comms.h"
 #include "Fusion/Fusion.h"
+#include "Fusion/FusionMath.h"
 #include "ino_globals.h"
 #include "kv_storage.h"
 #include "serial_utils.h"
@@ -89,7 +90,11 @@ void print_output(void) {
 /*
 -------------------- SERIAL INPUT PART --------------------------
 */
-void execute_commands(command_t &cmd) {
+
+// TODO: Maybe replace individual MAG_GET, ACC_GET... MAG_SET, ACC_SET commands
+// with generic CALIBRATION_GET & CALIBRATION_GET -functions which take target
+// as parameter.
+void execute_command(command_t &cmd) {
     switch (cmd.id) {
     case SERIAL_SET_PRINT_MODE:
         set_print_mode(cmd.params);
@@ -127,6 +132,100 @@ void execute_commands(command_t &cmd) {
         Serial.println(msg.c_str());
         break;
     }
+}
+
+void set_calibration_inertial(const vector<float> &params,
+                              FusionMatrix &misalignment,
+                              FusionVector &sensitivity, FusionVector &offset) {
+    if (params.size() < 9 + 3 + 3) {
+        Serial.println("Not enough parameters supplied.");
+        return;
+    }
+
+    misalignment.element.xx = params[0];
+    misalignment.element.xy = params[1];
+    misalignment.element.xz = params[2];
+    misalignment.element.yx = params[3];
+    misalignment.element.yy = params[4];
+    misalignment.element.yz = params[5];
+    misalignment.element.zx = params[6];
+    misalignment.element.zy = params[7];
+    misalignment.element.zz = params[8];
+
+    sensitivity.axis.x = params[9];
+    sensitivity.axis.y = params[10];
+    sensitivity.axis.z = params[11];
+
+    offset.axis.x = params[12];
+    offset.axis.y = params[13];
+    offset.axis.z = params[14];
+}
+
+void set_calibration_magnetic(const vector<float> &params,
+                              FusionMatrix &soft_iron_matrix,
+                              FusionVector &hard_iron_offset) {
+    if (params.size() < 9 + 3) {
+        Serial.println("Not enough parameters supplied.");
+        return;
+    }
+
+    soft_iron_matrix.element.xx = params[0];
+    soft_iron_matrix.element.xy = params[1];
+    soft_iron_matrix.element.xz = params[2];
+    soft_iron_matrix.element.yx = params[3];
+    soft_iron_matrix.element.yy = params[4];
+    soft_iron_matrix.element.yz = params[5];
+    soft_iron_matrix.element.zx = params[6];
+    soft_iron_matrix.element.zy = params[7];
+    soft_iron_matrix.element.zz = params[8];
+
+    hard_iron_offset.axis.x = params[9];
+    hard_iron_offset.axis.y = params[10];
+    hard_iron_offset.axis.z = params[11];
+}
+
+void get_calibration_inertial(command_t &cmd, const FusionMatrix &misalignment,
+                              const FusionVector &sensitivity,
+                              const FusionVector &offset) {
+    cmd.n_params = 9 + 3 + 3;
+
+    cmd.params.push_back(misalignment.element.xx);
+    cmd.params.push_back(misalignment.element.xy);
+    cmd.params.push_back(misalignment.element.xz);
+    cmd.params.push_back(misalignment.element.yx);
+    cmd.params.push_back(misalignment.element.yy);
+    cmd.params.push_back(misalignment.element.yz);
+    cmd.params.push_back(misalignment.element.zx);
+    cmd.params.push_back(misalignment.element.zy);
+    cmd.params.push_back(misalignment.element.zz);
+
+    cmd.params.push_back(sensitivity.axis.x);
+    cmd.params.push_back(sensitivity.axis.y);
+    cmd.params.push_back(sensitivity.axis.z);
+
+    cmd.params.push_back(offset.axis.x);
+    cmd.params.push_back(offset.axis.y);
+    cmd.params.push_back(offset.axis.z);
+}
+
+void get_calibration_magnetic(command_t &cmd,
+                              const FusionMatrix &soft_iron_matrix,
+                              const FusionVector &hard_iron_offset) {
+    cmd.n_params = 9 + 3;
+
+    cmd.params.push_back(soft_iron_matrix.element.xx);
+    cmd.params.push_back(soft_iron_matrix.element.xy);
+    cmd.params.push_back(soft_iron_matrix.element.xz);
+    cmd.params.push_back(soft_iron_matrix.element.yx);
+    cmd.params.push_back(soft_iron_matrix.element.yy);
+    cmd.params.push_back(soft_iron_matrix.element.yz);
+    cmd.params.push_back(soft_iron_matrix.element.zx);
+    cmd.params.push_back(soft_iron_matrix.element.zy);
+    cmd.params.push_back(soft_iron_matrix.element.zz);
+
+    cmd.params.push_back(hard_iron_offset.axis.x);
+    cmd.params.push_back(hard_iron_offset.axis.y);
+    cmd.params.push_back(hard_iron_offset.axis.z);
 }
 
 void mag_set_calib(vector<float> params) {

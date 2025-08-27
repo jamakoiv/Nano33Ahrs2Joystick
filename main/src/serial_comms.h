@@ -42,8 +42,7 @@ static const int SERIAL_BAUDRATE =
 static const int SERIAL_READ_BUFFER_SIZE = 2048; // 2 kB
 static char serialBuffer[SERIAL_READ_BUFFER_SIZE];
 
-void execute_commands(vector<command_t> &commands);
-vector<command_t> check_serial_input(void);
+void execute_command(command_t &commands);
 
 void print_output(void);
 void set_print_mode(vector<float> params);
