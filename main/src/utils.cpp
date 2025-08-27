@@ -86,53 +86,6 @@ std::vector<float> split_and_strtof(std::string input,
     return res;
 }
 
-int set_calib_helper(const std::vector<float> &data, FusionVector &offset) {
-    if (data.size() < 3) {
-        return -1;
-    } else {
-        offset.axis.x = data[0];
-        offset.axis.y = data[1];
-        offset.axis.z = data[2];
-
-        return 0;
-    }
-}
-
-int set_calib_helper(const std::vector<float> &data, FusionVector &offset,
-                     FusionVector &gain) {
-    if (data.size() < 6) {
-        return -1;
-    } else {
-        offset.axis.x = data[0];
-        offset.axis.y = data[1];
-        offset.axis.z = data[2];
-        gain.axis.x = data[3];
-        gain.axis.y = data[4];
-        gain.axis.z = data[5];
-
-        return 0;
-    }
-}
-
-int set_calib_helper(const std::vector<float> &data, FusionVector &offset,
-                     FusionMatrix &gain) {
-    if (data.size() < 6) {
-        return -1;
-    } else {
-        offset.axis.x = data[0];
-        offset.axis.y = data[1];
-        offset.axis.z = data[2];
-
-        // TODO: This will fuck us if we ever use it for anything else than to
-        // set the soft-iron calibration matrix.
-        gain.element.xx = 1.0 / data[3];
-        gain.element.yy = 1.0 / data[4];
-        gain.element.zz = 1.0 / data[5];
-
-        return 0;
-    }
-}
-
 float remap_yaw(float yaw, float d) {
     float overlap = 0;
     float res = yaw + d;
