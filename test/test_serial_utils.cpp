@@ -161,10 +161,11 @@ void test_create_message_escape() {
     command_t cmd;
     cmd.id = 0x02;
     cmd.n_params = 3;
-    cmd.params = {0.5117493, 1.11, 1.11};
+    cmd.params = {0.5117493, 1.00, 1.11};
 
-    string correct("\x01\x1b\x22\x1b\x23\x02\x1b\x21\x1b\x22\x1b\x23\x3f\x7b"
-                   "\x14\x8e\x3f\x7b\x14\x8e\x3f\x03\x04");
+    string correct(
+        "\x01\x1b\x22\x1b\x23\x02\x1b\x21\x1b\x22\x1b\x23\x3f\x1b\x20"
+        "\x1b\x20\x80\x3f\x7b\x14\x8e\x3f\x03\x04");
     string res = create_message(cmd);
 
     std::cout << "[test_create_message_escape] correct: ";
@@ -188,15 +189,15 @@ void test_retrieve_command() {
 }
 
 void test_retrieve_command_escape() {
-    string msg("\x01\x1b\x22\x1b\x23\x02\x1b\x21\x1b\x22\x1b\x23\x3f\x7b"
-               "\x14\x8e\x3f\x7b\x14\x8e\x3f\x03\x04");
+    string msg("\x01\x1b\x22\x1b\x23\x02\x1b\x21\x1b\x22\x1b\x23\x3f"
+               "\x1b\x20\x1b\x20\x80\x3f\x7b\x14\x8e\x3f\x03\x04");
 
-    command_t correct_cmd = {0x02, 3, {0.5117493, 1.11, 1.11}};
+    command_t correct_cmd = {0x02, 3, {0.5117493, 1.00, 1.11}};
     command_t res = retrieve_command(msg);
 
     assert(res.id == correct_cmd.id);
     assert(res.n_params == correct_cmd.n_params);
-    assert(res.params == std::vector<float>({0.5117493, 1.11, 1.11}));
+    assert(res.params == std::vector<float>({0.5117493, 1.00, 1.11}));
 }
 
 int main() {

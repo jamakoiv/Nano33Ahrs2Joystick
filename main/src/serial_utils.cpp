@@ -10,6 +10,7 @@
 using std::string;
 
 enum ASCII {
+    NUL_BYTE = 0x00,
     SOH = 0x01,
     STX = 0x02,
     ETX = 0x03,
@@ -17,7 +18,7 @@ enum ASCII {
     ESC = 0x1b,
     ESCAPE_OFFSET = 0x20,
 };
-std::set<char> TRANSMISSION_CONTROL_CHARS = {SOH, STX, ETX, EOT, ESC};
+std::set<char> TRANSMISSION_CONTROL_CHARS = {SOH, STX, ETX, EOT, ESC, NUL_BYTE};
 
 // INFO: Technically undefined behaviour, but works on GCC-suite (and clang).
 union float_bytes_t {
