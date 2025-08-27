@@ -45,6 +45,12 @@ FusionVector acc_gain_default {1.0, 1.0, 1.0};
 FusionVector acc_offset;
 FusionVector acc_offset_default = {0.0325f, 0.0306f, 0.01819f}; 
 
+FusionMatrix acc_misalignment = {
+  1.0, 0.0, 0.0,
+  0.0, 1.0, 0.0,
+  0.0, 0.0, 1.0
+};
+
 // Variables for gyroscope values and calibrations.
 FusionVector gyro_raw;
 FusionVector gyro_calibrated;
@@ -52,6 +58,12 @@ FusionVector gyro_gain;
 FusionVector gyro_gain_default {1.125f, 1.125f, 1.125f};
 FusionVector gyro_offset;
 FusionVector gyro_offset_default = {0.50019f, 0.68556f, -0.13808f}; // 238 Hz values
+                                                                    //
+FusionMatrix gyro_misalignment = {
+  1.0, 0.0, 0.0,
+  0.0, 1.0, 0.0,
+  0.0, 0.0, 1.0
+};
 
 // Variables for magnetometer values and calibrations.
 FusionVector mag_raw;
