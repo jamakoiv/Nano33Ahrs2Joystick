@@ -82,7 +82,7 @@ command_t retrieve_command(const string &msg) {
     } else if (check == -13) {
         return command_t{-13, 0, {}, "Transmission end byte not found"};
     } else if (check == -2) {
-        return command_t{-2, 0, {}, "Control characters in wrong order"}
+        return command_t{-2, 0, {}, "Control characters in wrong order"};
     }
 
     auto [raw_header, raw_body] = retrieve_header_and_body(msg);
