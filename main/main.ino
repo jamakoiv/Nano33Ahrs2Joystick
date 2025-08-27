@@ -279,7 +279,9 @@ void loop() {
     delay(100);
 
     std::vector<command_t> commands = check_serial_input();
-    execute_commands(commands);
+    for (command_t cmd : commands) {
+      execute_command(cmd);
+    }
   }
 }
 

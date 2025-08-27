@@ -87,48 +87,45 @@ void print_output(void) {
 */
 
 /*
--------------------- SERIAL INPUT PART --------------------
+-------------------- SERIAL INPUT PART --------------------------
 */
+void execute_commands(command_t &cmd) {
+    switch (cmd.id) {
+    case SERIAL_SET_PRINT_MODE:
+        set_print_mode(cmd.params);
+        break;
+    case SERIAL_MAG_SET_CALIB:
+        mag_set_calib(cmd.params);
+        break;
+    case SERIAL_MAG_GET_CALIB:
+        mag_get_calib(cmd.params);
+        break;
+    case SERIAL_ACC_SET_CALIB:
+        acc_set_calib(cmd.params);
+        break;
+    case SERIAL_ACC_GET_CALIB:
+        acc_get_calib(cmd.params);
+        break;
+    case SERIAL_GYRO_SET_CALIB:
+        gyro_set_calib(cmd.params);
+        break;
+    case SERIAL_GYRO_GET_CALIB:
+        gyro_get_calib(cmd.params);
+        break;
+    case SERIAL_SET_OFFSET:
+        yaw_set_offset(cmd.params);
+        break;
+    case SERIAL_GET_OFFSET:
+        yaw_get_offset(cmd.params);
+        break;
+    case SERIAL_RESET_KVSTORE:
+        kv_store_reset();
+        break;
 
-void execute_commands(vector<command_t> &commands) {
-    for (command_t cmd : commands) {
-        switch (cmd.id) {
-        case SERIAL_SET_PRINT_MODE:
-            set_print_mode(cmd.params);
-            break;
-        case SERIAL_MAG_SET_CALIB:
-            mag_set_calib(cmd.params);
-            break;
-        case SERIAL_MAG_GET_CALIB:
-            mag_get_calib(cmd.params);
-            break;
-        case SERIAL_ACC_SET_CALIB:
-            acc_set_calib(cmd.params);
-            break;
-        case SERIAL_ACC_GET_CALIB:
-            acc_get_calib(cmd.params);
-            break;
-        case SERIAL_GYRO_SET_CALIB:
-            gyro_set_calib(cmd.params);
-            break;
-        case SERIAL_GYRO_GET_CALIB:
-            gyro_get_calib(cmd.params);
-            break;
-        case SERIAL_SET_OFFSET:
-            yaw_set_offset(cmd.params);
-            break;
-        case SERIAL_GET_OFFSET:
-            yaw_get_offset(cmd.params);
-            break;
-        case SERIAL_RESET_KVSTORE:
-            kv_store_reset();
-            break;
-
-        default:
-            string msg = "Command " + std::to_string(cmd.id) + " not found.";
-            Serial.println(msg.c_str());
-            break;
-        }
+    default:
+        string msg = "Command " + std::to_string(cmd.id) + " not found.";
+        Serial.println(msg.c_str());
+        break;
     }
 }
 
