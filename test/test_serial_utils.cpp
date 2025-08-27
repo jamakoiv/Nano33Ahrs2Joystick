@@ -56,14 +56,35 @@ void test_sanity_check_message() {
     assert(res == 0);
 }
 
-void test_sanity_check_message_fail1() {
+void test_sanity_check_message_missing_SOH() {
     string fail{0x31, 0x05, 0x02, 0x20, 0x21, 0x22, 0x23, 0x24, 0x03, 0x04};
 
     int res = sanity_check_message(fail);
-    assert(res == -1);
+    assert(res == -10);
 }
 
-void test_sanity_check_message_fail2() {
+void test_sanity_check_message_missing_STX() {
+    string correct{0x01, 0x31, 0x05, 0x20, 0x21, 0x22, 0x23, 0x24, 0x03, 0x04};
+
+    int res = sanity_check_message(correct);
+    assert(res == -11);
+}
+
+void test_sanity_check_message_missing_ETX() {
+    string correct{0x01, 0x31, 0x05, 0x02, 0x20, 0x21, 0x22, 0x23, 0x24, 0x04};
+
+    int res = sanity_check_message(correct);
+    assert(res == -12);
+}
+
+void test_sanity_check_message_missing_EOT() {
+    string correct{0x01, 0x31, 0x05, 0x02, 0x20, 0x21, 0x22, 0x23, 0x24, 0x03};
+
+    int res = sanity_check_message(correct);
+    assert(res == -13);
+}
+
+void test_sanity_check_message_wrong_order() {
     string fail{0x02, 0x31, 0x05, 0x01, 0x20, 0x21,
                 0x22, 0x23, 0x24, 0x03, 0x04};
 
@@ -98,7 +119,7 @@ void test_bytes2command() {
 
     command_t correct_cmd;
     correct_cmd.id = 0x31;
-    correct_cmd.n_bytes = 3;
+    correct_cmd.n_params = 3;
     correct_cmd.params = {1.11, 2.22, 3.33};
 
     command_t res = bytes2command(header, body);
@@ -158,7 +179,7 @@ void test_retrieve_command() {
     string msg("\x01\x31\x05\x02\x7b\x14\x8e\x3f\x7b\x14\x8e\x3f\x7b\x14"
                "\x8e\x3f\x7b\x14\x8e\x3f\x7b\x14\x8e\x3f\x03\x04");
 
-    command_t correct_cmd = {0x31, 5, 5, {1.11, 1.11, 1.11, 1.11, 1.11}};
+    command_t correct_cmd = {0x31, 5, {1.11, 1.11, 1.11, 1.11, 1.11}};
     command_t res = retrieve_command(msg);
 
     assert(res.id == correct_cmd.id);
@@ -170,7 +191,7 @@ void test_retrieve_command_escape() {
     string msg("\x01\x1b\x22\x1b\x23\x02\x1b\x21\x1b\x22\x1b\x23\x3f\x7b"
                "\x14\x8e\x3f\x7b\x14\x8e\x3f\x03\x04");
 
-    command_t correct_cmd = {0x02, 3, 3, {0.5117493, 1.11, 1.11}};
+    command_t correct_cmd = {0x02, 3, {0.5117493, 1.11, 1.11}};
     command_t res = retrieve_command(msg);
 
     assert(res.id == correct_cmd.id);
@@ -185,8 +206,11 @@ int main() {
     test_retrieve_header_and_body();
 
     test_sanity_check_message();
-    test_sanity_check_message_fail1();
-    test_sanity_check_message_fail2();
+    test_sanity_check_message_missing_SOH();
+    test_sanity_check_message_missing_STX();
+    test_sanity_check_message_missing_ETX();
+    test_sanity_check_message_missing_EOT();
+    test_sanity_check_message_wrong_order();
 
     test_command2bytes();
     test_bytes2command();
