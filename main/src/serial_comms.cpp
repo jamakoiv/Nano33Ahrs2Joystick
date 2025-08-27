@@ -103,25 +103,25 @@ void execute_command(command_t &cmd) {
         mag_set_calib(cmd.params);
         break;
     case SERIAL_MAG_GET_CALIB:
-        mag_get_calib(cmd.params);
+        mag_get_calib();
         break;
     case SERIAL_ACC_SET_CALIB:
         acc_set_calib(cmd.params);
         break;
     case SERIAL_ACC_GET_CALIB:
-        acc_get_calib(cmd.params);
+        acc_get_calib();
         break;
     case SERIAL_GYRO_SET_CALIB:
         gyro_set_calib(cmd.params);
         break;
     case SERIAL_GYRO_GET_CALIB:
-        gyro_get_calib(cmd.params);
+        gyro_get_calib();
         break;
     case SERIAL_SET_OFFSET:
         yaw_set_offset(cmd.params);
         break;
     case SERIAL_GET_OFFSET:
-        yaw_get_offset(cmd.params);
+        yaw_get_offset();
         break;
     case SERIAL_RESET_KVSTORE:
         kv_store_reset();
@@ -231,7 +231,7 @@ void get_calibration_magnetic(command_t &cmd,
 void mag_set_calib(vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
-    set_calib_helper(params, hard_iron, soft_iron);
+    set_calibration_magnetic(params, soft_iron, hard_iron);
     kv_store_save_calibration("MagOffset", hard_iron);
     kv_store_save_calibration("MagGain", soft_iron);
 
@@ -239,29 +239,21 @@ void mag_set_calib(vector<float> params) {
     Serial.println(s.c_str());
 }
 
-void mag_get_calib(vector<float> params) {
+void mag_get_calib(void) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     command_t cmd;
     cmd.id = SERIAL_MAG_GET_CALIB;
-    cmd.n_params = 6;
-    cmd.params.push_back(hard_iron.axis.x);
-    cmd.params.push_back(hard_iron.axis.y);
-    cmd.params.push_back(hard_iron.axis.z);
-    cmd.params.push_back(1.0 / soft_iron.element.xx);
-    cmd.params.push_back(1.0 / soft_iron.element.yy);
-    cmd.params.push_back(1.0 / soft_iron.element.zz);
-
-    // Serial.println(soft_iron.element.xx, 5);
-    // Serial.println(soft_iron.element.yy, 5);
-    // Serial.println(soft_iron.element.zz, 5);
+    get_calibration_magnetic(cmd, soft_iron, hard_iron);
 
     string msg = create_message(cmd);
     Serial.println(msg.c_str());
 }
 
 void acc_set_calib(vector<float> params) {
-    set_calib_helper(params, acc_offset, acc_gain);
+    SerialOutputMode = SERIAL_PRINT_NOTHING;
+
+    set_calibration_inertial(params, acc_misalignment, acc_gain, acc_offset);
     kv_store_save_calibration("AccOffset", acc_offset);
     kv_store_save_calibration("AccGain", acc_gain);
 
@@ -269,25 +261,21 @@ void acc_set_calib(vector<float> params) {
     Serial.println(s.c_str());
 }
 
-void acc_get_calib(vector<float> params) {
+void acc_get_calib(void) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     command_t cmd;
     cmd.id = SERIAL_ACC_GET_CALIB;
-    cmd.n_params = 6;
-    cmd.params.push_back(acc_offset.axis.x);
-    cmd.params.push_back(acc_offset.axis.y);
-    cmd.params.push_back(acc_offset.axis.z);
-    cmd.params.push_back(acc_gain.axis.x);
-    cmd.params.push_back(acc_gain.axis.y);
-    cmd.params.push_back(acc_gain.axis.z);
+    get_calibration_inertial(cmd, acc_misalignment, acc_gain, acc_offset);
 
     string msg = create_message(cmd);
     Serial.println(msg.c_str());
 }
 
 void gyro_set_calib(vector<float> params) {
-    set_calib_helper(params, gyro_offset, gyro_gain);
+    SerialOutputMode = SERIAL_PRINT_NOTHING;
+
+    set_calibration_inertial(params, gyro_misalignment, gyro_gain, gyro_offset);
     kv_store_save_calibration("GyroOffset", gyro_offset);
     kv_store_save_calibration("GyroGain", gyro_gain);
 
@@ -295,36 +283,39 @@ void gyro_set_calib(vector<float> params) {
     Serial.println(s.c_str());
 }
 
-void gyro_get_calib(vector<float> params) {
+void gyro_get_calib(void) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     command_t cmd;
     cmd.id = SERIAL_GYRO_GET_CALIB;
-    cmd.n_params = 6;
-    cmd.params.push_back(gyro_offset.axis.x);
-    cmd.params.push_back(gyro_offset.axis.y);
-    cmd.params.push_back(gyro_offset.axis.z);
-    cmd.params.push_back(gyro_gain.axis.x);
-    cmd.params.push_back(gyro_gain.axis.y);
-    cmd.params.push_back(gyro_gain.axis.z);
+    get_calibration_inertial(cmd, gyro_misalignment, gyro_gain, gyro_offset);
 
     string msg = create_message(cmd);
     Serial.println(msg.c_str());
 }
 
 void yaw_set_offset(vector<float> params) {
-    set_calib_helper(params, AxisOffset);
-    kv_store_save_calibration("AxisOffset", AxisOffset);
+    SerialOutputMode = SERIAL_PRINT_NOTHING;
 
+    AxisOffset.axis.x = params[0];
+    AxisOffset.axis.x = params[1];
+    AxisOffset.axis.x = params[2];
+
+    kv_store_save_calibration("AxisOffset", AxisOffset);
     Serial.println("Yaw offset set;");
 }
-void yaw_get_offset(vector<float> params) {
+void yaw_get_offset(void) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
-    string str =
-        "Axis Offset (yaw,pitch,roll): " + std::to_string(AxisOffset.axis.x) +
-        ", " + std::to_string(AxisOffset.axis.y) + ", " +
-        std::to_string(AxisOffset.axis.z) + ";";
-    Serial.println(str.c_str());
+
+    command_t cmd;
+    cmd.id = SERIAL_GET_OFFSET;
+    cmd.n_params = 3;
+    cmd.params.push_back(AxisOffset.axis.x);
+    cmd.params.push_back(AxisOffset.axis.y);
+    cmd.params.push_back(AxisOffset.axis.z);
+
+    string msg = create_message(cmd);
+    Serial.println(msg.c_str());
 }
 
 void set_print_mode(vector<float> params) {

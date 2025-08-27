@@ -48,12 +48,13 @@ void print_output(void);
 void set_print_mode(vector<float> params);
 
 void mag_set_calib(vector<float> params);
-void mag_get_calib(vector<float> params);
 void acc_set_calib(vector<float> params);
-void acc_get_calib(vector<float> params);
 void gyro_set_calib(vector<float> params);
-void gyro_get_calib(vector<float> params);
 void yaw_set_offset(vector<float> params);
-void yaw_get_offset(vector<float> params);
+
+void acc_get_calib(void);
+void mag_get_calib(void);
+void gyro_get_calib(void);
+void yaw_get_offset(void);
 
 #endif
