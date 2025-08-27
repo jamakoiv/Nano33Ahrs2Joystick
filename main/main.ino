@@ -1,3 +1,5 @@
+#include <queue>
+
 #include "src/Fusion/Fusion.h"
 #include "src/USBJoystick/USBCommsJoystick.h"
 #include "src/LSM9DS1/LSM9DS1.h"
@@ -11,6 +13,8 @@
  * TODO: Axis ranges are defined in multiple places with magic numbers. Replace with
  *      central definition.
 */
+
+std::queue<command_t> commands;
 
 USBCommsJoystick usb_comms;
 Joystick joystick;
@@ -230,29 +234,36 @@ void setup() {
     delay(100);
 }
 
-vector<command_t> check_serial_input(void) {
-    // NOTE: We assume 
+command_t serial_check_for_command(void) {
     const char EOT = 0x04;
-
+    const char NO_DATA = -1;
     std::strncpy(serial_tmp_buffer, NULL, 256);
-    vector<command_t> commands;
 
-    while (int bytes_read = Serial.readBytesUntil(EOT, serial_tmp_buffer, 256)) {
-        std::string msg(serial_tmp_buffer);
-        // TODO: Currently our processing assumes the EOT-byte is present in the message,
-        // but readBytesUntil does not include the terminator-byte in the read data.
-        msg.push_back(EOT); 
-        Serial.println(msg.c_str());
+    char c = 0xff;
+    int i = 0;
+    while (true) {
+      c = Serial.read();
+      if (c == EOT) { 
+        serial_tmp_buffer[i++] = c;
+        break;
+      } else if (c == NO_DATA) {
+        break; 
+      } else if (i > 256) {
+        Serial.println("Terminating reading before buffer overflow.");
+        return command_t{0,0};
+      }
 
-        command_t cmd = retrieve_command(msg);
-        Serial.println(cmd.id);
-        Serial.println(cmd.n_params);
-        commands.push_back(cmd);
-
-        std::strncpy(serialBuffer, NULL, 256);
+      Serial.print("c = ");
+      Serial.println(c, HEX);
+      serial_tmp_buffer[i++] = c;
     }
+    serial_tmp_buffer[i++] = '\0'; // Not 100% sure if necessary here when we feed it to std::string.
+    std::string msg(serial_tmp_buffer);
+    Serial.println(msg.c_str());
 
-    return commands;
+    command_t cmd = retrieve_command(msg);
+
+    return cmd;
 }
 
 void loop() {
@@ -262,24 +273,13 @@ void loop() {
   /*
    * Main functionality. Run the AHRS algorithm and update the current orientation to the joystick.
    */
-  //Serial.println("AHRS");
   AHRS_check();
-  //Serial.println("Update joystick.");
   updateJoystickAxes(&AHRS, &joystick, &usb_comms);
-  //Serial.println("Send HID-report.");
   usb_comms.update();
 
   if (millis() - serial_output_timer > 200) {
     serial_output_timer = millis();
     print_output();
-
-    //const auto [sendBlocking, autoSend] = usb_comms.getSettings();
-    //Serial.println(autoSend);
-    //Serial.println(sendBlocking);
-
-    //const auto [sendBlocking_ptr, autoSend_ptr] = usb_comms.getSettingsPtr();
-    //Serial.println(reinterpret_cast<int>(autoSend_ptr));
-    //Serial.println(reinterpret_cast<int>(sendBlocking_ptr));
   }
 
   // NOTE: For Arduino Nano33 BLE the serial input buffer is 256 bytes.
@@ -287,13 +287,12 @@ void loop() {
   // in the buffer and keep the delay. 
   // If things change we must get rid of the delay and read input continuously.
   if (Serial.available()) {
-    Serial.println("Serial available");
     delay(100);
 
-    std::vector<command_t> commands = check_serial_input();
-    for (command_t cmd : commands) {
-      execute_command(cmd);
-    }
+    // INFO: With this implementation we read and execute single command every iteration, meaning the queue is useless.
+    commands.push(serial_check_for_command());
+    execute_command(commands.front());
+    commands.pop();
   }
 }
 
