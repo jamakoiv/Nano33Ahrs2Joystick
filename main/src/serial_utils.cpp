@@ -72,8 +72,17 @@ string create_message(const command_t &cmd) {
 }
 
 command_t retrieve_command(const string &msg) {
-    if (sanity_check_message(msg) != 0) {
-        return command_t{0, 0};
+    int check = sanity_check_message(msg);
+    if (check == -10) {
+        return command_t{-10, 0, {}, "Header byte not found"};
+    } else if (check == -11) {
+        return command_t{-11, 0, {}, "Data start byte not found"};
+    } else if (check == -12) {
+        return command_t{-12, 0, {}, "Data end byte not found"};
+    } else if (check == -13) {
+        return command_t{-13, 0, {}, "Transmission end byte not found"};
+    } else if (check == -2) {
+        return command_t{-2, 0, {}, "Control characters in wrong order"}
     }
 
     auto [raw_header, raw_body] = retrieve_header_and_body(msg);
@@ -84,13 +93,6 @@ command_t retrieve_command(const string &msg) {
     command_t cmd = bytes2command(header, body);
     return cmd;
 }
-
-// string create_message(const string &header, const string &body) {
-//     string msg = string(1, SOH) + header + string(1, STX) + body +
-//                  string(1, ETX) + string(1, EOT);
-//
-//     return msg;
-// }
 
 std::tuple<string, string> retrieve_header_and_body(const string &msg) {
     size_t SOH_pos = msg.find(SOH);

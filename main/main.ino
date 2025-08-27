@@ -262,6 +262,10 @@ command_t serial_check_for_command(void) {
     Serial.println(msg.c_str());
 
     command_t cmd = retrieve_command(msg);
+    if (cmd.id < 0) {
+      std::string msg = "Error: " + cmd.err;
+      Serial.println(msg.c_str());
+    }
 
     return cmd;
 }
