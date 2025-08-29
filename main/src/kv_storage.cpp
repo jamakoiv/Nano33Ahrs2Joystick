@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <kvstore_global_api.h>
+#include <map>
 #include <mbed_error.h>
-#include <stdint.h>
 #include <string>
 
 #include "Fusion/FusionMath.h"
@@ -9,16 +9,23 @@
 #include "kv_storage.h"
 #include "utils.h"
 
-std::string kv_keys[7] = {"MagOffset",  "MagGain",  "AccOffset",   "AccGain",
-                          "GyroOffset", "GyroGain", "OutputOffset"};
+using std::string;
+
+std::map<int, string> kv_keys = {{cal_mag_offset, "MagOffset"},
+                                 {cal_mag_gain, "MagGain"},
+                                 {cal_acc_offset, "AccOffset"},
+                                 {cal_acc_gain, "AccGain"},
+                                 {cal_gyro_offset, "GyroOffset"},
+                                 {cal_gyro_gain, "GyroGain"},
+                                 {cal_euler_output_offset, "OutputOffset"}};
 
 /*
 "AxisOffset"-------------------- KV-STORE PART --------------------
 */
 
-const uint8_t KV_BUFFER_SIZE = 64;
-const std::string kv_path = "/kv/";
-const std::string kv_init_key = kv_path + "KVStore_global_api_init";
+const int KV_BUFFER_SIZE = 64;
+const string kv_path = "/kv/";
+const string kv_init_key = kv_path + "KVStore_global_api_init";
 
 bool kv_store_initialized(void) {
     kv_info_t info;
@@ -45,11 +52,10 @@ bool kv_store_initialized(void) {
     }
 }
 
-bool kv_store_save_calibration(const std::string &key,
-                               const FusionVector &data) {
-    std::string data_str = std::to_string(data.axis.x) + "," +
-                           std::to_string(data.axis.y) + "," +
-                           std::to_string(data.axis.z);
+bool kv_store_save_calibration(const string key, const FusionVector &data) {
+    string data_str = std::to_string(data.axis.x) + "," +
+                      std::to_string(data.axis.y) + "," +
+                      std::to_string(data.axis.z);
     auto full_key = kv_path + key;
 
     auto res = kv_set(full_key.c_str(), data_str.c_str(), data_str.length(), 0);
@@ -60,22 +66,14 @@ bool kv_store_save_calibration(const std::string &key,
         return false;
 }
 
-bool kv_store_load_calibration(const std::string &key, FusionVector &calib,
+bool kv_store_load_calibration(const string key, FusionVector &calib,
                                FusionVector &factory_default) {
-    /*
-      Load calibration values from the KVstore. If the KVStore key does not
-      exist, set calibration to given factory defaults.
-
-      Returns true if calibration was loaded from KVStore succesfully.
-      Returns false if loading failed and defaults were used instead.
-    */
     static char kv_get_buffer[KV_BUFFER_SIZE];
-    static std::string VALUES_DELIMITER = ",";
+    static string VALUES_DELIMITER = ",";
 
     size_t bytes_received;
     kv_info_t info;
     auto full_key = kv_path + key;
-
     calib = factory_default;
 
     auto res = kv_get_info(full_key.c_str(), &info);
@@ -86,8 +84,7 @@ bool kv_store_load_calibration(const std::string &key, FusionVector &calib,
     if (res != MBED_SUCCESS)
         return false;
 
-    auto values =
-        split_and_strtof(std::string(kv_get_buffer), VALUES_DELIMITER);
+    auto values = split_and_strtof(string(kv_get_buffer), VALUES_DELIMITER);
     if (values.size() != 3)
         return false;
 
@@ -96,17 +93,10 @@ bool kv_store_load_calibration(const std::string &key, FusionVector &calib,
 }
 
 /* Brutal cut-paste for FusionMatrix overloads */
-bool kv_store_save_calibration(const std::string &key,
-                               const FusionMatrix &data) {
-    std::string data_str = std::to_string(data.element.xx) + "," +
-                           std::to_string(data.element.xy) + "," +
-                           std::to_string(data.element.xy) + "," +
-                           std::to_string(data.element.yz) + "," +
-                           std::to_string(data.element.yy) + "," +
-                           std::to_string(data.element.yz) + "," +
-                           std::to_string(data.element.zx) + "," +
-                           std::to_string(data.element.zy) + "," +
-                           std::to_string(data.element.zz);
+bool kv_store_save_calibration(const string key, const FusionMatrix &data) {
+    string data_str = std::to_string(data.element.xx) + "," +
+                      std::to_string(data.element.yy) + "," +
+                      std::to_string(data.element.zz);
 
     auto full_key = kv_path + key;
 
@@ -117,17 +107,10 @@ bool kv_store_save_calibration(const std::string &key,
         return false;
 }
 
-bool kv_store_load_calibration(const std::string &key, FusionMatrix &calib,
+bool kv_store_load_calibration(const string key, FusionMatrix &calib,
                                FusionMatrix &factory_default) {
-    /*
-      Load calibration values from the KVstore. If the KVStore key does not
-      exist, set calibration to given factory defaults.
-
-      Returns true if calibration was loaded from KVStore succesfully.
-      Returns false if loading failed and defaults were used instead.
-    */
     static char kv_get_buffer[KV_BUFFER_SIZE];
-    static std::string VALUES_DELIMITER = ",";
+    static string VALUES_DELIMITER = ",";
 
     size_t bytes_received;
     kv_info_t info;
@@ -143,21 +126,18 @@ bool kv_store_load_calibration(const std::string &key, FusionMatrix &calib,
     if (res != MBED_SUCCESS)
         return false;
 
-    auto values =
-        split_and_strtof(std::string(kv_get_buffer), VALUES_DELIMITER);
-    if (values.size() != 9)
+    auto values = split_and_strtof(string(kv_get_buffer), VALUES_DELIMITER);
+    if (values.size() != 3)
         return false;
 
-    calib =
-        (FusionMatrix){values[0], values[1], values[2], values[3], values[4],
-                       values[5], values[6], values[7], values[8]};
+    calib.element.xx = values[0];
+    calib.element.yy = values[1];
+    calib.element.zz = values[2];
+
     return true;
 }
 
-// kv_store_reset function has to match the 'std::map<...> input_functions'
-// signature.
-void kv_store_reset(std::vector<float> params) {
-
+void kv_store_reset(void) {
     // TODO: kv_store_initialized calls kv_reset as well.
     kv_reset(kv_path.c_str());
 

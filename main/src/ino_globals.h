@@ -21,6 +21,7 @@ extern FusionVector acc_gain;
 extern FusionVector acc_gain_default;
 extern FusionVector acc_offset;
 extern FusionVector acc_offset_default;
+extern FusionMatrix acc_misalignment;
 
 extern FusionVector gyro_raw;
 extern FusionVector gyro_calibrated;
@@ -28,6 +29,7 @@ extern FusionVector gyro_gain;
 extern FusionVector gyro_gain_default;
 extern FusionVector gyro_offset;
 extern FusionVector gyro_offset_default;
+extern FusionMatrix gyro_misalignment;
 
 extern FusionVector AxisOffset;
 extern FusionVector AxisOffset_default;

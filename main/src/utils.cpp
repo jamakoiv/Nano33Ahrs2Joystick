@@ -1,6 +1,5 @@
 #include "utils.h"
 #include "Fusion/FusionMath.h"
-#include <Serial.h>
 #include <iomanip>
 #include <sstream>
 
@@ -47,7 +46,7 @@ std::vector<std::string> split_between(const std::string &s, char start_char,
 }
 
 std::vector<std::string> split_input(std::string input,
-                                     const std::string &delimiter) {
+                                     const std::string delimiter) {
     /*
       Split string at 'delimiter' and return the pieces in a
       std::vector<std::string>.
@@ -85,49 +84,6 @@ std::vector<float> split_and_strtof(std::string input,
     }
 
     return res;
-}
-
-void set_calib_helper(const std::vector<float> &data, FusionVector &offset) {
-    if (data.size() < 3) {
-        Serial.println("Invalid input: Could not parse 3 floats from input.");
-    } else {
-        offset.axis.x = data[0];
-        offset.axis.y = data[1];
-        offset.axis.z = data[2];
-    }
-}
-
-void set_calib_helper(const std::vector<float> &data, FusionVector &offset,
-                      FusionVector &gain) {
-    /*
-
-    */
-    if (data.size() < 6) {
-        Serial.println("Invalid input: Could not parse 6 floats from input;");
-    } else {
-        offset.axis.x = data[0];
-        offset.axis.y = data[1];
-        offset.axis.z = data[2];
-        gain.axis.x = data[3];
-        gain.axis.y = data[4];
-        gain.axis.z = data[5];
-    }
-}
-
-void set_calib_helper(const std::vector<float> &data, FusionVector &offset,
-                      FusionMatrix &gain) {
-    if (data.size() < 6) {
-        Serial.println("Invalid input: Could not parse 6 floats from input;");
-    } else {
-        offset.axis.x = data[0];
-        offset.axis.y = data[1];
-        offset.axis.z = data[2];
-
-        // TODO: This will fuck us if we ever use it for anything else than to set the soft-iron calibration matrix.
-        gain.element.xx = 1.0/data[3];
-        gain.element.yy = 1.0/data[4];
-        gain.element.zz = 1.0/data[5];
-    }
 }
 
 float remap_yaw(float yaw, float d) {
