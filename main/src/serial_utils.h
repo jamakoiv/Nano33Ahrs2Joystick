@@ -1,3 +1,6 @@
+/*
+ * Functions for creating messages for binary transmissions.
+ */
 #ifndef __SERIAL_UTILS__
 #define __SERIAL_UTILS__
 
@@ -16,9 +19,15 @@ typedef struct {
     std::string err;
 } command_t;
 
-/*
- * Functions for creating messages for binary transmissions.
- */
+enum {
+    ASCII_NUL = 0x00,
+    ASCII_SOH = 0x01,
+    ASCII_STX = 0x02,
+    ASCII_ETX = 0x03,
+    ASCII_EOT = 0x04,
+    ASCII_ESC = 0x1b,
+    ESCAPE_OFFSET = 0x20,
+};
 
 /*
  * Create header and body from command.

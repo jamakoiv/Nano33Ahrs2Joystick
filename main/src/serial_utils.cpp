@@ -9,16 +9,8 @@
 
 using std::string;
 
-enum ASCII {
-    NUL_BYTE = 0x00,
-    SOH = 0x01,
-    STX = 0x02,
-    ETX = 0x03,
-    EOT = 0x04,
-    ESC = 0x1b,
-    ESCAPE_OFFSET = 0x20,
-};
-std::set<char> TRANSMISSION_CONTROL_CHARS = {SOH, STX, ETX, EOT, ESC, NUL_BYTE};
+std::set<char> TRANSMISSION_CONTROL_CHARS = {ASCII_SOH, ASCII_STX, ASCII_ETX,
+                                             ASCII_EOT, ASCII_ESC, ASCII_NUL};
 
 // INFO: Technically undefined behaviour, but works on GCC-suite (and clang).
 union float_bytes_t {
@@ -55,7 +47,8 @@ command_t bytes2command(const string &header, const string &body) {
     cmd.params.reserve(cmd.n_params);
     const char *tmp_array = body.c_str();
     for (int i = 0; i < cmd.n_params; i++, tmp_array += sizeof(float)) {
-        std::memcpy(float_bytes.b, tmp_array, sizeof(float));
+        std::memcpy(float_bytes.b, tmp_array,
+                    sizeof(float)); // TODO: Is memcpy the best we can do here?
         cmd.params.push_back(float_bytes.f);
     }
 
@@ -67,8 +60,8 @@ string create_message(const command_t &cmd) {
     string header = parse_outbound_bytes(raw_header);
     string body = parse_outbound_bytes(raw_body);
 
-    string msg = string(1, SOH) + header + string(1, STX) + body +
-                 string(1, ETX) + string(1, EOT);
+    string msg = string(1, ASCII_SOH) + header + string(1, ASCII_STX) + body +
+                 string(1, ASCII_ETX) + string(1, ASCII_EOT);
     return msg;
 }
 
@@ -96,10 +89,9 @@ command_t retrieve_command(const string &msg) {
 }
 
 std::tuple<string, string> retrieve_header_and_body(const string &msg) {
-    size_t SOH_pos = msg.find(SOH);
-    size_t STX_pos = msg.find(STX);
-    size_t ETX_pos = msg.find(ETX);
-    size_t EOT_pos = msg.find(EOT);
+    size_t SOH_pos = msg.find(ASCII_SOH);
+    size_t STX_pos = msg.find(ASCII_STX);
+    size_t ETX_pos = msg.find(ASCII_ETX);
 
     string header = msg.substr(SOH_pos + 1, STX_pos - SOH_pos - 1);
     string body = msg.substr(STX_pos + 1, ETX_pos - STX_pos - 1);
@@ -113,10 +105,10 @@ std::tuple<string, string> retrieve_header_and_body(const string &msg) {
 }
 
 int sanity_check_message(const string &msg) {
-    size_t SOH_pos = msg.find(SOH);
-    size_t STX_pos = msg.find(STX);
-    size_t ETX_pos = msg.find(ETX);
-    size_t EOT_pos = msg.find(EOT);
+    size_t SOH_pos = msg.find(ASCII_SOH);
+    size_t STX_pos = msg.find(ASCII_STX);
+    size_t ETX_pos = msg.find(ASCII_ETX);
+    size_t EOT_pos = msg.find(ASCII_EOT);
 
     if (SOH_pos == string::npos) {
         return -10;
@@ -142,7 +134,7 @@ string parse_outbound_bytes(const string &msg) {
     for (char msg_byte : msg) {
         for (char ctrl_byte : TRANSMISSION_CONTROL_CHARS) {
             if (msg_byte == ctrl_byte) {
-                res.push_back(ESC);
+                res.push_back(ASCII_ESC);
                 res.push_back(msg_byte + ESCAPE_OFFSET);
                 goto next_loop;
             }
@@ -161,7 +153,7 @@ string parse_inbound_bytes(const string &msg) {
 
     bool escape_found = false;
     for (char msg_byte : msg) {
-        if (msg_byte == ESC) {
+        if (msg_byte == ASCII_ESC) {
             escape_found = true;
             continue;
         } else if (escape_found) {

@@ -234,7 +234,7 @@ command_t serial_check_for_command(void) {
 
 void setup() {
     while (!Serial) {}
-    Serial.begin(SERIAL_BAUDRATE);
+    Serial.begin(57600);
     delay(100);
     Serial.println("Starting board.");
 
