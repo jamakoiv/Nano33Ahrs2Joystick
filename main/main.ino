@@ -93,17 +93,18 @@ FusionVector AxisOffset;
 FusionVector AxisOffset_default = {0.0f, 0.0f, 0.0f};
 
 
+// TODO: Uses global values which could easily be supplied as parameters.
 void readAcceleration() {
     IMU.readAcceleration(acc_raw.axis.x, acc_raw.axis.y, acc_raw.axis.z);
-    // acc_calibrated = FusionVectorHadamardProduct(FusionVectorSubtract(acc_raw, acc_offset), acc_gain);
-    acc_calibrated = FusionVectorHadamardProduct(FusionVectorSubtract(acc_raw, acc_offset_default), acc_gain_default);
+    acc_calibrated = FusionCalibrationInertial(acc_raw, acc_misalignment, acc_gain, acc_offset);
+    // acc_calibrated = FusionCalibrationInertial(acc_raw, acc_misalignment, acc_gain_default, acc_offset_default);
     acc_calibrated = changeAxisSign(acc_calibrated, 1, 1, -1);
 }
 
 void readGyroscope() {
     IMU.readGyroscope(gyro_raw.axis.x, gyro_raw.axis.y, gyro_raw.axis.z);
-    // gyro_calibrated = FusionVectorHadamardProduct(FusionVectorSubtract(gyro_raw, gyro_offset), gyro_gain);
-    gyro_calibrated = FusionVectorHadamardProduct(FusionVectorSubtract(gyro_raw, gyro_offset_default), gyro_gain_default);
+    gyro_calibrated = FusionCalibrationInertial(gyro_raw, gyro_misalignment, gyro_gain, gyro_offset);
+    // gyro_calibrated = FusionCalibrationInertial(gyro_raw, gyro_misalignment, gyro_gain_default, gyro_offset_default)
     gyro_calibrated = changeAxisSign(gyro_calibrated, 1, 1, -1 );
 }
 
@@ -125,6 +126,7 @@ float updateTimeStamp(void) {
     static const float MICROSECONDS_TO_SECONDS = 1.0f / 1000000.0f;
     static uint32_t IMU_timeStamp = micros();
     static uint32_t IMU_previousTimeStamp;
+    // TODO: Using static variables make this a bit hard to follow.
 
     IMU_timeStamp = micros();
     float dt = static_cast<float>((IMU_timeStamp-IMU_previousTimeStamp)*MICROSECONDS_TO_SECONDS); 
@@ -142,6 +144,7 @@ void AHRS_check(void) {
 
   static float deltaTime;
 
+  // TODO: Does this actually harm the accuracy/stability?
   /* 
   Accelerometer and gyroscope run with higher sample rate than the magnetometer,
   so we run the AHRS algorithm without the magnetometer if it is not ready.
