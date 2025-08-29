@@ -30,7 +30,7 @@ string printAHRSeuler(void) {
     return msg;
 }
 
-void printAHRSeulerDebug(void) {
+string printAHRSeulerDebug(void) {
     const FusionEuler euler =
         FusionQuaternionToEuler(FusionAhrsGetQuaternion(&AHRS));
 
@@ -52,7 +52,7 @@ string printFusionVector(FusionVector vec) {
     return str;
 }
 
-void printFusionMatrix(FusionMatrix mat) {
+string printFusionMatrix(FusionMatrix mat) {
     // clang-format off
     string str = std::to_string(mat.element.xx) + ", " +
                  std::to_string(mat.element.xy) + ", " +
