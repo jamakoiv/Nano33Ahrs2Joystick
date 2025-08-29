@@ -37,11 +37,6 @@ enum {
     SERIAL_RESET_KVSTORE = 0x70,
 };
 
-static const int SERIAL_BAUDRATE =
-    57600; // Not actually used when using USB-serial
-static const int SERIAL_READ_BUFFER_SIZE = 2048; // 2 kB
-static char serialBuffer[SERIAL_READ_BUFFER_SIZE];
-
 string execute_command(command_t &commands);
 
 string print_output(void);

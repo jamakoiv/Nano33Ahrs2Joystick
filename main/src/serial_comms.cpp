@@ -90,39 +90,27 @@ string execute_command(command_t &cmd) {
     switch (cmd.id) {
     case SERIAL_SET_PRINT_MODE:
         return set_print_mode(cmd.params);
-        break;
     case SERIAL_MAG_SET_CALIB:
         return mag_set_calib(cmd.params);
-        break;
     case SERIAL_MAG_GET_CALIB:
         return mag_get_calib();
-        break;
     case SERIAL_ACC_SET_CALIB:
         return acc_set_calib(cmd.params);
-        break;
     case SERIAL_ACC_GET_CALIB:
         return acc_get_calib();
-        break;
     case SERIAL_GYRO_SET_CALIB:
         return gyro_set_calib(cmd.params);
-        break;
     case SERIAL_GYRO_GET_CALIB:
         return gyro_get_calib();
-        break;
     case SERIAL_SET_OFFSET:
         return yaw_set_offset(cmd.params);
-        break;
     case SERIAL_GET_OFFSET:
         return yaw_get_offset();
-        break;
     case SERIAL_RESET_KVSTORE:
         return _kv_store_reset();
-        break;
-
     default:
         string msg = "Command " + std::to_string(cmd.id) + " not found.";
-        Serial.println(msg.c_str());
-        break;
+        return msg;
     }
 }
 
