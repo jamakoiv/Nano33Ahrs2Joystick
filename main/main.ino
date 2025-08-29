@@ -20,7 +20,8 @@ USBCommsJoystick usb_comms;
 Joystick joystick;
 int SerialOutputMode = SERIAL_PRINT_MAG_CALIB;
 
-char serial_tmp_buffer[256];
+const int BUFFER_MAX_SIZE = 256;
+char serial_comm_buffer[BUFFER_MAX_SIZE+1];
 
 /*
   Fusion-library objects and variables.
@@ -189,6 +190,47 @@ void updateJoystickAxes(const FusionAhrs *const ahrs, Joystick *const joy, USBCo
     usb->updateHIDreport(joy);
 }
 
+command_t serial_check_for_command(void) {
+    /*
+     * Read serial input and parse command from it.
+     */
+    const char ASCII_EOT = 0x04; // TODO: This is already defined in the serial-comms files.
+    const char NO_DATA = -1;
+    strlcpy(serial_comm_buffer, "", BUFFER_MAX_SIZE+1);
+
+    // TODO: Now that we escape also NUL we should change back to regular readBytesUntil.
+    char c = 0xff;
+    int i = 0;
+    while (true) {
+      c = Serial.read();
+      if (c == ASCII_EOT) { 
+        Serial.print("c = ");
+        Serial.println(c, HEX);
+        serial_comm_buffer[i++] = c;
+        break;
+      } else if (c == NO_DATA) {
+        break; 
+      } else if (i > BUFFER_MAX_SIZE) {
+        Serial.println("Terminating reading before buffer overflow.");
+        return command_t{-30, 0, {}, "Read function terminated before buffer overload"};
+      }
+
+      Serial.print("c = ");
+      Serial.println(c, HEX);
+      serial_comm_buffer[i++] = c;
+    }
+    serial_comm_buffer[i++] = '\0'; // Not 100% sure if necessary here when we feed it to std::string.
+    std::string msg(serial_comm_buffer, i);
+    Serial.println(msg.c_str());
+
+    command_t cmd = retrieve_command(msg);
+    if (cmd.id < 0) {
+      std::string msg = "Error: " + cmd.err;
+      Serial.println(msg.c_str());
+    }
+
+    return cmd;
+}
 
 void setup() {
     while (!Serial) {}
@@ -234,47 +276,9 @@ void setup() {
     delay(100);
 }
 
-command_t serial_check_for_command(void) {
-    const char EOT = 0x04;
-    const char NO_DATA = -1;
-    std::strncpy(serial_tmp_buffer, NULL, 256);
-
-    char c = 0xff;
-    int i = 0;
-    while (true) {
-      c = Serial.read();
-      if (c == EOT) { 
-        Serial.print("c = ");
-        Serial.println(c, HEX);
-        serial_tmp_buffer[i++] = c;
-        break;
-      } else if (c == NO_DATA) {
-        break; 
-      } else if (i > 256) {
-        Serial.println("Terminating reading before buffer overflow.");
-        return command_t{0,0};
-      }
-
-      Serial.print("c = ");
-      Serial.println(c, HEX);
-      serial_tmp_buffer[i++] = c;
-    }
-    serial_tmp_buffer[i++] = '\0'; // Not 100% sure if necessary here when we feed it to std::string.
-    std::string msg(serial_tmp_buffer, i);
-    Serial.println(msg.c_str());
-
-    command_t cmd = retrieve_command(msg);
-    if (cmd.id < 0) {
-      std::string msg = "Error: " + cmd.err;
-      Serial.println(msg.c_str());
-    }
-
-    return cmd;
-}
 
 void loop() {
   static uint32_t serial_output_timer = millis();
-  static uint32_t serial_input_timer = millis();
   
   /*
    * Main functionality. Run the AHRS algorithm and update the current orientation to the joystick.
