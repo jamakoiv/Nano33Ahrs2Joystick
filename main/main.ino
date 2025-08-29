@@ -93,6 +93,7 @@ FusionVector AxisOffset;
 FusionVector AxisOffset_default = {0.0f, 0.0f, 0.0f};
 
 
+// INFO: For the axis-sign changes, see https://axodyne.com/2020/06/arduino-nano-33-ble-ahrs/
 // TODO: Uses global values which could easily be supplied as parameters.
 void readAcceleration() {
     IMU.readAcceleration(acc_raw.axis.x, acc_raw.axis.y, acc_raw.axis.z);
