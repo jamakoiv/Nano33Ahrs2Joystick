@@ -12,9 +12,6 @@
 using std::string;
 using std::vector;
 
-// TODO: Do we need to do any printing in this file, or just have every print
-// function to return a string and print in the main-file?
-//
 // TODO: Serial input & output use a lot of global variables, hard to refactor
 // into separate file.
 
@@ -29,22 +26,47 @@ string printAHRSeuler(void) {
     string msg = "Roll: " + std::to_string(euler.angle.roll) + ", " +
                  "Pitch: " + std::to_string(euler.angle.pitch) + ", " +
                  "Yaw: " + std::to_string(euler.angle.yaw) + ", " +
-                 "Compass: " + std::to_string(CompassHeading);
+                 "Compass: " + std::to_string(CompassHeading) + ", ";
     return msg;
 }
 
 void printAHRSeulerDebug(void) {
-    // TODO: implement.
+    const FusionEuler euler =
+        FusionQuaternionToEuler(FusionAhrsGetQuaternion(&AHRS));
+
+    string msg =
+        "Roll: " + std::to_string(euler.angle.roll) + ", " +
+        "Pitch: " + std::to_string(euler.angle.pitch) + ", " +
+        "Yaw: " + std::to_string(euler.angle.yaw) + ", " +
+        "Init: " + std::to_string(AHRS.initialising) + ", " +
+        "RateRecovery: " + std::to_string(AHRS.angularRateRecovery) + ", " +
+        "AccIgnored: " + std::to_string(AHRS.accelerometerIgnored) + ", " +
+        "MagIgnored: " + std::to_string(AHRS.magnetometerIgnored) + ", ";
+    return msg;
 }
 
 string printFusionVector(FusionVector vec) {
     string str = std::to_string(vec.axis.x) + ", " +
-                 std::to_string(vec.axis.y) + ", " + std::to_string(vec.axis.z);
+                 std::to_string(vec.axis.y) + ", " +
+                 std::to_string(vec.axis.z) + ", ";
     return str;
 }
 
 void printFusionMatrix(FusionMatrix mat) {
-    // TODO: implement.
+    // clang-format off
+    string str = std::to_string(mat.element.xx) + ", " +
+                 std::to_string(mat.element.xy) + ", " +
+                 std::to_string(mat.element.xz) + "\n" +
+
+                 std::to_string(mat.element.yx) + ", " +
+                 std::to_string(mat.element.yy) + ", " +
+                 std::to_string(mat.element.yz) + "\n" +
+
+                 std::to_string(mat.element.zx) + ", " +
+                 std::to_string(mat.element.zy) + ", " +
+                 std::to_string(mat.element.zz) + "\n";
+    // clang-format on
+    return str;
 };
 
 // INFO: Better than the old 'get pointer to function from map and call that'...
@@ -55,8 +77,7 @@ string print_output(void) {
     case SERIAL_PRINT_AHRS:
         return printAHRSeuler();
     case SERIAL_PRINT_AHRS_DEBUG:
-        // return printAHRSeulerDebug();
-        break;
+        return printAHRSeulerDebug();
     case SERIAL_PRINT_ACC_CALIB:
         return printFusionVector(acc_calibrated);
     case SERIAL_PRINT_MAG_CALIB:
@@ -208,6 +229,8 @@ void get_calibration_magnetic(command_t &cmd,
     cmd.params.push_back(hard_iron_offset.axis.z);
 }
 
+// TODO: Lots of repeating of essentially the same function.
+//
 string mag_set_calib(vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
