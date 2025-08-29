@@ -139,7 +139,9 @@ void set_calibration_inertial(const vector<float> &params,
                               FusionMatrix &misalignment,
                               FusionVector &sensitivity, FusionVector &offset) {
     if (params.size() < 9 + 3 + 3) {
-        Serial.println("Not enough parameters supplied.");
+        Serial.println(
+            "Not enough parameters supplied."); // TODO: Still printing in this
+                                                // file...
         return;
     }
 
@@ -166,7 +168,9 @@ void set_calibration_magnetic(const vector<float> &params,
                               FusionMatrix &soft_iron_matrix,
                               FusionVector &hard_iron_offset) {
     if (params.size() < 9 + 3) {
-        Serial.println("Not enough parameters supplied.");
+        Serial.println(
+            "Not enough parameters supplied."); // TODO: Still printing in this
+                                                // file...
         return;
     }
 
