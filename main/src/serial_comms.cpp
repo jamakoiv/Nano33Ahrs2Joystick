@@ -38,6 +38,7 @@ string printAHRSeulerDebug(void) {
         "Roll: " + std::to_string(euler.angle.roll) + ", " +
         "Pitch: " + std::to_string(euler.angle.pitch) + ", " +
         "Yaw: " + std::to_string(euler.angle.yaw) + ", " +
+        "Compass: " + std::to_string(CompassHeading) + ", " +
         "Init: " + std::to_string(AHRS.initialising) + ", " +
         "RateRecovery: " + std::to_string(AHRS.angularRateRecovery) + ", " +
         "AccIgnored: " + std::to_string(AHRS.accelerometerIgnored) + ", " +
