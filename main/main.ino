@@ -26,7 +26,8 @@ char serial_comm_buffer[BUFFER_MAX_SIZE+1];
 /*
   Fusion-library objects and variables.
 */
-const uint32_t SAMPLE_RATE = 238;
+// const uint32_t SAMPLE_RATE = 238;
+const uint32_t SAMPLE_RATE = 20;
 FusionOffset AHRS_gyro_offset;
 FusionAhrs AHRS;
 float CompassHeading;
@@ -165,15 +166,15 @@ void AHRS_check(void) {
     CompassHeading = FusionCompassCalculateHeading(FusionConventionNed, acc_calibrated, mag_calibrated);
   }
 
-  else if (IMU.accelerationAvailable() && IMU.gyroscopeAvailable()) {
-    deltaTime = updateTimeStamp(); 
+  // else if (IMU.accelerationAvailable() && IMU.gyroscopeAvailable()) {
+  //   deltaTime = updateTimeStamp(); 
 
-    readAcceleration();
-    readGyroscope();
-    
-    gyro_calibrated = FusionOffsetUpdate(&AHRS_gyro_offset, gyro_calibrated); 
-    FusionAhrsUpdateNoMagnetometer(&AHRS, gyro_calibrated, acc_calibrated, deltaTime); 
-  }
+  //   readAcceleration();
+  //   readGyroscope();
+  //   
+  //   gyro_calibrated = FusionOffsetUpdate(&AHRS_gyro_offset, gyro_calibrated); 
+  //   FusionAhrsUpdateNoMagnetometer(&AHRS, gyro_calibrated, acc_calibrated, deltaTime); 
+  // }
 }
 /*
 ------------ END OF AHRS PART ---------------------------------------
@@ -242,8 +243,8 @@ void setup() {
     delay(100);
     Serial.println("Starting board.");
 
-    IMU.setGyroscopeSettings( LSM9DS1_ODR_G_238HZ, LSM9DS1_FS_G_500DPS );
-    IMU.setAccelerometerSettings( LSM9DS1_ODR_XL_119HZ, LSM9DS1_FS_XL_4G );
+    IMU.setGyroscopeSettings( LSM9DS1_ODR_G_60HZ, LSM9DS1_FS_G_500DPS );
+    IMU.setAccelerometerSettings( LSM9DS1_ODR_XL_50HZ, LSM9DS1_FS_XL_4G );
     IMU.begin(); // Start the STM LSM9DS1 inertial unit.
 
     // Madgwick fusion library initialization.
@@ -255,6 +256,7 @@ void setup() {
     joystick.setAxisRange( -180, 180, X );  // left-right, yaw-axis. Range [-180, 180] degrees. 
     joystick.setAxisRange( -90, 90, Y );    // up-down, pitch-axis. Range [-90, 90] degrees.
     joystick.setAxisRange( -90, 90, Z );  // roll left-right, roll-axis. Range [-90, 90] degrees.
+
 
 
     if (!kv_store_initialized()) {
@@ -283,7 +285,7 @@ void setup() {
 
 void loop() {
   static uint32_t serial_output_timer = millis();
-  
+
   /*
    * Main functionality. Run the AHRS algorithm and update the current orientation to the joystick.
    */
