@@ -94,28 +94,6 @@ FusionVector AxisOffset;
 FusionVector AxisOffset_default = {0.0f, 0.0f, 0.0f};
 
 
-// INFO: For the axis-sign changes, see https://axodyne.com/2020/06/arduino-nano-33-ble-ahrs/
-// TODO: Uses global values which could easily be supplied as parameters.
-void readAcceleration() {
-    IMU.readAcceleration(acc_raw.axis.x, acc_raw.axis.y, acc_raw.axis.z);
-    acc_calibrated = FusionCalibrationInertial(acc_raw, acc_misalignment, acc_gain, acc_offset);
-    // acc_calibrated = FusionCalibrationInertial(acc_raw, acc_misalignment, acc_gain_default, acc_offset_default);
-    acc_calibrated = changeAxisSign(acc_calibrated, 1, 1, -1);
-}
-
-void readGyroscope() {
-    IMU.readGyroscope(gyro_raw.axis.x, gyro_raw.axis.y, gyro_raw.axis.z);
-    gyro_calibrated = FusionCalibrationInertial(gyro_raw, gyro_misalignment, gyro_gain, gyro_offset);
-    // gyro_calibrated = FusionCalibrationInertial(gyro_raw, gyro_misalignment, gyro_gain_default, gyro_offset_default)
-    gyro_calibrated = changeAxisSign(gyro_calibrated, 1, 1, -1 );
-}
-
-void readMagneticField() {
-    IMU.readMagneticField(mag_raw.axis.x, mag_raw.axis.y, mag_raw.axis.z);
-    mag_calibrated = FusionCalibrationMagnetic(mag_raw, soft_iron, hard_iron);
-    // mag_calibrated = FusionCalibrationMagnetic(mag_raw, soft_iron_default, hard_iron_default);
-    mag_calibrated = changeAxisSign(mag_calibrated, -1, 1, -1);
-}
 
 
 inline FusionVector changeAxisSign(FusionVector vec, int xSign, int ySign, int zSign) {
@@ -137,28 +115,25 @@ float updateTimeStamp(void) {
     return dt;
 }
 
-
 void AHRS_check(void) {
   /*
-   * Retrieve data from sensors and feed them to the AHRS algorithm 
-  */
-  //  TODO: Try to reduce code duplication.
-
+   * Retrieve data from sensors and feed them to the AHRS algorithm.
+   *
+   * The algorithm is run every time there is new gyroscope-data available, even if there
+   * is no new accelerometer or magnetometer data available.
+   * According to Fusion github-page, this is the correct way to deal with mismatched sample rates.
+   *
+   * INFO: For the axis-sign changes, see https://axodyne.com/2020/06/arduino-nano-33-ble-ahrs/
+   */
   static float deltaTime;
 
-  // TODO: Does this actually harm the accuracy/stability?
-  /* 
-  Accelerometer and gyroscope run with higher sample rate than the magnetometer,
-  so we run the AHRS algorithm without the magnetometer if it is not ready.
-  */
-  if (IMU.accelerationAvailable() && IMU.gyroscopeAvailable() && IMU.magneticFieldAvailable()) {
+  if (IMU.gyroscopeAvailable()) {
+
     deltaTime = updateTimeStamp(); 
 
-    readAcceleration();   
-    readMagneticField();
-    readGyroscope();
-
-    // Compensate for the long-term gyroscope drift.
+    IMU.readGyroscope(gyro_raw.axis.x, gyro_raw.axis.y, gyro_raw.axis.z);
+    gyro_calibrated = FusionCalibrationInertial(gyro_raw, gyro_misalignment, gyro_gain, gyro_offset);
+    gyro_calibrated = changeAxisSign(gyro_calibrated, 1, 1, -1 );
     gyro_calibrated = FusionOffsetUpdate(&AHRS_gyro_offset, gyro_calibrated); 
 
     // Run the AHRS-algorithm.
@@ -166,15 +141,17 @@ void AHRS_check(void) {
     CompassHeading = FusionCompassCalculateHeading(FusionConventionNed, acc_calibrated, mag_calibrated);
   }
 
-  // else if (IMU.accelerationAvailable() && IMU.gyroscopeAvailable()) {
-  //   deltaTime = updateTimeStamp(); 
+  if (IMU.accelerationAvailable()) {
+    IMU.readAcceleration(acc_raw.axis.x, acc_raw.axis.y, acc_raw.axis.z);
+    acc_calibrated = FusionCalibrationInertial(acc_raw, acc_misalignment, acc_gain, acc_offset);
+    acc_calibrated = changeAxisSign(acc_calibrated, 1, 1, -1);
+  }
 
-  //   readAcceleration();
-  //   readGyroscope();
-  //   
-  //   gyro_calibrated = FusionOffsetUpdate(&AHRS_gyro_offset, gyro_calibrated); 
-  //   FusionAhrsUpdateNoMagnetometer(&AHRS, gyro_calibrated, acc_calibrated, deltaTime); 
-  // }
+  if (IMU.magneticFieldAvailable()) {
+    IMU.readMagneticField(mag_raw.axis.x, mag_raw.axis.y, mag_raw.axis.z);
+    mag_calibrated = FusionCalibrationMagnetic(mag_raw, soft_iron, hard_iron);
+    mag_calibrated = changeAxisSign(mag_calibrated, -1, 1, -1);
+  }
 }
 /*
 ------------ END OF AHRS PART ---------------------------------------
