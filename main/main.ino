@@ -26,8 +26,7 @@ char serial_comm_buffer[BUFFER_MAX_SIZE+1];
 /*
   Fusion-library objects and variables.
 */
-// const uint32_t SAMPLE_RATE = 238;
-const uint32_t SAMPLE_RATE = 20;
+const uint32_t SAMPLE_RATE = 238;
 FusionOffset AHRS_gyro_offset;
 FusionAhrs AHRS;
 float CompassHeading;
@@ -220,8 +219,8 @@ void setup() {
     delay(100);
     Serial.println("Starting board.");
 
-    IMU.setGyroscopeSettings( LSM9DS1_ODR_G_60HZ, LSM9DS1_FS_G_500DPS );
-    IMU.setAccelerometerSettings( LSM9DS1_ODR_XL_50HZ, LSM9DS1_FS_XL_4G );
+    IMU.setGyroscopeSettings( LSM9DS1_ODR_G_238HZ, LSM9DS1_FS_G_500DPS );
+    IMU.setAccelerometerSettings( LSM9DS1_ODR_XL_119HZ, LSM9DS1_FS_XL_4G );
     IMU.begin(); // Start the STM LSM9DS1 inertial unit.
 
     // Madgwick fusion library initialization.
