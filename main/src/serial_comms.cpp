@@ -53,6 +53,13 @@ string printFusionVector(FusionVector vec) {
     return str;
 }
 
+string printFusionVector(FusionVector vecA, FusionVector vecB) {
+    string strA = printFusionVector(vecA);
+    string strB = printFusionVector(vecB);
+
+    return strA + strB;
+}
+
 string printFusionMatrix(FusionMatrix mat) {
     // clang-format off
     string str = std::to_string(mat.element.xx) + ", " +
@@ -91,6 +98,8 @@ string print_output(void) {
         return printFusionVector(mag_raw);
     case SERIAL_PRINT_GYRO_RAW:
         return printFusionVector(gyro_raw);
+    case SERIAL_PRINT_MAG_GYRO_RAW:
+        return printFusionVector(mag_raw, gyro_raw);
     default:
         string msg = "Error: Output mode " + std::to_string(SerialOutputMode) +
                      " is not valid.";
