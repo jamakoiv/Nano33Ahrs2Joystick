@@ -10,7 +10,8 @@
 using std::string;
 
 std::set<char> TRANSMISSION_CONTROL_CHARS = {ASCII_SOH, ASCII_STX, ASCII_ETX,
-                                             ASCII_EOT, ASCII_ESC, ASCII_NUL};
+                                             ASCII_EOT, ASCII_ESC, ASCII_NUL,
+                                             ASCII_LF,  ASCII_CR};
 
 // INFO: Technically undefined behaviour, but works on GCC-suite (and clang).
 union float_bytes_t {

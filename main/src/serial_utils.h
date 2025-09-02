@@ -26,6 +26,8 @@ enum {
     ASCII_ETX = 0x03,
     ASCII_EOT = 0x04,
     ASCII_ESC = 0x1b,
+    ASCII_LF = 0x0a,
+    ASCII_CR = 0x0d,
     ESCAPE_OFFSET = 0x20,
 };
 

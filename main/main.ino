@@ -111,8 +111,8 @@ void readGyroscope() {
 
 void readMagneticField() {
     IMU.readMagneticField(mag_raw.axis.x, mag_raw.axis.y, mag_raw.axis.z);
-    // mag_calibrated = FusionCalibrationMagnetic(mag_raw, soft_iron, hard_iron);
-    mag_calibrated = FusionCalibrationMagnetic(mag_raw, soft_iron_default, hard_iron_default);
+    mag_calibrated = FusionCalibrationMagnetic(mag_raw, soft_iron, hard_iron);
+    // mag_calibrated = FusionCalibrationMagnetic(mag_raw, soft_iron_default, hard_iron_default);
     mag_calibrated = changeAxisSign(mag_calibrated, -1, 1, -1);
 }
 
@@ -225,12 +225,12 @@ command_t serial_check_for_command(void) {
     }
     serial_comm_buffer[i++] = '\0'; // Not 100% sure if necessary here when we feed it to std::string.
     std::string msg(serial_comm_buffer, i);
-    Serial.println(msg.c_str());
+    // Serial.println(msg.c_str());
 
     command_t cmd = retrieve_command(msg);
     if (cmd.id < 0) {
       std::string msg = "Error: " + cmd.err;
-      Serial.println(msg.c_str());
+      // Serial.println(msg.c_str());
     }
 
     return cmd;
