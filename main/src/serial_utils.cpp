@@ -57,7 +57,8 @@ command_t bytes2command(const string &header, const string &body) {
 }
 
 string create_message(const command_t &cmd) {
-    auto [raw_header, raw_body] = command2bytes(cmd);
+    std::string raw_header, raw_body;
+    std::tie(raw_header, raw_body) = command2bytes(cmd);
     string header = parse_outbound_bytes(raw_header);
     string body = parse_outbound_bytes(raw_body);
 
@@ -80,7 +81,8 @@ command_t retrieve_command(const string &msg) {
         return command_t{-2, 0, {}, "Control characters in wrong order"};
     }
 
-    auto [raw_header, raw_body] = retrieve_header_and_body(msg);
+    std::string raw_header, raw_body;
+    std::tie(raw_header, raw_body) = retrieve_header_and_body(msg);
 
     string header = parse_inbound_bytes(raw_header);
     string body = parse_inbound_bytes(raw_body);

@@ -26,9 +26,9 @@ std::vector<std::string> split_between(const std::string &s, char start_char,
                                        char stop_char) {
     std::vector<std::string> res;
 
-    int pos0 = 0;
-    int pos1 = 0;
-    int last_pos0 = 0;
+    size_t pos0 = 0;
+    size_t pos1 = 0;
+    // size_t last_pos0 = 0;
 
     while (true) {
         pos0 = s.find(start_char, pos1);

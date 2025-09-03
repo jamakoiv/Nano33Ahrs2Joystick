@@ -30,11 +30,12 @@ USBCommsJoystick::USBCommsJoystick(USBPhy *phy, uint16_t vendor_id,
                                    uint16_t product_id,
                                    uint16_t product_release)
     : USBHID(phy, 0, 0, vendor_id, product_id, product_release) {
-  // User or child must call connect or init when using this constructor.
+    // User or child must call connect or init when using this constructor.
 }
 
 USBCommsJoystick::~USBCommsJoystick(void) {}
 
+// clang-format off
 const uint8_t *USBCommsJoystick::report_desc(void) {
   // TODO: Make a HID-descriptor which can handle different axis-counts and
   // multiple joysticks.
@@ -72,9 +73,8 @@ const uint8_t *USBCommsJoystick::report_desc(void) {
       // USAGE(1), 0x37,      // slider1
       //  LOGICAL_MINIMUM(2), 0x01, 0xfe, // 0xfe01 = -511. 10-bit resolution.
       //  LOGICAL_MAXIMUM(2), 0xff, 0x01, // 0x01ff = 511
-      LOGICAL_MINIMUM(2), this->HID_AXIS_MIN,
-      this->HID_AXIS_MIN >> this->BYTE_LENGTH, LOGICAL_MAXIMUM(2),
-      this->HID_AXIS_MAX, this->HID_AXIS_MAX >> this->BYTE_LENGTH,
+      LOGICAL_MINIMUM(2), static_cast<uint8_t>(this->HID_AXIS_MIN), static_cast<uint8_t>(this->HID_AXIS_MIN >> this->BYTE_LENGTH),
+      LOGICAL_MAXIMUM(2), static_cast<uint8_t>(this->HID_AXIS_MAX), static_cast<uint8_t>(this->HID_AXIS_MAX >> this->BYTE_LENGTH),
       REPORT_COUNT(1), 0x06, // 6 reports ...
       REPORT_SIZE(1), 0x10,  // ...of 16 bits of data.
       INPUT(1), 0x02,        // Data, variable, absolute.
@@ -87,6 +87,7 @@ const uint8_t *USBCommsJoystick::report_desc(void) {
       sizeof(reportDescriptor); // reportLength is inherited from USBHID.
   return reportDescriptor;
 }
+//clang-format on
 
 #define DEFAULT_CONFIGURATION (1)
 #define TOTAL_DESCRIPTOR_LENGTH                                                \
@@ -180,7 +181,9 @@ void USBCommsJoystick::updateHIDreport(const Joystick *const joystick) {
   // explicitly?
 
   for (int ax = 0; ax < joystick->getAxisAmount(); ax++) {
-    const auto [axis_min, axis_max] = joystick->getAxisRange(ax);
+
+    float axis_min, axis_max;
+    std::tie(axis_min, axis_max) = joystick->getAxisRange(ax);
 
     uint16_t value = this->mapfi(joystick->getAxis(ax), axis_min, axis_max,
                                  this->HID_AXIS_MIN, this->HID_AXIS_MAX);
