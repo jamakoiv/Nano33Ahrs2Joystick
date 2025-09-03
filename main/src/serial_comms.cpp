@@ -135,10 +135,6 @@ std::string execute_command(command_t &cmd) {
         return gyro_set_calib(cmd.params);
     case SERIAL_GYRO_GET_CALIB:
         return gyro_get_calib();
-    case SERIAL_SET_OFFSET:
-        return yaw_set_offset(cmd.params);
-    case SERIAL_GET_OFFSET:
-        return yaw_get_offset();
     case SERIAL_RESET_KVSTORE:
         return _kv_store_reset();
     case SERIAL_MISC_SET_SETTINGS:
@@ -312,31 +308,6 @@ std::string gyro_get_calib(void) {
     command_t cmd;
     cmd.id = SERIAL_GYRO_GET_CALIB;
     get_calibration_inertial(cmd, gyro_misalignment, gyro_gain, gyro_offset);
-
-    std::string msg = create_message(cmd);
-    return msg;
-}
-
-std::string yaw_set_offset(std::vector<float> params) {
-    SerialOutputMode = SERIAL_PRINT_NOTHING;
-
-    AxisOffset.axis.x = params[0];
-    AxisOffset.axis.x = params[1];
-    AxisOffset.axis.x = params[2];
-
-    kv_store_save_calibration("AxisOffset", AxisOffset);
-    std::string msg("Yaw offset set;");
-    return msg;
-}
-std::string yaw_get_offset(void) {
-    SerialOutputMode = SERIAL_PRINT_NOTHING;
-
-    command_t cmd;
-    cmd.id = SERIAL_GET_OFFSET;
-    cmd.n_params = 3;
-    cmd.params.push_back(AxisOffset.axis.x);
-    cmd.params.push_back(AxisOffset.axis.y);
-    cmd.params.push_back(AxisOffset.axis.z);
 
     std::string msg = create_message(cmd);
     return msg;
