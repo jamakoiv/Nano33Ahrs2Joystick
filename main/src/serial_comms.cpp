@@ -9,9 +9,6 @@
 #include <Arduino.h>
 #include <cstring>
 
-using std::string;
-using std::vector;
-
 // TODO: Serial input & output use a lot of global variables, hard to refactor
 // into separate file.
 
@@ -19,7 +16,7 @@ using std::vector;
  ---------------- SERIAL OUTPUT PART ------------------------------
 */
 
-string printAHRSeuler(void) {
+std::string printAHRSeuler(void) {
     const FusionEuler euler =
         FusionQuaternionToEuler(FusionAhrsGetQuaternion(&AHRS));
 
@@ -30,11 +27,11 @@ string printAHRSeuler(void) {
     return msg;
 }
 
-string printAHRSeulerDebug(void) {
+std::string printAHRSeulerDebug(void) {
     const FusionEuler euler =
         FusionQuaternionToEuler(FusionAhrsGetQuaternion(&AHRS));
 
-    string msg =
+    std::string msg =
         "Roll: " + std::to_string(euler.angle.roll) + ", " +
         "Pitch: " + std::to_string(euler.angle.pitch) + ", " +
         "Yaw: " + std::to_string(euler.angle.yaw) + ", " +
@@ -46,25 +43,25 @@ string printAHRSeulerDebug(void) {
     return msg;
 }
 
-string printFusionVector(FusionVector vec) {
-    string str = std::to_string(vec.axis.x) + ", " +
-                 std::to_string(vec.axis.y) + ", " +
-                 std::to_string(vec.axis.z) + ", ";
+std::string printFusionVector(FusionVector vec) {
+    std::string str = std::to_string(vec.axis.x) + ", " +
+                      std::to_string(vec.axis.y) + ", " +
+                      std::to_string(vec.axis.z) + ", ";
     return str;
 }
 
-string printMagGyroRaw(void) {
+std::string printMagGyroRaw(void) {
     static const float MICROSECONDS_TO_SECONDS = 1.0f / 1000000.0f;
 
     float time = static_cast<float>(IMU_timeStamp) * MICROSECONDS_TO_SECONDS;
-    string str = std::to_string(time) + ", " + printFusionVector(mag_raw) +
-                 printFusionVector(gyro_raw);
+    std::string str = std::to_string(time) + ", " + printFusionVector(mag_raw) +
+                      printFusionVector(gyro_raw);
     return str;
 }
 
-string printFusionMatrix(FusionMatrix mat) {
+std::string printFusionMatrix(FusionMatrix mat) {
     // clang-format off
-    string str = std::to_string(mat.element.xx) + ", " +
+    std::string str = std::to_string(mat.element.xx) + ", " +
                  std::to_string(mat.element.xy) + ", " +
                  std::to_string(mat.element.xz) + "\n" +
 
@@ -80,10 +77,10 @@ string printFusionMatrix(FusionMatrix mat) {
 };
 
 // INFO: Better than the old 'get pointer to function from map and call that'...
-string print_output(void) {
+std::string print_output(void) {
     switch (SerialOutputMode) {
     case SERIAL_PRINT_NOTHING:
-        return string();
+        return std::string();
     case SERIAL_PRINT_AHRS:
         return printAHRSeuler();
     case SERIAL_PRINT_AHRS_DEBUG:
@@ -149,12 +146,12 @@ std::string execute_command(command_t &cmd) {
     case SERIAL_AHRS_GET_SETTINGS:
         return ahrs_get_settings();
     default:
-        string msg = "Command " + std::to_string(cmd.id) + " not found.";
+        std::string msg = "Command " + std::to_string(cmd.id) + " not found.";
         return msg;
     }
 }
 
-void set_calibration_inertial(const vector<float> &params,
+void set_calibration_inertial(const std::vector<float> &params,
                               FusionMatrix &misalignment,
                               FusionVector &sensitivity, FusionVector &offset) {
     if (params.size() < 9 + 3 + 3) {
@@ -183,7 +180,7 @@ void set_calibration_inertial(const vector<float> &params,
     offset.axis.z = params[14];
 }
 
-void set_calibration_magnetic(const vector<float> &params,
+void set_calibration_magnetic(const std::vector<float> &params,
                               FusionMatrix &soft_iron_matrix,
                               FusionVector &hard_iron_offset) {
     if (params.size() < 9 + 3) {
@@ -254,73 +251,73 @@ void get_calibration_magnetic(command_t &cmd,
 
 // TODO: Lots of repeating of essentially the same function.
 //
-string mag_set_calib(vector<float> params) {
+std::string mag_set_calib(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     set_calibration_magnetic(params, soft_iron, hard_iron);
     kv_store_save_calibration("MagOffset", hard_iron);
     kv_store_save_calibration("MagGain", soft_iron);
 
-    string s = int_to_hex(SERIAL_MAG_SET_CALIB) + ", Calibration set;";
+    std::string s = int_to_hex(SERIAL_MAG_SET_CALIB) + ", Calibration set;";
     return s;
 }
 
-string mag_get_calib(void) {
+std::string mag_get_calib(void) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     command_t cmd;
     cmd.id = SERIAL_MAG_GET_CALIB;
     get_calibration_magnetic(cmd, soft_iron, hard_iron);
 
-    string msg = create_message(cmd);
+    std::string msg = create_message(cmd);
     return msg;
 }
 
-string acc_set_calib(vector<float> params) {
+std::string acc_set_calib(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     set_calibration_inertial(params, acc_misalignment, acc_gain, acc_offset);
     kv_store_save_calibration("AccOffset", acc_offset);
     kv_store_save_calibration("AccGain", acc_gain);
 
-    string s = int_to_hex(SERIAL_ACC_SET_CALIB) + ", Calibration set;";
+    std::string s = int_to_hex(SERIAL_ACC_SET_CALIB) + ", Calibration set;";
     return s;
 }
 
-string acc_get_calib(void) {
+std::string acc_get_calib(void) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     command_t cmd;
     cmd.id = SERIAL_ACC_GET_CALIB;
     get_calibration_inertial(cmd, acc_misalignment, acc_gain, acc_offset);
 
-    string msg = create_message(cmd);
+    std::string msg = create_message(cmd);
     return msg;
 }
 
-string gyro_set_calib(vector<float> params) {
+std::string gyro_set_calib(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     set_calibration_inertial(params, gyro_misalignment, gyro_gain, gyro_offset);
     kv_store_save_calibration("GyroOffset", gyro_offset);
     kv_store_save_calibration("GyroGain", gyro_gain);
 
-    string s = int_to_hex(SERIAL_GYRO_SET_CALIB) + ", Calibration set;";
+    std::string s = int_to_hex(SERIAL_GYRO_SET_CALIB) + ", Calibration set;";
     return s;
 }
 
-string gyro_get_calib(void) {
+std::string gyro_get_calib(void) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     command_t cmd;
     cmd.id = SERIAL_GYRO_GET_CALIB;
     get_calibration_inertial(cmd, gyro_misalignment, gyro_gain, gyro_offset);
 
-    string msg = create_message(cmd);
+    std::string msg = create_message(cmd);
     return msg;
 }
 
-string yaw_set_offset(vector<float> params) {
+std::string yaw_set_offset(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     AxisOffset.axis.x = params[0];
@@ -328,10 +325,10 @@ string yaw_set_offset(vector<float> params) {
     AxisOffset.axis.x = params[2];
 
     kv_store_save_calibration("AxisOffset", AxisOffset);
-    string msg("Yaw offset set;");
+    std::string msg("Yaw offset set;");
     return msg;
 }
-string yaw_get_offset(void) {
+std::string yaw_get_offset(void) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     command_t cmd;
@@ -341,22 +338,23 @@ string yaw_get_offset(void) {
     cmd.params.push_back(AxisOffset.axis.y);
     cmd.params.push_back(AxisOffset.axis.z);
 
-    string msg = create_message(cmd);
+    std::string msg = create_message(cmd);
     return msg;
 }
 
-string set_print_mode(vector<float> params) {
+std::string set_print_mode(std::vector<float> params) {
     if (params.size() < 1) {
         string err("Error: No serial output mode given");
         return err;
     }
 
     SerialOutputMode = static_cast<uint8_t>(params[0]);
-    string msg = "Output mode set to " + int_to_hex(SerialOutputMode) + ";";
+    std::string msg =
+        "Output mode set to " + int_to_hex(SerialOutputMode) + ";";
     return msg;
 }
 
-string ahrs_set_settings(vector<float> params) {
+std::string ahrs_set_settings(std::vector<float> params) {
     if (params.size() < 4) {
         string err("Error: Not enough parameters given");
         return err;
@@ -369,11 +367,11 @@ string ahrs_set_settings(vector<float> params) {
     FusionAhrsSetSettings(&AHRS, &AHRSsettings);
     FusionAhrsReset(&AHRS);
 
-    string msg = "AHRS settings set;";
+    std::string msg = "AHRS settings set;";
     return msg;
 }
 
-string ahrs_get_settings(void) {
+std::string ahrs_get_settings(void) {
     command_t cmd;
     cmd.id = SERIAL_AHRS_GET_SETTINGS;
     cmd.n_params = 4;
@@ -382,15 +380,15 @@ string ahrs_get_settings(void) {
     cmd.params.push_back(AHRSsettings.magneticRejection);
     cmd.params.push_back(AHRSsettings.recoveryTriggerPeriod);
 
-    string msg = create_message(cmd);
+    std::string msg = create_message(cmd);
     return msg;
 }
 
 // TODO: Stupid wrapper function...
-string _kv_store_reset() {
+std::string _kv_store_reset() {
     kv_store_reset();
 
-    string msg("Resetting KV-store");
+    std::string msg("Resetting KV-store");
     return msg;
 }
 

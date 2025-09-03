@@ -7,9 +7,6 @@
 
 #include "serial_utils.h"
 
-using std::string;
-using std::vector;
-
 enum {
     SERIAL_SET_PRINT_MODE = 0x10,
     SERIAL_PRINT_NOTHING = 0x15,
@@ -41,21 +38,21 @@ enum {
     SERIAL_RESET_KVSTORE = 0x75,
 };
 
-string execute_command(command_t &commands);
+std::string execute_command(command_t &commands);
 
-string print_output(void);
-string set_print_mode(vector<float> params);
+std::string print_output(void);
+std::string set_print_mode(std::vector<float> params);
 
-string mag_set_calib(vector<float> params);
-string acc_set_calib(vector<float> params);
-string gyro_set_calib(vector<float> params);
-string yaw_set_offset(vector<float> params);
+std::string mag_set_calib(std::vector<float> params);
+std::string acc_set_calib(std::vector<float> params);
+std::string gyro_set_calib(std::vector<float> params);
+std::string yaw_set_offset(std::vector<float> params);
 
-string acc_get_calib(void);
-string mag_get_calib(void);
-string gyro_get_calib(void);
-string yaw_get_offset(void);
+std::string acc_get_calib(void);
+std::string mag_get_calib(void);
+std::string gyro_get_calib(void);
+std::string yaw_get_offset(void);
 
-string _kv_store_reset(void);
+std::string _kv_store_reset(void);
 
 #endif
