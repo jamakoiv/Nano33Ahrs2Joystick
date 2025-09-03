@@ -1,3 +1,6 @@
+#ifndef INO_GLOBALS_H
+#define INO_GLOBALS_H
+
 #include "Fusion/FusionAhrs.h"
 #include "Fusion/FusionMath.h"
 
@@ -37,5 +40,8 @@ extern FusionVector AxisOffset;
 extern FusionVector AxisOffset_default;
 
 extern FusionAhrs AHRS;
+extern FusionAhrsSettings AHRSsettings;
 extern float CompassHeading;
 extern int SerialOutputMode;
+
+#endif // INO_GLOBALS_H

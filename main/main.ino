@@ -35,7 +35,11 @@ FusionAhrs AHRS;
 float CompassHeading;
 
 // Set AHRS algorithm settings
-const FusionAhrsSettings AHRSsettings = {
+// TODO: Make default and actual like the calibration values.
+// Save to kv_storage etc.
+//
+// FusionAhrsSettings AHRSsettings;
+FusionAhrsSettings AHRSsettings = {
         .convention = FusionConventionNed, /* North-East-Down */
         .gain = 0.50f,
         // .gain = 3.00f,
@@ -224,8 +228,8 @@ void setup() {
 
     // Madgwick fusion library initialization.
     FusionOffsetInitialise(&AHRS_gyro_offset, SAMPLE_RATE);
-    FusionAhrsInitialise(&AHRS);
     FusionAhrsSetSettings(&AHRS, &AHRSsettings);
+    FusionAhrsReset(&AHRS);
 
     usb_comms.setSettings(usb_comms.NO_AUTOSEND, usb_comms.SEND_NONBLOCKING);
     joystick.setAxisRange( -180, 180, X );  // left-right, yaw-axis. Range [-180, 180] degrees. 

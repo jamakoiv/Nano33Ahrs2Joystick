@@ -116,10 +116,13 @@ string print_output(void) {
 -------------------- SERIAL INPUT PART --------------------------
 */
 
+std::string ahrs_set_settings(std::vector<float> params);
+std::string ahrs_get_settings(void);
+
 // TODO: Maybe replace individual MAG_GET, ACC_GET... MAG_SET, ACC_SET commands
 // with generic CALIBRATION_GET & CALIBRATION_GET -functions which take target
 // as parameter.
-string execute_command(command_t &cmd) {
+std::string execute_command(command_t &cmd) {
     switch (cmd.id) {
     case SERIAL_SET_PRINT_MODE:
         return set_print_mode(cmd.params);
@@ -141,6 +144,10 @@ string execute_command(command_t &cmd) {
         return yaw_get_offset();
     case SERIAL_RESET_KVSTORE:
         return _kv_store_reset();
+    case SERIAL_AHRS_SET_SETTINGS:
+        return ahrs_set_settings(cmd.params);
+    case SERIAL_AHRS_GET_SETTINGS:
+        return ahrs_get_settings();
     default:
         string msg = "Command " + std::to_string(cmd.id) + " not found.";
         return msg;
@@ -346,6 +353,36 @@ string set_print_mode(vector<float> params) {
 
     SerialOutputMode = static_cast<uint8_t>(params[0]);
     string msg = "Output mode set to " + int_to_hex(SerialOutputMode) + ";";
+    return msg;
+}
+
+string ahrs_set_settings(vector<float> params) {
+    if (params.size() < 4) {
+        string err("Error: Not enough parameters given");
+        return err;
+    }
+    AHRSsettings.gain = params[0];
+    AHRSsettings.accelerationRejection = params[1];
+    AHRSsettings.magneticRejection = params[2];
+    AHRSsettings.recoveryTriggerPeriod = params[3];
+
+    FusionAhrsSetSettings(&AHRS, &AHRSsettings);
+    FusionAhrsReset(&AHRS);
+
+    string msg = "AHRS settings set;";
+    return msg;
+}
+
+string ahrs_get_settings(void) {
+    command_t cmd;
+    cmd.id = SERIAL_AHRS_GET_SETTINGS;
+    cmd.n_params = 4;
+    cmd.params.push_back(AHRSsettings.gain);
+    cmd.params.push_back(AHRSsettings.accelerationRejection);
+    cmd.params.push_back(AHRSsettings.magneticRejection);
+    cmd.params.push_back(AHRSsettings.recoveryTriggerPeriod);
+
+    string msg = create_message(cmd);
     return msg;
 }
 
