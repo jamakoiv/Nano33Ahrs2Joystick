@@ -53,11 +53,13 @@ string printFusionVector(FusionVector vec) {
     return str;
 }
 
-string printFusionVector(FusionVector vecA, FusionVector vecB) {
-    string strA = printFusionVector(vecA);
-    string strB = printFusionVector(vecB);
+string printMagGyroRaw(void) {
+    static const float MICROSECONDS_TO_SECONDS = 1.0f / 1000000.0f;
 
-    return strA + strB;
+    float time = static_cast<float>(IMU_timeStamp) * MICROSECONDS_TO_SECONDS;
+    string str = std::to_string(time) + ", " + printFusionVector(mag_raw) +
+                 printFusionVector(gyro_raw);
+    return str;
 }
 
 string printFusionMatrix(FusionMatrix mat) {
@@ -99,7 +101,7 @@ string print_output(void) {
     case SERIAL_PRINT_GYRO_RAW:
         return printFusionVector(gyro_raw);
     case SERIAL_PRINT_MAG_GYRO_RAW:
-        return printFusionVector(mag_raw, gyro_raw);
+        return printMagGyroRaw();
     default:
         string msg = "Error: Output mode " + std::to_string(SerialOutputMode) +
                      " is not valid.";

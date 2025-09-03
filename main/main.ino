@@ -23,6 +23,9 @@ int SerialOutputMode = SERIAL_PRINT_MAG_CALIB;
 const int BUFFER_MAX_SIZE = 256;
 char serial_comm_buffer[BUFFER_MAX_SIZE+1];
 
+uint32_t IMU_timeStamp = 0;
+uint32_t IMU_previousTimeStamp = 0;
+
 /*
   Fusion-library objects and variables.
 */
@@ -103,9 +106,6 @@ inline FusionVector changeAxisSign(FusionVector vec, int xSign, int ySign, int z
 float updateTimeStamp(void) {
     /* Calculate timestep and convert from microseconds to seconds. */
     static const float MICROSECONDS_TO_SECONDS = 1.0f / 1000000.0f;
-    static uint32_t IMU_timeStamp = micros();
-    static uint32_t IMU_previousTimeStamp;
-    // TODO: Using static variables make this a bit hard to follow.
 
     IMU_timeStamp = micros();
     float dt = static_cast<float>((IMU_timeStamp-IMU_previousTimeStamp)*MICROSECONDS_TO_SECONDS); 
@@ -127,7 +127,6 @@ void AHRS_check(void) {
   static float deltaTime;
 
   if (IMU.gyroscopeAvailable()) {
-
     deltaTime = updateTimeStamp(); 
 
     IMU.readGyroscope(gyro_raw.axis.x, gyro_raw.axis.y, gyro_raw.axis.z);
@@ -232,8 +231,6 @@ void setup() {
     joystick.setAxisRange( -180, 180, X );  // left-right, yaw-axis. Range [-180, 180] degrees. 
     joystick.setAxisRange( -90, 90, Y );    // up-down, pitch-axis. Range [-90, 90] degrees.
     joystick.setAxisRange( -90, 90, Z );  // roll left-right, roll-axis. Range [-90, 90] degrees.
-
-
 
     if (!kv_store_initialized()) {
       while (true) {

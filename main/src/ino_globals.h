@@ -8,6 +8,8 @@
 // TODO: The existance of this file is a massive code smell. Try to get rid of
 // it eventually.
 
+extern uint32_t IMU_timeStamp;
+
 extern FusionVector mag_raw;
 extern FusionVector mag_calibrated;
 extern FusionMatrix soft_iron;
