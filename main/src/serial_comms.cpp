@@ -141,10 +141,10 @@ std::string execute_command(command_t &cmd) {
         return yaw_get_offset();
     case SERIAL_RESET_KVSTORE:
         return _kv_store_reset();
-    case SERIAL_AHRS_SET_SETTINGS:
-        return ahrs_set_settings(cmd.params);
-    case SERIAL_AHRS_GET_SETTINGS:
-        return ahrs_get_settings();
+    case SERIAL_MISC_SET_SETTINGS:
+        return misc_set_settings(cmd.params);
+    case SERIAL_MISC_GET_SETTINGS:
+        return misc_get_settings();
     default:
         std::string msg = "Command " + std::to_string(cmd.id) + " not found.";
         return msg;
@@ -354,15 +354,19 @@ std::string set_print_mode(std::vector<float> params) {
     return msg;
 }
 
-std::string ahrs_set_settings(std::vector<float> params) {
-    if (params.size() < 4) {
+std::string misc_set_settings(std::vector<float> params) {
+    if (params.size() < 7) {
         string err("Error: Not enough parameters given");
         return err;
     }
-    AHRSsettings.gain = params[0];
-    AHRSsettings.accelerationRejection = params[1];
-    AHRSsettings.magneticRejection = params[2];
-    AHRSsettings.recoveryTriggerPeriod = params[3];
+    AxisOffset.axis.x = params[0]; // Yaw
+    AxisOffset.axis.y = params[1]; // Pitch
+    AxisOffset.axis.z = params[2]; // Roll
+    //
+    AHRSsettings.gain = params[3];
+    AHRSsettings.accelerationRejection = params[4];
+    AHRSsettings.magneticRejection = params[5];
+    AHRSsettings.recoveryTriggerPeriod = params[6];
 
     FusionAhrsSetSettings(&AHRS, &AHRSsettings);
     FusionAhrsReset(&AHRS);
@@ -371,10 +375,15 @@ std::string ahrs_set_settings(std::vector<float> params) {
     return msg;
 }
 
-std::string ahrs_get_settings(void) {
+std::string misc_get_settings(void) {
     command_t cmd;
     cmd.id = SERIAL_AHRS_GET_SETTINGS;
-    cmd.n_params = 4;
+    cmd.n_params = 7;
+
+    cmd.params.push_back(AxisOffset.axis.x);
+    cmd.params.push_back(AxisOffset.axis.y);
+    cmd.params.push_back(AxisOffset.axis.z);
+
     cmd.params.push_back(AHRSsettings.gain);
     cmd.params.push_back(AHRSsettings.accelerationRejection);
     cmd.params.push_back(AHRSsettings.magneticRejection);
