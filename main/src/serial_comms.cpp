@@ -113,8 +113,8 @@ std::string print_output(void) {
 -------------------- SERIAL INPUT PART --------------------------
 */
 
-std::string ahrs_set_settings(std::vector<float> params);
-std::string ahrs_get_settings(void);
+std::string misc_set_settings(std::vector<float> params);
+std::string misc_get_settings(void);
 
 // TODO: Maybe replace individual MAG_GET, ACC_GET... MAG_SET, ACC_SET commands
 // with generic CALIBRATION_GET & CALIBRATION_GET -functions which take target
@@ -326,6 +326,8 @@ std::string set_print_mode(std::vector<float> params) {
 }
 
 std::string misc_set_settings(std::vector<float> params) {
+    SerialOutputMode = SERIAL_PRINT_NOTHING;
+
     if (params.size() < 7) {
         string err("Error: Not enough parameters given");
         return err;
@@ -347,8 +349,10 @@ std::string misc_set_settings(std::vector<float> params) {
 }
 
 std::string misc_get_settings(void) {
+    SerialOutputMode = SERIAL_PRINT_NOTHING;
+
     command_t cmd;
-    cmd.id = SERIAL_AHRS_GET_SETTINGS;
+    cmd.id = SERIAL_MISC_GET_SETTINGS;
     cmd.n_params = 7;
 
     cmd.params.push_back(AxisOffset.axis.x);
