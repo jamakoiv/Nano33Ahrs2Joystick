@@ -18,7 +18,7 @@ enum {
     cal_euler_output_offset
 };
 
-extern std::map<int, string> kv_keys;
+extern std::map<int, std::string> kv_keys;
 
 bool kv_store_initialized(void);
 
@@ -28,7 +28,7 @@ bool kv_store_initialized(void);
  * Returns true if saved successfully.
  * Returns false if kv-store returned an error.
  */
-bool kv_store_save_calibration(const string key, const FusionVector &data);
+bool kv_store_save_calibration(const std::string key, const FusionVector &data);
 
 /*
   Load calibration values from the KVstore. If the KVStore key does not
@@ -37,14 +37,14 @@ bool kv_store_save_calibration(const string key, const FusionVector &data);
   Returns true if calibration was loaded from KVStore succesfully.
   Returns false if loading failed and defaults were used instead.
 */
-bool kv_store_load_calibration(const string key, FusionVector &calib,
+bool kv_store_load_calibration(const std::string key, FusionVector &calib,
                                FusionVector &factory_default);
 
 /*
  * Same as above overloaded for FUsionMatrix.
  */
-bool kv_store_save_calibration(const string key, const FusionMatrix &data);
-bool kv_store_load_calibration(const string key, FusionMatrix &calib,
+bool kv_store_save_calibration(const std::string key, const FusionMatrix &data);
+bool kv_store_load_calibration(const std::string key, FusionMatrix &calib,
                                FusionMatrix &factory_default);
 
 void kv_store_reset(void);

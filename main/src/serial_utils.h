@@ -34,27 +34,28 @@ enum {
 /*
  * Create header and body from command.
  */
-std::tuple<string, string> command2bytes(const command_t &cmd);
+std::tuple<std::string, std::string> command2bytes(const command_t &cmd);
 
 /*
  * Create command from supplied header and body.
  */
-command_t bytes2command(const string &header, const string &body);
+command_t bytes2command(const std::string &header, const std::string &body);
 
-string create_message(const command_t &cmd);
-command_t retrieve_command(const string &msg);
+std::string create_message(const command_t &cmd);
+command_t retrieve_command(const std::string &msg);
 
 /*
  * Check that the message has all the necessary control characters in the
  * correct order.
  */
-int sanity_check_message(const string &msg);
+int sanity_check_message(const std::string &msg);
 
 /*
  * Extract the header and body from message following form described
  * in 'create_message'.
  */
-tuple<string, string> retrieve_header_and_body(const string &msg);
+tuple<std::string, std::string>
+retrieve_header_and_body(const std::string &msg);
 
 /*
  * Preface all characters found in the list TRANSMISSION_CONTROL_CHARS with
@@ -62,7 +63,7 @@ tuple<string, string> retrieve_header_and_body(const string &msg);
  *
  * Example: \x04\x3f => \x1b\x24\x3f
  */
-string parse_outbound_bytes(const string &msg);
+std::string parse_outbound_bytes(const std::string &msg);
 
 /*
  * Remove all ASCII_ESC bytes from the message buffer and remove the
@@ -70,11 +71,11 @@ string parse_outbound_bytes(const string &msg);
  *
  * Example: \x1b\x24\x3f => \x04\x3f
  */
-string parse_inbound_bytes(const string &msg);
+std::string parse_inbound_bytes(const std::string &msg);
 
 /*
  * Helper function for checking byte values.
  */
-void print_hex(const string &msg);
+void print_hex(const std::string &msg);
 
 #endif // __SERIAL_UTILS_

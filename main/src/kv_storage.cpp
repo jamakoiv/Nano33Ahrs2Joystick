@@ -11,21 +11,22 @@
 
 using std::string;
 
-std::map<int, string> kv_keys = {{cal_mag_offset, "MagOffset"},
-                                 {cal_mag_gain, "MagGain"},
-                                 {cal_acc_offset, "AccOffset"},
-                                 {cal_acc_gain, "AccGain"},
-                                 {cal_gyro_offset, "GyroOffset"},
-                                 {cal_gyro_gain, "GyroGain"},
-                                 {cal_euler_output_offset, "OutputOffset"}};
+std::map<int, std::string> kv_keys = {
+    {cal_mag_offset, "MagOffset"},
+    {cal_mag_gain, "MagGain"},
+    {cal_acc_offset, "AccOffset"},
+    {cal_acc_gain, "AccGain"},
+    {cal_gyro_offset, "GyroOffset"},
+    {cal_gyro_gain, "GyroGain"},
+    {cal_euler_output_offset, "OutputOffset"}};
 
 /*
 "AxisOffset"-------------------- KV-STORE PART --------------------
 */
 
 const int KV_BUFFER_SIZE = 64;
-const string kv_path = "/kv/";
-const string kv_init_key = kv_path + "KVStore_global_api_init";
+const std::string kv_path = "/kv/";
+const std::string kv_init_key = kv_path + "KVStore_global_api_init";
 
 bool kv_store_initialized(void) {
     kv_info_t info;
@@ -52,10 +53,11 @@ bool kv_store_initialized(void) {
     }
 }
 
-bool kv_store_save_calibration(const string key, const FusionVector &data) {
-    string data_str = std::to_string(data.axis.x) + "," +
-                      std::to_string(data.axis.y) + "," +
-                      std::to_string(data.axis.z);
+bool kv_store_save_calibration(const std::string key,
+                               const FusionVector &data) {
+    std::string data_str = std::to_string(data.axis.x) + "," +
+                           std::to_string(data.axis.y) + "," +
+                           std::to_string(data.axis.z);
     auto full_key = kv_path + key;
 
     auto res = kv_set(full_key.c_str(), data_str.c_str(), data_str.length(), 0);
@@ -66,10 +68,10 @@ bool kv_store_save_calibration(const string key, const FusionVector &data) {
         return false;
 }
 
-bool kv_store_load_calibration(const string key, FusionVector &calib,
+bool kv_store_load_calibration(const std::string key, FusionVector &calib,
                                FusionVector &factory_default) {
     static char kv_get_buffer[KV_BUFFER_SIZE];
-    static string VALUES_DELIMITER = ",";
+    static std::string VALUES_DELIMITER = ",";
 
     size_t bytes_received;
     kv_info_t info;
@@ -84,7 +86,8 @@ bool kv_store_load_calibration(const string key, FusionVector &calib,
     if (res != MBED_SUCCESS)
         return false;
 
-    auto values = split_and_strtof(string(kv_get_buffer), VALUES_DELIMITER);
+    auto values =
+        split_and_strtof(std::string(kv_get_buffer), VALUES_DELIMITER);
     if (values.size() != 3)
         return false;
 
@@ -93,10 +96,11 @@ bool kv_store_load_calibration(const string key, FusionVector &calib,
 }
 
 /* Brutal cut-paste for FusionMatrix overloads */
-bool kv_store_save_calibration(const string key, const FusionMatrix &data) {
-    string data_str = std::to_string(data.element.xx) + "," +
-                      std::to_string(data.element.yy) + "," +
-                      std::to_string(data.element.zz);
+bool kv_store_save_calibration(const std::string key,
+                               const FusionMatrix &data) {
+    std::string data_str = std::to_string(data.element.xx) + "," +
+                           std::to_string(data.element.yy) + "," +
+                           std::to_string(data.element.zz);
 
     auto full_key = kv_path + key;
 
@@ -107,10 +111,10 @@ bool kv_store_save_calibration(const string key, const FusionMatrix &data) {
         return false;
 }
 
-bool kv_store_load_calibration(const string key, FusionMatrix &calib,
+bool kv_store_load_calibration(const std::string key, FusionMatrix &calib,
                                FusionMatrix &factory_default) {
     static char kv_get_buffer[KV_BUFFER_SIZE];
-    static string VALUES_DELIMITER = ",";
+    static std::string VALUES_DELIMITER = ",";
 
     size_t bytes_received;
     kv_info_t info;
@@ -126,7 +130,8 @@ bool kv_store_load_calibration(const string key, FusionMatrix &calib,
     if (res != MBED_SUCCESS)
         return false;
 
-    auto values = split_and_strtof(string(kv_get_buffer), VALUES_DELIMITER);
+    auto values =
+        split_and_strtof(std::string(kv_get_buffer), VALUES_DELIMITER);
     if (values.size() != 3)
         return false;
 

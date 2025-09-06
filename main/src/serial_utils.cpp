@@ -19,8 +19,8 @@ union float_bytes_t {
     char b[sizeof(float)];
 };
 
-std::tuple<string, string> command2bytes(const command_t &cmd) {
-    string header;
+std::tuple<std::string, std::string> command2bytes(const command_t &cmd) {
+    std::string header;
     float_bytes_t float_bytes;
 
     header.reserve(3);
@@ -28,7 +28,7 @@ std::tuple<string, string> command2bytes(const command_t &cmd) {
     header.push_back(cmd.n_params);
 
     // TODO: No endianess handling, will break on some platform combinations.
-    string body;
+    std::string body;
     body.reserve(cmd.params.size() * sizeof(float));
     for (float f : cmd.params) {
         float_bytes.f = f;
@@ -38,7 +38,7 @@ std::tuple<string, string> command2bytes(const command_t &cmd) {
     return std::make_tuple(header, body);
 }
 
-command_t bytes2command(const string &header, const string &body) {
+command_t bytes2command(const std::string &header, const std::string &body) {
     command_t cmd;
     float_bytes_t float_bytes;
 
@@ -56,18 +56,19 @@ command_t bytes2command(const string &header, const string &body) {
     return cmd;
 }
 
-string create_message(const command_t &cmd) {
+std::string create_message(const command_t &cmd) {
     std::string raw_header, raw_body;
     std::tie(raw_header, raw_body) = command2bytes(cmd);
-    string header = parse_outbound_bytes(raw_header);
-    string body = parse_outbound_bytes(raw_body);
+    std::string header = parse_outbound_bytes(raw_header);
+    std::string body = parse_outbound_bytes(raw_body);
 
-    string msg = string(1, ASCII_SOH) + header + string(1, ASCII_STX) + body +
-                 string(1, ASCII_ETX) + string(1, ASCII_EOT);
+    std::string msg = std::string(1, ASCII_SOH) + header +
+                      std::string(1, ASCII_STX) + body +
+                      std::string(1, ASCII_ETX) + std::string(1, ASCII_EOT);
     return msg;
 }
 
-command_t retrieve_command(const string &msg) {
+command_t retrieve_command(const std::string &msg) {
     int check = sanity_check_message(msg);
     if (check == -10) {
         return command_t{-10, 0, {}, "Header byte not found"};
@@ -84,20 +85,21 @@ command_t retrieve_command(const string &msg) {
     std::string raw_header, raw_body;
     std::tie(raw_header, raw_body) = retrieve_header_and_body(msg);
 
-    string header = parse_inbound_bytes(raw_header);
-    string body = parse_inbound_bytes(raw_body);
+    std::string header = parse_inbound_bytes(raw_header);
+    std::string body = parse_inbound_bytes(raw_body);
 
     command_t cmd = bytes2command(header, body);
     return cmd;
 }
 
-std::tuple<string, string> retrieve_header_and_body(const string &msg) {
+std::tuple<std::string, std::string>
+retrieve_header_and_body(const std::string &msg) {
     size_t SOH_pos = msg.find(ASCII_SOH);
     size_t STX_pos = msg.find(ASCII_STX);
     size_t ETX_pos = msg.find(ASCII_ETX);
 
-    string header = msg.substr(SOH_pos + 1, STX_pos - SOH_pos - 1);
-    string body = msg.substr(STX_pos + 1, ETX_pos - STX_pos - 1);
+    std::string header = msg.substr(SOH_pos + 1, STX_pos - SOH_pos - 1);
+    std::string body = msg.substr(STX_pos + 1, ETX_pos - STX_pos - 1);
 
     // Serial.print("[retrieve_header_and_body] header: ");
     // Serial.println(header.c_str());
@@ -107,19 +109,19 @@ std::tuple<string, string> retrieve_header_and_body(const string &msg) {
     return std::make_tuple(header, body);
 }
 
-int sanity_check_message(const string &msg) {
+int sanity_check_message(const std::string &msg) {
     size_t SOH_pos = msg.find(ASCII_SOH);
     size_t STX_pos = msg.find(ASCII_STX);
     size_t ETX_pos = msg.find(ASCII_ETX);
     size_t EOT_pos = msg.find(ASCII_EOT);
 
-    if (SOH_pos == string::npos) {
+    if (SOH_pos == std::string::npos) {
         return -10;
-    } else if (STX_pos == string::npos) {
+    } else if (STX_pos == std::string::npos) {
         return -11;
-    } else if (ETX_pos == string::npos) {
+    } else if (ETX_pos == std::string::npos) {
         return -12;
-    } else if (EOT_pos == string::npos) {
+    } else if (EOT_pos == std::string::npos) {
         return -13;
     }
 
@@ -130,8 +132,8 @@ int sanity_check_message(const string &msg) {
     return 0;
 }
 
-string parse_outbound_bytes(const string &msg) {
-    string res;
+std::string parse_outbound_bytes(const std::string &msg) {
+    std::string res;
     res.reserve(msg.length() + 20); // TODO: Make a better estimate.
 
     for (char msg_byte : msg) {
@@ -150,8 +152,8 @@ string parse_outbound_bytes(const string &msg) {
     return res;
 }
 
-string parse_inbound_bytes(const string &msg) {
-    string res;
+std::string parse_inbound_bytes(const std::string &msg) {
+    std::string res;
     res.reserve(msg.length());
 
     bool escape_found = false;
@@ -170,7 +172,7 @@ string parse_inbound_bytes(const string &msg) {
     return res;
 }
 
-void print_hex(const string &msg) {
+void print_hex(const std::string &msg) {
     for (const auto &c : msg) {
         std::cout << std::hex << std::setw(2) << std::setfill('0')
                   << (static_cast<int>(c) & 0xff) << " ";
