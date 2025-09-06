@@ -44,19 +44,36 @@ std::string printAHRSeulerDebug(void) {
 }
 
 std::string printFusionVector(FusionVector vec) {
-    std::string str = std::to_string(vec.axis.x) + ", " +
+    std::string msg = std::to_string(vec.axis.x) + ", " +
                       std::to_string(vec.axis.y) + ", " +
                       std::to_string(vec.axis.z) + ", ";
-    return str;
+    return msg;
 }
 
-std::string printMagGyroRaw(void) {
+std::string printMagAccGyroRaw(void) {
     static const float MICROSECONDS_TO_SECONDS = 1.0f / 1000000.0f;
-
     float time = static_cast<float>(IMU_timeStamp) * MICROSECONDS_TO_SECONDS;
-    std::string str = std::to_string(time) + ", " + printFusionVector(mag_raw) +
-                      printFusionVector(gyro_raw);
-    return str;
+
+    // clang-format off
+    std::string msg = std::to_string(time) + ", " +
+                    printFusionVector(mag_raw) +
+                    printFusionVector(acc_raw) +
+                    printFusionVector(gyro_raw);
+    // clang-format on
+    return msg;
+}
+
+std::string printMagAccGyroCalib(void) {
+    static const float MICROSECONDS_TO_SECONDS = 1.0f / 1000000.0f;
+    float time = static_cast<float>(IMU_timeStamp) * MICROSECONDS_TO_SECONDS;
+
+    // clang-format off
+    std::string msg = std::to_string(time) + ", " +
+                    printFusionVector(mag_calibrated) +
+                    printFusionVector(acc_calibrated) +
+                    printFusionVector(gyro_calibrated);
+    // clang-format on
+    return msg;
 }
 
 std::string printFusionMatrix(FusionMatrix mat) {
@@ -97,8 +114,10 @@ std::string print_output(void) {
         return printFusionVector(mag_raw);
     case SERIAL_PRINT_GYRO_RAW:
         return printFusionVector(gyro_raw);
-    case SERIAL_PRINT_MAG_GYRO_RAW:
-        return printMagGyroRaw();
+    case SERIAL_PRINT_MAG_ACC_GYRO_RAW:
+        return printMagAccGyroRaw();
+    case SERIAL_PRINT_MAG_ACC_GYRO_CALIB:
+        return printMagAccGyroCalib();
     default:
         string msg = "Error: Output mode " + std::to_string(SerialOutputMode) +
                      " is not valid.";
