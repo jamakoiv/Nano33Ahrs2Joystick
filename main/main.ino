@@ -29,7 +29,17 @@ uint32_t IMU_previousTimeStamp = 0;
 /*
   Fusion-library objects and variables.
 */
-const uint32_t SAMPLE_RATE = 238;
+const uint32_t SAMPLE_RATE_GYRO = 238;
+const uint32_t SAMPLE_RATE_ACC = 119;
+const uint32_t SAMPLE_RATE_MAG = 20;
+
+const float gyro_time_constant = 0.10;  // In seconds
+const float acc_time_constant = 0.10;  // In seconds
+const float mag_time_constant = 1.00;  // In seconds
+const float gyro_alpha = 1-pow(M_E, -1.0/static_cast<float>(SAMPLE_RATE_GYRO) / filter_time_constant);
+const float acc_alpha = 1-pow(M_E, -1.0/static_cast<float>(SAMPLE_RATE_ACC) / filter_time_constant);
+const float mag_alpha = 1-pow(M_E, -1.0/static_cast<float>(SAMPLE_RATE_MAG) / filter_time_constant);
+
 FusionOffset AHRS_gyro_offset;
 FusionAhrs AHRS;
 float CompassHeading;
@@ -43,11 +53,13 @@ FusionAhrsSettings AHRSsettings_default = {
         .gyroscopeRange = 500.0,  // In degrees per second.
         .accelerationRejection = 10.0f,
         .magneticRejection = 10.0f,
-        .recoveryTriggerPeriod = 5*SAMPLE_RATE
+        .recoveryTriggerPeriod = 5*SAMPLE_RATE_GYRO
 } ;
 
 // Variables for acceleration values and calibrations.
 FusionVector acc_raw;
+FusionVector acc_last;
+FusionVector acc_filtered;
 FusionVector acc_calibrated;
 FusionVector acc_gain;
 FusionVector acc_gain_default {1.0, 1.0, 1.0};
@@ -62,6 +74,8 @@ FusionMatrix acc_misalignment_default = {
 
 // Variables for gyroscope values and calibrations.
 FusionVector gyro_raw;
+FusionVector gyro_last;
+FusionVector gyro_filtered;
 FusionVector gyro_calibrated;
 FusionVector gyro_gain;
 FusionVector gyro_gain_default {1.125f, 1.125f, 1.125f};
@@ -76,6 +90,8 @@ FusionMatrix gyro_misalignment_default = {
 
 // Variables for magnetometer values and calibrations.
 FusionVector mag_raw;
+FusionVector mag_last;
+FusionVector mag_filtered;
 FusionVector mag_calibrated;
 FusionMatrix soft_iron;
 FusionMatrix soft_iron_default = {
@@ -96,14 +112,12 @@ FusionVector AxisOffset;
 FusionVector AxisOffset_default = {0.0f, 0.0f, 0.0f};
 
 
-
-
 inline FusionVector changeAxisSign(FusionVector vec, int xSign, int ySign, int zSign) {
     FusionVector res = {vec.axis.x * xSign, vec.axis.y * ySign, vec.axis.z * zSign};
     return res;
 }
 
-float updateTimeStamp(void) {
+inline float updateTimeStamp(void) {
     /* Calculate timestep and convert from microseconds to seconds. */
     static const float MICROSECONDS_TO_SECONDS = 1.0f / 1000000.0f;
 
@@ -112,6 +126,13 @@ float updateTimeStamp(void) {
     IMU_previousTimeStamp = IMU_timeStamp;
 
     return dt;
+}
+
+inline FusionVector exponentialFilter(const FusionVector raw, const FusionVector last, const float alpha) {
+  return FusionVectorAdd(
+      FusionVectorMultiplyScalar(raw, alpha),
+      FusionVectorMultiplyScalar(last, 1-alpha)
+      );
 }
 
 void AHRS_check(void) {
@@ -130,7 +151,10 @@ void AHRS_check(void) {
     deltaTime = updateTimeStamp(); 
 
     IMU.readGyroscope(gyro_raw.axis.x, gyro_raw.axis.y, gyro_raw.axis.z);
-    gyro_calibrated = FusionCalibrationInertial(gyro_raw, gyro_misalignment, gyro_gain, gyro_offset);
+    gyro_filtered = exponentialFilter(gyro_raw, gyro_last, gyro_alpha);
+    gyro_last = gyro_filtered;
+
+    gyro_calibrated = FusionCalibrationInertial(gyro_filtered, gyro_misalignment, gyro_gain, gyro_offset);
     gyro_calibrated = changeAxisSign(gyro_calibrated, 1, 1, -1 );
     gyro_calibrated = FusionOffsetUpdate(&AHRS_gyro_offset, gyro_calibrated); 
 
@@ -141,13 +165,19 @@ void AHRS_check(void) {
 
   if (IMU.accelerationAvailable()) {
     IMU.readAcceleration(acc_raw.axis.x, acc_raw.axis.y, acc_raw.axis.z);
-    acc_calibrated = FusionCalibrationInertial(acc_raw, acc_misalignment, acc_gain, acc_offset);
+    acc_filtered = exponentialFilter(acc_raw, acc_last, acc_alpha);
+    acc_last = acc_filtered;
+
+    acc_calibrated = FusionCalibrationInertial(acc_filtered, acc_misalignment, acc_gain, acc_offset);
     acc_calibrated = changeAxisSign(acc_calibrated, 1, 1, -1);
   }
 
   if (IMU.magneticFieldAvailable()) {
     IMU.readMagneticField(mag_raw.axis.x, mag_raw.axis.y, mag_raw.axis.z);
-    mag_calibrated = FusionCalibrationMagnetic(mag_raw, soft_iron, hard_iron);
+    mag_filtered = exponentialFilter(mag_raw, mag_last, mag_alpha);
+    mag_last = mag_filtered;
+
+    mag_calibrated = FusionCalibrationMagnetic(mag_filtered, soft_iron, hard_iron);
     mag_calibrated = changeAxisSign(mag_calibrated, -1, 1, -1);
   }
 }
@@ -213,10 +243,15 @@ command_t serial_check_for_command(void) {
 }
 
 void setup() {
-    // while (!Serial) {}
+    while (!Serial) {}
     Serial.begin(57600);
-    delay(500);
+    delay(1000);
     Serial.println("Starting board.");
+
+    Serial.println(M_E);
+    Serial.println(gyro_alpha);
+    Serial.println(acc_alpha);
+    Serial.println(mag_alpha);
 
     IMU.setGyroscopeSettings( LSM9DS1_ODR_G_238HZ, LSM9DS1_FS_G_500DPS );
     IMU.setAccelerometerSettings( LSM9DS1_ODR_XL_119HZ, LSM9DS1_FS_XL_4G );
@@ -256,7 +291,7 @@ void setup() {
     kv_store_load_calibration(kv_keys[cal_ahrs_settings], AHRSsettings, AHRSsettings_default);
 
     // Madgwick fusion library initialization.
-    FusionOffsetInitialise(&AHRS_gyro_offset, SAMPLE_RATE);
+    FusionOffsetInitialise(&AHRS_gyro_offset, SAMPLE_RATE_GYRO);
     FusionAhrsSetSettings(&AHRS, &AHRSsettings);
     FusionAhrsReset(&AHRS);
 
