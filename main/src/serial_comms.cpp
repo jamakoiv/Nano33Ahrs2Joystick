@@ -44,9 +44,14 @@ std::string printAHRSeulerDebug(void) {
 }
 
 std::string printFusionVector(FusionVector vec) {
+    float magnitude = FusionVectorMagnitude(vec);
+
+    // clang-format off
     std::string msg = std::to_string(vec.axis.x) + ", " +
                       std::to_string(vec.axis.y) + ", " +
-                      std::to_string(vec.axis.z) + ", ";
+                      std::to_string(vec.axis.z) + ", " +
+                      std::to_string(magnitude) + ",";
+    // clang-format on
     return msg;
 }
 
