@@ -36,9 +36,9 @@ const uint32_t SAMPLE_RATE_MAG = 20;
 const float gyro_time_constant = 0.10;  // In seconds
 const float acc_time_constant = 0.10;  // In seconds
 const float mag_time_constant = 1.00;  // In seconds
-const float gyro_alpha = 1-pow(M_E, -1.0/static_cast<float>(SAMPLE_RATE_GYRO) / filter_time_constant);
-const float acc_alpha = 1-pow(M_E, -1.0/static_cast<float>(SAMPLE_RATE_ACC) / filter_time_constant);
-const float mag_alpha = 1-pow(M_E, -1.0/static_cast<float>(SAMPLE_RATE_MAG) / filter_time_constant);
+const float gyro_alpha = 1-pow(M_E, -1.0/static_cast<float>(SAMPLE_RATE_GYRO) / gyro_time_constant);
+const float acc_alpha = 1-pow(M_E, -1.0/static_cast<float>(SAMPLE_RATE_ACC) / acc_time_constant);
+const float mag_alpha = 1-pow(M_E, -1.0/static_cast<float>(SAMPLE_RATE_MAG) / mag_time_constant);
 
 FusionOffset AHRS_gyro_offset;
 FusionAhrs AHRS;
@@ -101,7 +101,6 @@ FusionMatrix soft_iron_default = {
 };
 FusionVector hard_iron;
 FusionVector hard_iron_default = {2.97, -26.39, 14.13};
-
 
 /* AxisOffset(yaw, pitch, roll). Add constant offset to the AHRS-Euler 
  * output as degrees. Generally you should leave these zero and mitigate 
@@ -313,7 +312,7 @@ void loop() {
   if (millis() - serial_output_timer > 200) {
     serial_output_timer = millis();
     std::string output = print_output();
-    
+
     Serial.println(output.c_str());
   }
 
