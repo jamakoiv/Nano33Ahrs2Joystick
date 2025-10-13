@@ -11,14 +11,14 @@
 
 using std::string;
 
-std::map<int, std::string> kv_keys = {
-    {cal_mag_offset, "MagOffset"},
-    {cal_mag_gain, "MagGain"},
-    {cal_acc_offset, "AccOffset"},
-    {cal_acc_gain, "AccGain"},
-    {cal_gyro_offset, "GyroOffset"},
-    {cal_gyro_gain, "GyroGain"},
-    {cal_euler_output_offset, "OutputOffset"}};
+std::map<int, std::string> kv_keys = {{cal_mag_offset, "MagOffset"},
+                                      {cal_mag_gain, "MagGain"},
+                                      {cal_acc_offset, "AccOffset"},
+                                      {cal_acc_gain, "AccGain"},
+                                      {cal_gyro_offset, "GyroOffset"},
+                                      {cal_gyro_gain, "GyroGain"},
+                                      {cal_euler_output_offset, "OutputOffset"},
+                                      {cal_ahrs_settings, "AHRSSettings"}};
 
 /*
 "AxisOffset"-------------------- KV-STORE PART --------------------

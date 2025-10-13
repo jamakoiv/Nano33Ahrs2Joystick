@@ -15,7 +15,8 @@ enum {
     cal_acc_gain,
     cal_gyro_offset,
     cal_gyro_gain,
-    cal_euler_output_offset
+    cal_euler_output_offset,
+    cal_ahrs_settings
 };
 
 extern std::map<int, std::string> kv_keys;
