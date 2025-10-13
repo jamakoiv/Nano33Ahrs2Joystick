@@ -28,7 +28,7 @@ std::map<int, std::string> kv_keys = {
 "AxisOffset"-------------------- KV-STORE PART --------------------
 */
 
-const int KV_BUFFER_SIZE = 64;
+const int KV_BUFFER_SIZE = 1024;
 const std::string kv_path = "/kv/";
 const std::string kv_init_key = kv_path + "KVStore_global_api_init";
 
