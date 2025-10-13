@@ -150,9 +150,9 @@ bool kv_store_load_calibration(const std::string key, FusionMatrix &calib,
 bool kv_store_save_calibration(const std::string key,
                                const FusionAhrsSettings &data) {
     std::string data_str =
-        std::to_string(data.gain) "," +
+        std::to_string(data.gain) + "," +
         std::to_string(data.accelerationRejection) + "," +
-        std::to_string(data.magneticRejection) "," +
+        std::to_string(data.magneticRejection) + "," +
         std::to_string(static_cast<float>(data.recoveryTriggerPeriod));
 
     auto full_key = kv_path + key;
@@ -211,8 +211,12 @@ void kv_store_reset(void) {
     kv_store_save_calibration(kv_keys[cal_mag_gain], soft_iron_default);
     kv_store_save_calibration(kv_keys[cal_acc_offset], acc_offset_default);
     kv_store_save_calibration(kv_keys[cal_acc_gain], acc_gain_default);
+    kv_store_save_calibration(kv_keys[cal_acc_misalignment],
+                              acc_misalignment_default);
     kv_store_save_calibration(kv_keys[cal_gyro_offset], gyro_offset_default);
     kv_store_save_calibration(kv_keys[cal_gyro_gain], gyro_gain_default);
+    kv_store_save_calibration(kv_keys[cal_gyro_misalignment],
+                              gyro_misalignment_default);
     kv_store_save_calibration(kv_keys[cal_euler_output_offset],
                               AxisOffset_default);
 

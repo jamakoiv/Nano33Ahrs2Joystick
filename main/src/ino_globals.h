@@ -27,6 +27,7 @@ extern FusionVector acc_gain_default;
 extern FusionVector acc_offset;
 extern FusionVector acc_offset_default;
 extern FusionMatrix acc_misalignment;
+extern FusionMatrix acc_misalignment_default;
 
 extern FusionVector gyro_raw;
 extern FusionVector gyro_calibrated;
@@ -35,12 +36,14 @@ extern FusionVector gyro_gain_default;
 extern FusionVector gyro_offset;
 extern FusionVector gyro_offset_default;
 extern FusionMatrix gyro_misalignment;
+extern FusionMatrix gyro_misalignment_default;
 
 extern FusionVector AxisOffset;
 extern FusionVector AxisOffset_default;
 
 extern FusionAhrs AHRS;
 extern FusionAhrsSettings AHRSsettings;
+extern FusionAhrsSettings AHRSsettings_default;
 extern float CompassHeading;
 extern int SerialOutputMode;
 
