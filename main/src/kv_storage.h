@@ -1,3 +1,4 @@
+#include "Fusion/FusionAhrs.h"
 #ifndef __KV_STORAGE__
 
 #include "Fusion/FusionMath.h"
@@ -49,6 +50,14 @@ bool kv_store_load_calibration(const std::string key, FusionVector &calib,
 bool kv_store_save_calibration(const std::string key, const FusionMatrix &data);
 bool kv_store_load_calibration(const std::string key, FusionMatrix &calib,
                                FusionMatrix &factory_default);
+
+/*
+ * Same as above overloaded for FusionAhrsSettings.
+ */
+bool kv_store_save_calibration(const std::string key,
+                               const FusionAhrsSettings &data);
+bool kv_store_load_calibration(const std::string key, FusionAhrsSettings &calib,
+                               FusionAhrsSettings &factory_default);
 
 void kv_store_reset(void);
 

@@ -4,6 +4,7 @@
 #include <mbed_error.h>
 #include <string>
 
+#include "Fusion/FusionAhrs.h"
 #include "Fusion/FusionMath.h"
 #include "ino_globals.h"
 #include "kv_storage.h"
@@ -99,6 +100,7 @@ bool kv_store_load_calibration(const std::string key, FusionVector &calib,
 }
 
 /* Brutal cut-paste for FusionMatrix overloads */
+// TODO: Actually save the whole 3x3 matrix and not just diagonal.
 bool kv_store_save_calibration(const std::string key,
                                const FusionMatrix &data) {
     std::string data_str = std::to_string(data.element.xx) + "," +
@@ -141,6 +143,55 @@ bool kv_store_load_calibration(const std::string key, FusionMatrix &calib,
     calib.element.xx = values[0];
     calib.element.yy = values[1];
     calib.element.zz = values[2];
+
+    return true;
+}
+
+bool kv_store_save_calibration(const std::string key,
+                               const FusionAhrsSettings &data) {
+    std::string data_str =
+        std::to_string(data.gain) "," +
+        std::to_string(data.accelerationRejection) + "," +
+        std::to_string(data.magneticRejection) "," +
+        std::to_string(static_cast<float>(data.recoveryTriggerPeriod));
+
+    auto full_key = kv_path + key;
+
+    auto res = kv_set(full_key.c_str(), data_str.c_str(), data_str.length(), 0);
+    if (res == MBED_SUCCESS)
+        return true;
+    else
+        return false;
+}
+
+bool kv_store_load_calibration(const std::string key, FusionAhrsSettings &calib,
+                               FusionAhrsSettings &factory_default) {
+    static char kv_get_buffer[KV_BUFFER_SIZE];
+    static std::string VALUES_DELIMITER = ",";
+
+    size_t bytes_received;
+    kv_info_t info;
+    auto full_key = kv_path + key;
+
+    calib = factory_default;
+
+    auto res = kv_get_info(full_key.c_str(), &info);
+    if (res == MBED_ERROR_ITEM_NOT_FOUND)
+        return false;
+
+    res = kv_get(full_key.c_str(), kv_get_buffer, info.size, &bytes_received);
+    if (res != MBED_SUCCESS)
+        return false;
+
+    auto values =
+        split_and_strtof(std::string(kv_get_buffer), VALUES_DELIMITER);
+    if (values.size() != 4)
+        return false;
+
+    calib.gain = values[0];
+    calib.accelerationRejection = values[1];
+    calib.magneticRejection = values[2];
+    calib.recoveryTriggerPeriod = static_cast<int>(values[3]);
 
     return true;
 }
