@@ -100,11 +100,16 @@ bool kv_store_load_calibration(const std::string key, FusionVector &calib,
 }
 
 /* Brutal cut-paste for FusionMatrix overloads */
-// TODO: Actually save the whole 3x3 matrix and not just diagonal.
 bool kv_store_save_calibration(const std::string key,
                                const FusionMatrix &data) {
     std::string data_str = std::to_string(data.element.xx) + "," +
+                           std::to_string(data.element.xy) + "," +
+                           std::to_string(data.element.xz) + "," +
+                           std::to_string(data.element.yx) + "," +
                            std::to_string(data.element.yy) + "," +
+                           std::to_string(data.element.yz) + "," +
+                           std::to_string(data.element.zx) + "," +
+                           std::to_string(data.element.zy) + "," +
                            std::to_string(data.element.zz);
 
     auto full_key = kv_path + key;
@@ -137,12 +142,18 @@ bool kv_store_load_calibration(const std::string key, FusionMatrix &calib,
 
     auto values =
         split_and_strtof(std::string(kv_get_buffer), VALUES_DELIMITER);
-    if (values.size() != 3)
+    if (values.size() != 9)
         return false;
 
     calib.element.xx = values[0];
-    calib.element.yy = values[1];
-    calib.element.zz = values[2];
+    calib.element.xy = values[1];
+    calib.element.xz = values[2];
+    calib.element.yx = values[3];
+    calib.element.yy = values[4];
+    calib.element.yz = values[5];
+    calib.element.zx = values[6];
+    calib.element.zy = values[7];
+    calib.element.zz = values[8];
 
     return true;
 }
