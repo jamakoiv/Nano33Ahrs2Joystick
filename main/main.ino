@@ -34,12 +34,9 @@ FusionOffset AHRS_gyro_offset;
 FusionAhrs AHRS;
 float CompassHeading;
 
-// Set AHRS algorithm settings
-// TODO: Make default and actual like the calibration values.
-// Save to kv_storage etc.
-//
-// FusionAhrsSettings AHRSsettings;
-FusionAhrsSettings AHRSsettings = {
+// AHRS algorithm settings
+FusionAhrsSettings AHRSsettings;
+FusionAhrsSettings AHRSsettings_default = {
         .convention = FusionConventionNed, /* North-East-Down */
         .gain = 0.50f,
         // .gain = 3.00f,
@@ -225,10 +222,6 @@ void setup() {
     IMU.setAccelerometerSettings( LSM9DS1_ODR_XL_119HZ, LSM9DS1_FS_XL_4G );
     IMU.begin(); // Start the STM LSM9DS1 inertial unit.
 
-    // Madgwick fusion library initialization.
-    FusionOffsetInitialise(&AHRS_gyro_offset, SAMPLE_RATE);
-    FusionAhrsSetSettings(&AHRS, &AHRSsettings);
-    FusionAhrsReset(&AHRS);
 
     usb_comms.setSettings(usb_comms.NO_AUTOSEND, usb_comms.SEND_NONBLOCKING);
     joystick.setAxisRange( -180, 180, X );  // left-right, yaw-axis. Range [-180, 180] degrees. 
@@ -258,7 +251,12 @@ void setup() {
     kv_store_load_calibration(kv_keys[cal_gyro_misalignment], gyro_misalignment, gyro_misalignment_default);
 
     kv_store_load_calibration(kv_keys[cal_euler_output_offset], AxisOffset, AxisOffset_default);
-    kv_store_load_calibration(kv_keys[cal_ahrs_settings], tmp_ahrs_settings, tmp_ahrs_settings_default);
+    kv_store_load_calibration(kv_keys[cal_ahrs_settings], AHRSsettings, AHRSsettings_default);
+
+    // Madgwick fusion library initialization.
+    FusionOffsetInitialise(&AHRS_gyro_offset, SAMPLE_RATE);
+    FusionAhrsSetSettings(&AHRS, &AHRSsettings);
+    FusionAhrsReset(&AHRS);
 
     Serial.println("System reset.");
     delay(100);
