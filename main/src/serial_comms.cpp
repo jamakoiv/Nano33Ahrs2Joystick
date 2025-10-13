@@ -270,8 +270,8 @@ std::string mag_set_calib(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     set_calibration_magnetic(params, soft_iron, hard_iron);
-    kv_store_save_calibration("MagOffset", hard_iron);
-    kv_store_save_calibration("MagGain", soft_iron);
+    kv_store_save_calibration(kv_keys[cal_mag_offset], hard_iron);
+    kv_store_save_calibration(kv_keys[cal_mag_gain], soft_iron);
 
     std::string s = int_to_hex(SERIAL_MAG_SET_CALIB) + ", Calibration set;";
     return s;
@@ -292,8 +292,8 @@ std::string acc_set_calib(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     set_calibration_inertial(params, acc_misalignment, acc_gain, acc_offset);
-    kv_store_save_calibration("AccOffset", acc_offset);
-    kv_store_save_calibration("AccGain", acc_gain);
+    kv_store_save_calibration(kv_keys[cal_acc_offset], acc_offset);
+    kv_store_save_calibration(kv_keys[cal_acc_gain], acc_gain);
 
     std::string s = int_to_hex(SERIAL_ACC_SET_CALIB) + ", Calibration set;";
     return s;
@@ -314,8 +314,8 @@ std::string gyro_set_calib(std::vector<float> params) {
     SerialOutputMode = SERIAL_PRINT_NOTHING;
 
     set_calibration_inertial(params, gyro_misalignment, gyro_gain, gyro_offset);
-    kv_store_save_calibration("GyroOffset", gyro_offset);
-    kv_store_save_calibration("GyroGain", gyro_gain);
+    kv_store_save_calibration(kv_keys[cal_gyro_offset], gyro_offset);
+    kv_store_save_calibration(kv_keys[cal_gyro_gain], gyro_gain);
 
     std::string s = int_to_hex(SERIAL_GYRO_SET_CALIB) + ", Calibration set;";
     return s;
@@ -362,6 +362,18 @@ std::string misc_set_settings(std::vector<float> params) {
 
     FusionAhrsSetSettings(&AHRS, &AHRSsettings);
     FusionAhrsReset(&AHRS);
+
+    kv_store_save_calibration(kv_keys[cal_euler_output_offset], AxisOffset);
+
+    // NOTE: Very much not a matrix, but we already have code for saving a
+    // matrix to kv-store.
+    FusionMatrix tmp = {
+        params[3],
+        params[4],
+        params[5],
+        params[6],
+    };
+    kv_store_save_calibration(kv_keys[cal_ahrs_settings], tmp);
 
     std::string msg = "AHRS settings set;";
     return msg;
