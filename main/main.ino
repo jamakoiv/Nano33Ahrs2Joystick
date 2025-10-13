@@ -213,20 +213,22 @@ command_t serial_check_for_command(void) {
 }
 
 void setup() {
-    while (!Serial) {}
+    // while (!Serial) {}
     Serial.begin(57600);
-    delay(100);
+    delay(500);
     Serial.println("Starting board.");
 
     IMU.setGyroscopeSettings( LSM9DS1_ODR_G_238HZ, LSM9DS1_FS_G_500DPS );
     IMU.setAccelerometerSettings( LSM9DS1_ODR_XL_119HZ, LSM9DS1_FS_XL_4G );
     IMU.begin(); // Start the STM LSM9DS1 inertial unit.
 
-
     usb_comms.setSettings(usb_comms.NO_AUTOSEND, usb_comms.SEND_NONBLOCKING);
-    joystick.setAxisRange( -180, 180, X );  // left-right, yaw-axis. Range [-180, 180] degrees. 
-    joystick.setAxisRange( -90, 90, Y );    // up-down, pitch-axis. Range [-90, 90] degrees.
-    joystick.setAxisRange( -90, 90, Z );  // roll left-right, roll-axis. Range [-90, 90] degrees.
+
+    // INFO: Use the full range for every axis.
+    // The old system was creating problems OS-side.
+    joystick.setAxisRange( -180, 180, X );
+    joystick.setAxisRange( -180, 180, Y );
+    joystick.setAxisRange( -180, 180, Z );
 
     if (!kv_store_initialized()) {
       while (true) {
