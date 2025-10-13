@@ -13,8 +13,10 @@ enum {
     cal_mag_gain,
     cal_acc_offset,
     cal_acc_gain,
+    cal_acc_misalignment,
     cal_gyro_offset,
     cal_gyro_gain,
+    cal_gyro_misalignment,
     cal_euler_output_offset,
     cal_ahrs_settings
 };

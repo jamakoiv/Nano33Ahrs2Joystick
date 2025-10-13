@@ -294,6 +294,7 @@ std::string acc_set_calib(std::vector<float> params) {
     set_calibration_inertial(params, acc_misalignment, acc_gain, acc_offset);
     kv_store_save_calibration(kv_keys[cal_acc_offset], acc_offset);
     kv_store_save_calibration(kv_keys[cal_acc_gain], acc_gain);
+    kv_store_save_calibration(kv_keys[cal_acc_misalignment], acc_misalignment);
 
     std::string s = int_to_hex(SERIAL_ACC_SET_CALIB) + ", Calibration set;";
     return s;
@@ -316,6 +317,8 @@ std::string gyro_set_calib(std::vector<float> params) {
     set_calibration_inertial(params, gyro_misalignment, gyro_gain, gyro_offset);
     kv_store_save_calibration(kv_keys[cal_gyro_offset], gyro_offset);
     kv_store_save_calibration(kv_keys[cal_gyro_gain], gyro_gain);
+    kv_store_save_calibration(kv_keys[cal_gyro_misalignment],
+                              gyro_misalignment);
 
     std::string s = int_to_hex(SERIAL_GYRO_SET_CALIB) + ", Calibration set;";
     return s;

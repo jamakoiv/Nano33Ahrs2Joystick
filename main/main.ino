@@ -56,8 +56,8 @@ FusionVector acc_gain;
 FusionVector acc_gain_default {1.0, 1.0, 1.0};
 FusionVector acc_offset;
 FusionVector acc_offset_default = {0.0325f, 0.0306f, 0.01819f}; 
-
-FusionMatrix acc_misalignment = {
+FusionMatrix acc_misalignment;
+FusionMatrix acc_misalignment_default = {
   1.0, 0.0, 0.0,
   0.0, 1.0, 0.0,
   0.0, 0.0, 1.0
@@ -70,8 +70,8 @@ FusionVector gyro_gain;
 FusionVector gyro_gain_default {1.125f, 1.125f, 1.125f};
 FusionVector gyro_offset;
 FusionVector gyro_offset_default = {0.50019f, 0.68556f, -0.13808f}; // 238 Hz values
-                                                                    //
-FusionMatrix gyro_misalignment = {
+FusionMatrix gyro_misalignment;
+FusionMatrix gyro_misalignment_default = {
   1.0, 0.0, 0.0,
   0.0, 1.0, 0.0,
   0.0, 0.0, 1.0
@@ -89,7 +89,6 @@ FusionMatrix soft_iron_default = {
 FusionVector hard_iron;
 FusionVector hard_iron_default = {2.97, -26.39, 14.13};
 
-// x0=3.2874, y0=-25.4467, z0=14.1876, a=46.3417, b=45.8475, c=44.1814:software
 
 /* AxisOffset(yaw, pitch, roll). Add constant offset to the AHRS-Euler 
  * output as degrees. Generally you should leave these zero and mitigate 
@@ -249,11 +248,17 @@ void setup() {
     // kv_storage_reset({}); // Reset the KVStore to factory defaults.
     kv_store_load_calibration(kv_keys[cal_mag_offset], hard_iron, hard_iron_default);
     kv_store_load_calibration(kv_keys[cal_mag_gain], soft_iron, soft_iron_default);
+
     kv_store_load_calibration(kv_keys[cal_acc_offset], acc_offset, acc_offset_default);
     kv_store_load_calibration(kv_keys[cal_acc_gain], acc_gain, acc_gain_default);
+    kv_store_load_calibration(kv_keys[cal_acc_misalignment], acc_misalignment, acc_misalignment_default);
+
     kv_store_load_calibration(kv_keys[cal_gyro_offset], gyro_offset, gyro_offset_default);
     kv_store_load_calibration(kv_keys[cal_gyro_gain], gyro_gain, gyro_gain_default);
+    kv_store_load_calibration(kv_keys[cal_gyro_misalignment], gyro_misalignment, gyro_misalignment_default);
+
     kv_store_load_calibration(kv_keys[cal_euler_output_offset], AxisOffset, AxisOffset_default);
+    kv_store_load_calibration(kv_keys[cal_ahrs_settings], tmp_ahrs_settings, tmp_ahrs_settings_default);
 
     Serial.println("System reset.");
     delay(100);
