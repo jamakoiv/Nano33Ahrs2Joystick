@@ -45,12 +45,12 @@ std::string set_print_mode(std::vector<float> params);
 std::string mag_set_calib(std::vector<float> params);
 std::string acc_set_calib(std::vector<float> params);
 std::string gyro_set_calib(std::vector<float> params);
-std::string yaw_set_offset(std::vector<float> params);
+std::string misc_set_settings(std::vector<float> params);
 
 std::string acc_get_calib(void);
 std::string mag_get_calib(void);
 std::string gyro_get_calib(void);
-std::string yaw_get_offset(void);
+std::string misc_get_settings(void);
 
 std::string _kv_store_reset(void);
 
